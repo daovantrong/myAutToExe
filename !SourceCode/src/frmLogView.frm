@@ -1,13 +1,13 @@
 VERSION 5.00
 Begin VB.Form frmLogView 
    Caption         =   "View Log"
-   ClientHeight    =   7845
+   ClientHeight    =   7836
    ClientLeft      =   60
-   ClientTop       =   450
-   ClientWidth     =   11670
+   ClientTop       =   456
+   ClientWidth     =   11676
    BeginProperty Font 
       Name            =   "System"
-      Size            =   9.75
+      Size            =   9.6
       Charset         =   0
       Weight          =   700
       Underline       =   0   'False
@@ -15,13 +15,13 @@ Begin VB.Form frmLogView
       Strikethrough   =   0   'False
    EndProperty
    LinkTopic       =   "Form1"
-   ScaleHeight     =   7845
-   ScaleWidth      =   11670
+   ScaleHeight     =   7836
+   ScaleWidth      =   11676
    StartUpPosition =   3  'Windows Default
    Begin VB.TextBox txtlog 
       BeginProperty Font 
          Name            =   "Courier New"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   0
          Weight          =   400
          Underline       =   0   'False

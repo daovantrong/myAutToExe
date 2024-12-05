@@ -19,7 +19,7 @@ Private PEStart&
 'Private Const CHECKSUM_MAP_FAILURE As Long = 2
 'Private Const CHECKSUM_MAPVIEW_FAILURE As Long = 3
 'Private Const CHECKSUM_UNICODE_FAILURE As Long = 4
-Private Declare Function MapFileAndCheckSum Lib "E:\Programmierung\Projekte\vir_clean\Imagehlp.dll" Alias "MapFileAndCheckSumA" (ByVal FileName As String, ByRef HeaderSum As Long, ByRef CheckSum As Long) As Long
+Private Declare Function MapFileAndCheckSum Lib "Imagehlp.dll" Alias "MapFileAndCheckSumA" (ByVal FileName As String, ByRef HeaderSum As Long, ByRef CheckSum As Long) As Long
 
 Public Sub Create()
 

@@ -1,14 +1,24 @@
 VERSION 5.00
 Begin VB.Form FrmFuncRename 
    Caption         =   "Function Renamer"
-   ClientHeight    =   8595
-   ClientLeft      =   165
-   ClientTop       =   450
+   ClientHeight    =   8592
+   ClientLeft      =   168
+   ClientTop       =   456
    ClientWidth     =   11880
    LinkTopic       =   "Form1"
-   ScaleHeight     =   8595
+   ScaleHeight     =   8592
    ScaleWidth      =   11880
    StartUpPosition =   3  'Windows Default
+   Begin VB.CheckBox chk_MatchByName 
+      Caption         =   "Match by function name"
+      Height          =   252
+      Left            =   1680
+      TabIndex        =   30
+      ToolTipText     =   "Enable is for scripts that Not obfuscated"
+      Top             =   1920
+      UseMaskColor    =   -1  'True
+      Width           =   2292
+   End
    Begin VB.CheckBox Chk_DontDeleteFunctions 
       Caption         =   "Keep Functions"
       Height          =   495
@@ -20,7 +30,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.ListBox List_Fn_String_Org 
       Appearance      =   0  'Flat
-      Height          =   4515
+      Height          =   4440
       Left            =   0
       TabIndex        =   27
       Top             =   4560
@@ -64,7 +74,7 @@ Begin VB.Form FrmFuncRename
          BackStyle       =   0  'Transparent
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   9.75
+            Size            =   9.6
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -118,7 +128,7 @@ Begin VB.Form FrmFuncRename
          BackStyle       =   0  'Transparent
          BeginProperty Font 
             Name            =   "MS Sans Serif"
-            Size            =   9.75
+            Size            =   9.6
             Charset         =   0
             Weight          =   700
             Underline       =   0   'False
@@ -151,7 +161,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.FileListBox File_Includes 
       Appearance      =   0  'Flat
-      Height          =   1200
+      Height          =   1176
       Left            =   10320
       Pattern         =   "*.au3"
       TabIndex        =   4
@@ -189,7 +199,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.ListBox List_Fn_Inc 
       Appearance      =   0  'Flat
-      Height          =   1785
+      Height          =   1752
       Left            =   5040
       TabIndex        =   14
       Top             =   2280
@@ -207,7 +217,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.ListBox List_Fn_Assigned 
       Appearance      =   0  'Flat
-      Height          =   1200
+      Height          =   1176
       Left            =   0
       TabIndex        =   5
       Top             =   600
@@ -236,7 +246,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.ListBox List_Fn_Org 
       Appearance      =   0  'Flat
-      Height          =   1785
+      Height          =   1752
       Left            =   0
       TabIndex        =   13
       Top             =   2280
@@ -445,9 +455,16 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
    Dim KeepFunctions As Boolean
    KeepFunctions = (Chk_DontDeleteFunctions = vbChecked)
    
+   
    With List_Fn_Assigned
+   
+      GUIEvent_ProcessBegin .ListCount
+      
       Dim ListItemIdx%
       For ListItemIdx = 0 To .ListCount - 1
+      
+         GUIEvent_ProcessBegin ListItemIdx
+         
          SearchAndReplaceJob_Line = .List(ListItemIdx)
          
          Dim tmp
@@ -508,6 +525,7 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
                                     "Global Const " & SearchAndReplace_ReplaceWith
             If SearchAndReplace_Include <> "" Then FunctionBody_ReplaceText = IncludeLine & FunctionBody_ReplaceText
             
+            
             If KeepFunctions = False Then
                   
                myRegEx.Pattern = RE_WSpace("", "Global Const", RE_Literal(SearchAndReplace_LookFor)) ' & RE_AnyChars
@@ -537,6 +555,9 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
             ReplaceDo SearchAndReplBuff, FunctionBody_ReplaceText, Replace(FunctionBody_ReplaceText, "; ", ";;"), 1
          End If
       Next
+   
+   GUIEvent_ProcessEnd
+   
    End With
    
    
@@ -577,7 +598,8 @@ Private Sub OpenAndFill( _
         FileName$, _
         ScriptData As StringReader, _
         FuncList, _
-        List_Func As Listbox _
+        List_Func As Listbox, _
+        Optional ShowProgressbar As Boolean _
         )
         
         
@@ -601,11 +623,11 @@ Private Sub OpenAndFill( _
               item = FuncList(itemidx)
            
               'add #Includes
-              Dim match As match
-              For Each match In RE_FindPatterns(item, _
+              Dim Match As Match
+              For Each Match In RE_FindPatterns(item, _
                                       "#include\s*[""<]([^>""])*" _
                                    )
-                 .AddItem match
+                 .AddItem Match
                  .ItemData(.ListCount - 1) = itemidx
               Next
               
@@ -633,9 +655,12 @@ Private Sub OpenAndFill( _
        ' Seperate Const
          Dim GlobalList
          GlobalList = Split(ScriptData.Data, vbCrLf & "Global Const ", , vbTextCompare)
-        
+         
+         Dim counter&
+         If ShowProgressbar Then GUIEvent_ProcessBegin UBound(GlobalList)
       
          For Each item In GlobalList
+         
             If Left(item, 1) = "$" Then
               
              ' Clean up Comments
@@ -680,7 +705,13 @@ Private Sub OpenAndFill( _
                 
                 
             End If
+            
+            Inc counter
+            If ShowProgressbar Then GUIEvent_ProcessUpdate counter
+            
          Next
+         
+         If ShowProgressbar Then GUIEvent_ProcessEnd
          
       End If
       'BenchEnd
@@ -764,12 +795,19 @@ On Error GoTo LoadSearchReplaceData_Err
       .NameWithExt = FILENAME_SEARCH_REPLACE_DATA
       Textlines = Split(FileLoad(.FileName), vbCrLf)
    End With
+   
+   Dim counter&
+   GUIEvent_ProcessBegin UBound(Textlines)
 
    With List_Fn_Assigned
 
 'seperate Org & Inc Functions
       Dim item
       For Each item In Textlines
+      
+         Inc counter
+         GUIEvent_ProcessUpdate counter
+         
          Dim Textline_items
          Textline_items = Split(item, " => ")
          
@@ -843,6 +881,9 @@ On Error GoTo LoadSearchReplaceData_Err
 '            Log "Load_Error: Missing ' => ' seperator in line: '" & item & "'"
          End If 'Split at " => "
       Next
+      
+      GUIEvent_ProcessEnd
+      
    End With
 
 Err.Clear
@@ -930,6 +971,7 @@ End Sub
 '///////////////////////////////////////////
 '// Form_Load
 Private Sub Form_Load()
+
    
  ' Load Configuration Setting
    With Txt_Fn_Org_FileName
@@ -1053,7 +1095,7 @@ Private Sub List_Fn_String_Org_Fill()
    Dim List_Fn_String_Org_LongestStringIndex&: List_Fn_String_Org_LongestStringIndex = 0
    
    
-   Dim item As match
+   Dim item As Match
    For Each item In matches
       
       If ItemStringMaxLength < Len(item) Then
@@ -1294,6 +1336,11 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
      
    If (List_Fn_Inc.ListCount = 0) Or (List_Fn_Org.ListCount = 0) Then Exit Function
    
+   
+   Dim isMatchByName As Boolean
+   isMatchByName = chk_MatchByName = vbChecked
+   
+   
  ' Get FuncOldName
    Dim FuncOldName$, FuncOldNameIdx&
    With List_Fn_Org
@@ -1413,69 +1460,79 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
 '   End If
    
    
- ' ===== Validate Arguments =====
-   Dim numArgOrg&, numArgInc&
-      numArgOrg = GetNumOccurrenceIn(List_Fn_Org.Text, ",") + 1
-      numArgInc = GetNumOccurrenceIn(List_Fn_Inc.Text, ",") + 1
-   If numArgOrg <> numArgInc Then
-      If bQuietMode Then
-         Log "Rejected - function argument differ:" & Logtmp
+   If isMatchByName Then
+   
+      If StrComp(FuncOldName, FuncNewName, vbTextCompare) Then
+         Log "Rejected - Function names are different."
          Exit Function
       End If
-      
-      Dim Answer&
-      Answer = MsgBox("Number of argument of both function differs( " & numArgOrg & " <> " & numArgInc & " )." & vbCrLf & _
-                         "Add them anyway?", vbQuestion + vbYesNoCancel + vbDefaultButton2, "Attention")
-      If vbNo = Answer Then
-         Log "Rejected by user function argument differ" & Logtmp
-         Exit Function
-      ElseIf vbCancel = Answer Then
-         Err.Raise ERR_CANCEL_ALL
-         
-      End If
-   End If
-   
-   
-   
- ' ===== Validate Strings =====
-   Dim fn_inc As MatchCollection
-   GetStrings Txt_Fn_Inc, fn_inc
-   
-   Dim fn_org As MatchCollection
-   GetStrings Txt_Fn_Org, fn_org
-   
-   If RE_MatchesCompare(fn_org, fn_inc) = False Then
-      If bQuietMode Then
-         Log "Rejected - contained strings differ" & Logtmp
-         Exit Function
-      End If
-      
-      With FrmFuncRename_StringMismatch
-         .Create fn_org, fn_inc
-         .Show vbModal
-         
-         Dim result As AcceptResult_enum
-         result = .AcceptResult
-         
-         Log Switch( _
-            (result = Result_False), "Rejected by user - contained strings differ", _
-            (result = Result_True), "Accepted by user", _
-            (True), "ERROR decision undefined.") & Logtmp
 
-      End With
+   Else
+   
+   ' ===== Validate Arguments =====
+     Dim numArgOrg&, numArgInc&
+        numArgOrg = GetNumOccurrenceIn(List_Fn_Org.Text, ",") + 1
+        numArgInc = GetNumOccurrenceIn(List_Fn_Inc.Text, ",") + 1
+     If numArgOrg <> numArgInc Then
+        If bQuietMode Then
+           Log "Rejected - function argument differ:" & Logtmp
+           Exit Function
+        End If
+        
+        Dim Answer&
+        Answer = MsgBox("Number of argument of both function differs( " & numArgOrg & " <> " & numArgInc & " )." & vbCrLf & _
+                           "Add them anyway?", vbQuestion + vbYesNoCancel + vbDefaultButton2, "Attention")
+        If vbNo = Answer Then
+           Log "Rejected by user function argument differ" & Logtmp
+           Exit Function
+        ElseIf vbCancel = Answer Then
+           Err.Raise ERR_CANCEL_ALL
+           
+        End If
+     End If
+     
+   
+    ' ===== Validate Strings =====
+      Dim fn_inc As MatchCollection
+      GetStrings Txt_Fn_Inc, fn_inc
       
-      If result = Result_False Then
-'      If vbNo = MsgBox("Local strings don't match continue anyway?", vbYesNo + vbDefaultButton2) Then
-         Exit Function
-      ElseIf result = Result_True Then
-      ElseIf result = Result_Undefined Then
-         Err.Raise ERR_CANCEL_ALL
+      Dim fn_org As MatchCollection
+      GetStrings Txt_Fn_Org, fn_org
       
-      Else
-'         Stop
-         Exit Function
+      If RE_MatchesCompare(fn_org, fn_inc) = False Then
+         If bQuietMode Then
+            Log "Rejected - contained strings differ" & Logtmp
+            Exit Function
+         End If
+         
+         With FrmFuncRename_StringMismatch
+            .Create fn_org, fn_inc
+            .Show vbModal
+            
+            Dim result As AcceptResult_enum
+            result = .AcceptResult
+            
+            Log Switch( _
+               (result = Result_False), "Rejected by user - contained strings differ", _
+               (result = Result_True), "Accepted by user", _
+               (True), "ERROR decision undefined.") & Logtmp
+   
+         End With
+         
+         If result = Result_False Then
+   '      If vbNo = MsgBox("Local strings don't match continue anyway?", vbYesNo + vbDefaultButton2) Then
+            Exit Function
+         ElseIf result = Result_True Then
+         ElseIf result = Result_Undefined Then
+            Err.Raise ERR_CANCEL_ALL
+         
+         Else
+   '         Stop
+            Exit Function
+         End If
       End If
-   End If
+   
+   End If 'isMatchByName
    
   'Add S&R item
    
@@ -1511,7 +1568,7 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
    ListBox_ScrollToFirstSelected List_Fn_Org
    ListBox_ScrollToFirstSelected List_Fn_Inc
    
-   Cmd_DoSearchAndReplace.Enabled = True
+   Cmd_DoSearchAndReplace.enabled = True
    
   'Success
    SearchAndReplace_AddItem = True
@@ -1669,10 +1726,16 @@ End Sub
 
 Private Sub Txt_Fn_Org_FileName_Change()
   
+  
+   On Error Resume Next
+   
    If FileExists(Txt_Fn_Org_FileName) Then
       File_Org_FileName = Txt_Fn_Org_FileName
    
-      OpenAndFill File_Org_FileName.FileName, Script_Org, Functions_Org, List_Fn_Org
+      OpenAndFill File_Org_FileName.FileName, Script_Org, Functions_Org, List_Fn_Org, True
+      
+      If Err Then Log Err.Description
+      'TODO Quit when during init
       
       List_Fn_Assigned.Clear
       Set List_Fn_Assigned_FuncIdxs = New Collection

@@ -3,8 +3,8 @@ Begin VB.Form Frm_Options
    BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Options"
    ClientHeight    =   7020
-   ClientLeft      =   45
-   ClientTop       =   285
+   ClientLeft      =   48
+   ClientTop       =   288
    ClientWidth     =   8400
    LinkTopic       =   "Options"
    MaxButton       =   0   'False
@@ -250,7 +250,7 @@ Begin VB.Form Frm_Options
          TabIndex        =   10
          Tag             =   "FILE"
          Text            =   "FILE"
-         ToolTipText     =   "The 'FILE' marker marks the beginning of the mainscript and every File that is installed by FILEINSTALL"
+         ToolTipText     =   "The 'FILE' marker marks the beginning of the mainscript and every file that is installed by FILEINSTALL"
          Top             =   360
          Width           =   495
       End
@@ -396,6 +396,16 @@ Begin VB.Form Frm_Options
       TabIndex        =   27
       Top             =   4920
       Width           =   8175
+      Begin VB.CheckBox chk_MsgBoxCache 
+         Caption         =   "Messagebox Cache"
+         Height          =   252
+         Left            =   4800
+         TabIndex        =   58
+         ToolTipText     =   "Memorize the choice you made on MsgBox's and avoid that they popup again."
+         Top             =   240
+         Value           =   1  'Checked
+         Width           =   1812
+      End
       Begin VB.CheckBox chk_extractIcon 
          Caption         =   "Extract Icon"
          Height          =   255
@@ -412,7 +422,7 @@ Begin VB.Form Frm_Options
          Height          =   255
          Left            =   1920
          TabIndex        =   51
-         ToolTipText     =   "Disables Winhex since it maybe disturbing that eac time you change the start offset it'll pops up."
+         ToolTipText     =   "Disables Winhex since it maybe disturbing when it pops up each time you change the start offset ."
          Top             =   240
          Value           =   1  'Checked
          Width           =   1575
@@ -507,7 +517,7 @@ Begin VB.Form Frm_Options
          TabIndex        =   3
          Tag             =   $"Frm_Options.frx":0000
          Text            =   $"Frm_Options.frx":0014
-         ToolTipText     =   "Only imporatant if 'Use 'normal' Au3_Signature to find start of script' is checked"
+         ToolTipText     =   "Only important if 'Use 'normal' Au3_Signature to find the start of script' is checked"
          Top             =   840
          Width           =   1575
       End

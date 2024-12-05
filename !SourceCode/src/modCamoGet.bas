@@ -91,7 +91,14 @@ Public Sub CamoGet()
 '  000056E8   41 55 33 21  00 00 00 00  61 00 75 00  74 00 00 00  2A 00   AU3!    a u t   *
 '  000056FA   00 00 77 00  62 00 00 00  00 00 46 49  4C 45 00 00  00 00     w b     FILE
 '  0000570C   41 00 42 00  53 00 00 00                                    A B S
-   
+
+'Newer Version
+'000B22E0                            30 00 32 00 64 00 00 00           0 2 d
+'000B22F0   44 00 65 00 66 00 61 00  75 00 6C 00 74 00 00 00   D e f a u l t
+'000B2300   77 00 2B 00 62 00 00 00  45 41 30 36 00 00 00 00   w + b   EA06
+'000B2310   61 00 75 00 74 00 00 00  77 00 62 00 00 00 00 00   a u t   w b
+'000B2320   46 49 4C 45 00 00 00 00  57 6F 77 36 34 52 65 76   FILE    Wow64Rev
+'
    
 Dim Pattern As New clsStrCat
 
@@ -166,19 +173,113 @@ Dim Pattern As New clsStrCat
    Dim Match  As Match
    Set Match = myRegExp.Execute(filedata.Data)(0)
    
+   If Err = 0 Then
+      
+      
+      Dim mymatch As SubMatches
+      Set mymatch = Match.SubMatches
+      
+      Debug.Assert mymatch.Count = 3
+      
+      
+      Dim AU3_SubType$
+      AU3_SubType = mymatch.item(0)
+         
+      Dim AU3_Type$
+      AU3_Type = mymatch.item(1)
+      
+      Dim AU3_ResTypeFile$
+      AU3_ResTypeFile = mymatch.item(2)
+      
+   Else
+         '  8D8C24 A4000000        LEA     ECX, [ESP+A4]
+         '  E8 C27DFFFF            CALL    004046CE
+         '  817C24 60 41553321     CMP     [DWORD ESP+60], 21335541
+         '  0F84 AF670600          JE      004730C9
+
+      Err.Clear
+      
+      
+      
+  Pattern.Clear
+  
+  Pattern.Concat szToUnicodeGREPHex( _
+                  "%02d")
+                  
+  Pattern.Concat RE_Group_NonCaptured( _
+         szToUnicodeGREPHex( _
+                  "Default", _
+                  "w+b" _
+                  ) _
+               )
+   Pattern.Concat "?"
+                  
+   '#1 AU3_SubType
+   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
+                  'sToGREPHex( _
+                  "EA06")
+   Pattern.Concat szToUnicodeGREPHex( _
+                  vbNullChar)
+               
+
+   Pattern.Concat szToUnicodeGREPHex( _
+                  vbNullChar, _
+                  "aut" _
+                  )
+                  
+   Pattern.Concat szToUnicodeGREPHex( _
+                  "wb" _
+                  )
+
    
-   Dim mymatch As SubMatches
-   Set mymatch = Match.SubMatches
+   Pattern.Concat sToGREPHex( _
+                  vbNullChar, _
+                  vbNullChar)
+   '#3 AU3_ResTypeFile
+   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
+                  'szToGREPHex( _
+                  "FILE")
+
+   Pattern.Concat szToUnicodeGREPHex( _
+                  vbNullChar)
+
+  '("Wow64DisableWow64FsRedirection  Wow64RevertWow64FsRedirection")?
+  ' Pattern.Concat szToUnicodeGREPHex("ABS")
+
+   myRegExp.Pattern = Pattern
+   Set Match = myRegExp.Execute(filedata.Data)(0)
+      
+        
+      AU3_Type = mymatch.item(0)
+      AU3_ResTypeFile = mymatch.item(1)
+            
+      
+      
+      Pattern.Clear
+'      Pattern.Concat "\xE8...\xFF"
+      Pattern.Concat "\x81\x7C\x24."
+      Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
+ '     Pattern.Concat "\x0F"
+      myRegExp.Pattern = Pattern
+      
+      Set Match = myRegExp.Execute(filedata.Data)(0)
+
+      Set mymatch = Match.SubMatches
+
+
+      AU3_SubType = mymatch.item(0)
+
+
+   End If
    
-   Debug.Assert mymatch.Count = 3
    With Frm_Options
-      .Txt_AU3_SubType_hex = ToHexStr(mymatch.item(0))
+      .Txt_AU3_SubType_hex = ToHexStr(AU3_SubType)
       log_verbose H32(Match.FirstIndex) & " ->  Found  AU3_SubType: " & .txt_AU3_SubType
       
-      .txt_AU3_Type_hex = ToHexStr(mymatch.item(1))
+      .txt_AU3_Type_hex = ToHexStr(AU3_Type)
       log_verbose "Found  AU3_Type : " & .txt_AU3_Type
       
-      .txt_AU3_ResTypeFile_hex = ToHexStr(mymatch.item(2))
+      .txt_AU3_ResTypeFile_hex = ToHexStr(AU3_ResTypeFile)
       log_verbose "Found  AU3_ResTypeFile :" & .txt_AU3_ResTypeFile
    
    End With
@@ -238,58 +339,84 @@ Dim Pattern As New clsStrCat
    Set Match = myRegExp.Execute(filedata.Data)(0)
    If (Match Is Nothing) = False Then
       filedata.Position = Match.FirstIndex
+      log_verbose H32(filedata.Position) & " ->  Found  AU3_Signature: " ' & .txt_AU3Sig
+
+      
+      Dim AU3Sig_Hex$
       
       filedata.bSearchBackward = True
       filedata.FindByte &H80
+'      If filedata.FindString(Chr(&HE) & String(&H44, vbNullChar) & Chr(&HF) & String(3, vbNullChar)) Then
+'         AU3Sig_Hex = filedata.FixedString(8)
+'      End If
+      
       filedata.bSearchBackward = False
       
-      
-'    ' Subpattern
-'      Pattern.Clear
-'      Pattern.Concat ("\x01..." & _
-'                      "\x02..." & _
-'                      "\x03...")
-'      myRegExp.Pattern = Pattern
-'
-'
-'
-'      filedata.DisableAutoMove = True
-'
-'    ' get 1KB tmp buffer
-'      Dim filedataTmpBuff As New StringReader
-'      filedataTmpBuff.Data = filedata.FixedString(1024)
-'      Set Match = Nothing
-'      Set Match = myRegExp.Execute(filedataTmpBuff.Data)(0)
-'      filedata.DisableAutoMove = False
-'
-'    ' Seek to 80 00 00 ...
-'      filedataTmpBuff.bSearchBackward = True
-'      filedataTmpBuff.Position = Match.FirstIndex
-'      filedataTmpBuff.FindByte &H80
-'
-    ' Seek to au3sig start
-      filedata.Move -1 - 2 * 8
-       
-      
-   '   Pattern.Clear
-   '   Pattern.Concat RE_Group(RE_AnyCharRepeat(8, 8)) '("\x99\x4C\x53\x0A\x86\xD6\x48\x7D")
-   '   Pattern.Concat RE_Group(RE_AnyCharRepeat(8, 8)) ' ("\xA3\x48\x4B\xBE\x98\x6C\x4A\xA9")
-   ''   Pattern.Concat "[^\x00]\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-   '
-   '   myRegExp.Pattern = Pattern
-   '   Set mymatch = myRegExp.Execute(filedata.FixedString(-1)).item(0).SubMatches
+      If filedata.int32 = 0 Then
+         filedata.Move -4
+         
+         
+   '    ' Subpattern
+   '      Pattern.Clear
+   '      Pattern.Concat ("\x01..." & _
+   '                      "\x02..." & _
+   '                      "\x03...")
+   '      myRegExp.Pattern = Pattern
    '
    '
    '
-      Dim hex1 As New StringReader
-      hex1.Data = filedata.FixedString(8)
+   '      filedata.DisableAutoMove = True
+   '
+   '    ' get 1KB tmp buffer
+   '      Dim filedataTmpBuff As New StringReader
+   '      filedataTmpBuff.Data = filedata.FixedString(1024)
+   '      Set Match = Nothing
+   '      Set Match = myRegExp.Execute(filedataTmpBuff.Data)(0)
+   '      filedata.DisableAutoMove = False
+   '
+   '    ' Seek to 80 00 00 ...
+   '      filedataTmpBuff.bSearchBackward = True
+   '      filedataTmpBuff.Position = Match.FirstIndex
+   '      filedataTmpBuff.FindByte &H80
+   '
+       ' Seek to au3sig start
+         filedata.Move -1 - 2 * 8
+          
+         
+      '   Pattern.Clear
+      '   Pattern.Concat RE_Group(RE_AnyCharRepeat(8, 8)) '("\x99\x4C\x53\x0A\x86\xD6\x48\x7D")
+      '   Pattern.Concat RE_Group(RE_AnyCharRepeat(8, 8)) ' ("\xA3\x48\x4B\xBE\x98\x6C\x4A\xA9")
+      ''   Pattern.Concat "[^\x00]\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+      '
+      '   myRegExp.Pattern = Pattern
+      '   Set mymatch = myRegExp.Execute(filedata.FixedString(-1)).item(0).SubMatches
+      '
+      '
+      '
+         Dim hex1 As New StringReader
+         hex1.Data = filedata.FixedString(8)
+         
+         Dim hex2 As New StringReader
+         hex2.Data = filedata.FixedString(8)
+         
+         AU3Sig_Hex = ValuesToHexString(hex2) & ValuesToHexString(hex1)
+         
+         With Frm_Options
+         
+            .txt_AU3Sig_Hex = RTrim(AU3Sig_Hex)
+            log_verbose H32(filedata.Position - 16) & " ->  Found  AU3_Signature: " & .txt_AU3Sig
       
-      Dim hex2 As New StringReader
-      hex2.Data = filedata.FixedString(8)
+            .Chk_NormalSigScan.value = vbChecked
+         End With
+      Else
+         With Frm_Options
+            log_verbose "Find AU3_Signature failed!"
+            
+            .Chk_NormalSigScan.value = vbUnchecked
+         End With
+
+      End If
       
-      Frm_Options.txt_AU3Sig_Hex = RTrim(ValuesToHexString(hex2) & ValuesToHexString(hex1))
-      
-      Frm_Options.Chk_NormalSigScan.value = vbChecked
       
    End If
 '---------------------------------------------------
@@ -312,6 +439,8 @@ Dim Pattern As New clsStrCat
 
    With Frm_Options
       .txt_FILE_DecryptionKey = H32(tmpstr.int32)
+       log_verbose H32(mymatch.Count) & " ->  Found  AU3_ResourceTypeFILE: " & .txt_FILE_DecryptionKey
+
    End With
  
 '---------------------------------------------------

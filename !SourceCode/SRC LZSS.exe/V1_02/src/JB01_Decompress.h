@@ -118,7 +118,11 @@ public:
 
 	// Monitor functions
 //	UINT	GetPercentComplete(void) { return ((UINT)(((double)m_nUserDataPos/(double)m_nDataSize) * 100.0)); }
-	UINT	GetPercentComplete(void) { return ((m_nUserDataPos / m_nDataSize) * 100); }
+	UINT	GetPercentComplete(void) {
+      return ( (m_nDataSize == 0)? 0: 
+        (m_nUserDataPos / m_nDataSize) * 100 
+      );
+  }
 private:
 	// User supplied buffers and counters
 	UCHAR	*m_bUserData;						// When compressing from memory this is the user input buffer

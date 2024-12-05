@@ -25,10 +25,14 @@ Private Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal 
 Private Declare Sub MemCopyLngToInt Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As Integer, ByVal Length&)
 
 Public bSearchBackward As Boolean
-'lokale Variable(n) zum Zuweisen der Eigenschaft(en)
-Private mvarPosition As Long 'lokale Kopie
-Public mvardata As String  'lokale Kopie
-'Public Position As Long 'lokale Kopie
+
+Private mvarPosition As Long
+Public mvardata As String
+Private mvardata_len As Long
+
+
+'Public Position As Long
+
 Public mStorePos As Long
 Public DisableAutoMove As Boolean
 
@@ -41,8 +45,6 @@ Public Property Get Stream(Length As Long) As StringReader
     Set Stream = New StringReader
     Stream.Data = FixedString(Length)
 End Property
-
-
 
 
 
@@ -71,10 +73,8 @@ End Property
 
 
 Public Property Get Length() As Long
-    Length = Len(mvardata)
+    Length = mvardata_len ' Len(mvardata)
 End Property
-
-
 
 
 Public Sub RestorePos()
@@ -88,7 +88,7 @@ End Sub
 
 Public Property Let ToMove(ByVal vData As Long)
    If DisableAutoMove Then Exit Property
-   Move (vData)
+   Move vData
 End Property
 
 
@@ -115,15 +115,16 @@ End Function
 
 '/////////////////////////////////////////////////////////
 '// set_EOS - Returns True if Position is at the End Of String
+
 Public Property Let EOS(ByVal vData As Boolean)
-    Position = Len(mvardata) And vData
+    Position = mvardata_len And vData
 End Property
 '// get_EOS - Forward to End Of String
 Public Property Get EOS() As Boolean
  '  EOS = Position >= Len(mvardata)
  'optimised
  '  EOS = (mvarPosition - 1) >= Len(mvardata)
-    EOS = mvarPosition > Len(mvardata)
+    EOS = mvarPosition > mvardata_len
 End Property
 
 
@@ -187,7 +188,7 @@ Public Property Let FixedString(Optional ByVal Length& = -1, vData As String)
     
    'Enlarge Buffer if necessary
     Dim enlarge&
-    enlarge = (Length + mvarPosition - 1) - Len(mvardata)
+    enlarge = (Length + mvarPosition - 1) - mvardata_len
     If enlarge >= 1 Then mvardata = mvardata & Space(enlarge)
     
     Mid$(mvardata, mvarPosition, Length) = vData
@@ -196,18 +197,22 @@ End Property
 
 
 Public Property Get FixedString(Optional ByVal Length& = -1) As String
-    If Length <= -1 Then Length = Len(mvardata)
-    FixedString = Mid$(mvardata, mvarPosition, Length)
+   If Length <= -1 Then _
+      Length = mvardata_len
+    
+   FixedString = Mid$(mvardata, mvarPosition, Length)
    
-    ToMove = Length
+   ToMove = Length
 End Property
 
 Public Property Get FixedStringW(Optional ByVal Length& = -1) As String
-    Length = Length * 2
-    If Length <= -1 Then Length = Len(mvardata)
-    FixedStringW = Mid(mvardata, mvarPosition, Length)
+   Length = Length * 2
+   If Length <= -1 Then _
+      Length = mvardata_len
    
-    ToMove = Length
+      FixedStringW = Mid(mvardata, mvarPosition, Length)
+   
+   ToMove = Length
 End Property
 
 
@@ -283,7 +288,10 @@ End Property
 
 
 Public Property Let Data(vData As String)
+
     mvardata = vData
+    mvardata_len = Len(vData)
+    
     Position = 0
 End Property
 
@@ -293,13 +301,13 @@ Attribute Data.VB_UserMemId = 0
     Data = mvardata
 End Property
 
-Public Sub CopyData(src&, Dest&, Optional size = -1)
+Public Sub CopyData(src&, Dest&, Optional SIZE = -1)
    Dim tmpstr$
    Position = src
-   tmpstr = FixedString(size)
+   tmpstr = FixedString(SIZE)
    
    Position = Dest
-   FixedString(size) = tmpstr
+   FixedString(SIZE) = tmpstr
    
    
 End Sub

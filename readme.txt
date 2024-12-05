@@ -633,8 +633,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -1506,8 +1518,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -2375,8 +2399,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -3248,8 +3284,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -4115,8 +4163,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -4988,8 +5048,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -5857,8 +5929,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -6730,8 +6814,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -7593,8 +7689,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -8466,8 +8574,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -9335,8 +9455,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -10208,8 +10340,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -11075,8 +11219,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -11948,8 +12104,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -12817,8 +12985,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -13690,8 +13870,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -14542,8 +14734,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -15415,8 +15619,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -16284,8 +16500,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -17157,8 +17385,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -18024,8 +18264,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -18897,8 +19149,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -19766,8 +20030,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -20639,8 +20915,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -21502,8 +21790,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -22375,8 +22675,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -23244,8 +23556,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -24117,8 +24441,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -24984,8 +25320,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -25857,8 +26205,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -26726,8 +27086,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems
@@ -27599,8 +27971,20 @@ Version 3_2
 Version 3_26
    same as Version 3_2, expect that here it's "AU3!EA06"
 
+Version 3_3
+	Script is stored as resource inside the exe at .rsrc\0\RCDATA\SCRIPT
+	added new token for tenary operator
+   
 History
 =======
+
+2.13 Added UPX unpacker
+	 Added support for tenary operator [ Example: (a==4) ? "Okay" : "No"]
+     Speed up scan for script start
+	 Bugfix scan for script start
+	 updated tidy
+	 updated LZSS.exe
+	 Minor other bugfixes / enhancements 
 
 2.12 Resetbutton for OptionsDialog
      Reload/Cancel Menuitems

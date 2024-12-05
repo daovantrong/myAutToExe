@@ -1,5 +1,5 @@
 Type=Exe
-Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#5.5#0#C:\Windows\system32\vbscript.dll\3#Microsoft VBScript Regular Expressions 5.5
+Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#5.5#0#C:\Windows\SysWOW64\vbscript.dll\3#Microsoft VBScript Regular Expressions 5.5
 Form=!SourceCode\src\FrmAbout.frm
 Form=!SourceCode\src\frmLogView.frm
 Module=ApiHelper; !SourceCode\src\lib\ApiHelper.bas
@@ -38,6 +38,8 @@ Module=IconFile; !SourceCode\SRC\IconFile.bas
 Module=CRC_Adler32; !SourceCode\SRC\CRC_Adler32.bas
 Module=CustomStrCrypt; !SourceCode\SRC\CustomStrCrypt.bas
 Module=ExtractAHKScript; !SourceCode\SRC\ExtractAHKScript.bas
+Class=CBinaryReader; !SourceCode\SRC\lib\CBinaryReader.cls
+Module=Unpacker; !SourceCode\SRC\Unpacker.bas
 IconForm="FrmMain"
 Startup="FrmMain"
 HelpFile=""
@@ -49,7 +51,7 @@ HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
 MinorVer=12
-RevisionVer=198
+RevisionVer=200
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionComments="http://board.deioncube.in/showthread.php?tid=29"

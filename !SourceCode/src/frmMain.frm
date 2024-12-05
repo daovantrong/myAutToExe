@@ -1,17 +1,17 @@
 VERSION 5.00
 Begin VB.Form FrmMain 
    Caption         =   "myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler<"
-   ClientHeight    =   9675
-   ClientLeft      =   2670
-   ClientTop       =   1005
+   ClientHeight    =   9588
+   ClientLeft      =   2676
+   ClientTop       =   1008
    ClientWidth     =   9300
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
    OLEDropMode     =   1  'Manual
-   ScaleHeight     =   9675
+   ScaleHeight     =   9588
    ScaleWidth      =   9300
    Begin VB.ListBox List_Positions 
-      Height          =   2010
+      Height          =   1968
       Left            =   3480
       TabIndex        =   14
       ToolTipText     =   "Right click for close"
@@ -145,7 +145,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.ListBox ListLog 
       Appearance      =   0  'Flat
-      Height          =   1785
+      Height          =   1752
       Left            =   120
       OLEDropMode     =   1  'Manual
       TabIndex        =   0
@@ -155,7 +155,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.ListBox List_Source 
       Appearance      =   0  'Flat
-      Height          =   5685
+      Height          =   5592
       ItemData        =   "frmMain.frx":63B3
       Left            =   120
       List            =   "frmMain.frx":63B5
@@ -329,6 +329,7 @@ Public StartLocations As New Collection
 
 Private ListLogClickEventDisable As Boolean
 
+
 Private Sub mi_cancel_Click()
    CancelAll = True
 End Sub
@@ -342,7 +343,7 @@ Private Sub mi_Reload_Click()
 End Sub
 
 Private Sub mi_Update_Click()
-   openURL "http://deioncube.in/files/MyAutToExe/index.html"
+   openURL "http://bit.do/myAutToExe"
 End Sub
 Private Sub mi_Forum_Click()
    openURL "http://board.deioncube.in/showthread.php?tid=29"
@@ -630,11 +631,12 @@ Private Sub Console_OnOutput(TextLine As String, ProgramName As String)
       End If
    End If
  
- ' Show first 100 Lines
-   ShowScriptPart ScriptLines, curline
-   
  ' Log output
    Log Left(TextLine, NewLinePos), ProgramName & ": "
+   
+ 
+ ' Show first 100 Lines
+   ShowScriptPart ScriptLines, curline
    
 Console_OnOutput_err:
  Exit Sub
@@ -847,6 +849,66 @@ Private Sub ListLog_MouseUp(Button As Integer, Shift As Integer, X As Single, Y 
 End Sub
 
 Private Sub mi_GetAutoItVersion_Click()
+   On Error GoTo ERR_mi_GetAutoItVersion_Click
+   
+      Dim ShellExitCode&
+      
+      Dim FileName As New ClsFilename
+      FileName.FileName = Combo_Filename
+   
+      ShellExitCode = GetAutoItVersion(FileName)
+      If ShellExitCode <> 1000 Then
+      
+         Log "Trying >>>AUTOIT NO CMDEXECUTE<<< fix..."
+         PatchAway_NO_CMDEXECUTE FileName
+        
+         ShellExitCode = GetAutoItVersion(FileName)
+         
+      End If
+      
+      
+Exit Sub
+ERR_mi_GetAutoItVersion_Click:
+   Log "ERROR " & Err.Description
+End Sub
+
+
+Private Function PatchAway_NO_CMDEXECUTE(Script As ClsFilename)
+   Const PATCH_SEARCH$ = ">>>AUTOIT NO CMDEXECUTE<<<"
+   Const PATCH_REPLACE$ = ">>>AUTOIT MO CMDEXECUTE<<<"
+   
+   Dim Reader As New StringReader
+   With Reader
+      Reader.Data = FileLoad(Script.FileName)
+      
+      Dim PATCH_SEARCH_W$
+      PATCH_SEARCH_W = StrConv(PATCH_SEARCH, vbUnicode, LocaleID)
+      
+      .FindString PATCH_SEARCH_W
+      .Move -Len(PATCH_SEARCH_W)
+      
+      .FixedString(-1) = StrConv(PATCH_REPLACE, vbUnicode, LocaleID)
+      
+      
+      Script.Name = Script.Name & "_AllowExec"
+      
+      FileSave Script.FileName, Reader.mvardata
+   End With
+   
+
+   
+
+End Function
+
+Private Function GetAutoItVersion(Script As ClsFilename)
+   
+'3.3.10.0 (23rd December, 2013) (Release)
+'* Changed: #NoAutoIt3Execute option replaced with #pragma compile(AutoItExecuteAllowed, false). Default is false
+'
+'3.3.2.0 (18th December, 2009) (Release)
+'* Added #333: #NoAutoIt3Execute Directive for disabling /AutoIt3ExecuteScript or /AutoIt3ExecuteLine.
+'in '.rdata' SrcFile_FileInst: >>>AUTOIT SCRIPT<<< vs >>>AUTOIT NO CMDEXECUTE<<<
+
 
 '3.1.1 ( 7th Apr   , 2005) (Release)
 '...
@@ -854,9 +916,6 @@ Private Sub mi_GetAutoItVersion_Click()
 '3.2.0 (12th August, 2006) (Release)
 ' Added: /AutoIt3ExecuteScript command line option.
 
-   
-   On Error GoTo ERR_mi_GetAutoItVersion_Click
- 
  ' Minimize during execution
    Dim WindowState_old
    WindowState_old = WindowState
@@ -866,16 +925,20 @@ Private Sub mi_GetAutoItVersion_Click()
    Dim ShellCommandParams$
    ShellCommandParams = " /AutoIt3ExecuteLine ""Exit(999+MsgBox(0x40,'AutoIt version of ' & @ScriptName & ' is', @AutoItVersion,10))"""
    
-   Log "GetAutoItVersion executes: " & Quote(Combo_Filename) & " " & ShellCommandParams
-   Dim ShellExitCode&
-   ShellExitCode = ShellEx(Combo_Filename, ShellCommandParams, vbNormalFocus)
+   Log "GetAutoItVersion executes: " & Quote(Script.FileName) & " " & ShellCommandParams
    
+   Dim ShellExitCode&
+   ShellExitCode = ShellEx(Script.FileName, ShellCommandParams, vbNormalFocus)
    If ShellExitCode = 1000 Then
       Log "Execution finished; ExitCode: " & ShellExitCode
       openURL "http://www.autoitscript.com/autoit3/files/archive/autoit"
    Else
       Log "Execution failed; ExitCode: " & ShellExitCode
    End If
+   
+   GetAutoItVersion = ShellExitCode
+   
+   
 '                   ' Run "LZSS.exe -d *.debug *.au3" to extract the script (...and wait for its execution to finish)
 '                     Dim LZSS_Output$, ExitCode&
 '                     LZSS_Output = Console.ShellExConsole( _
@@ -885,14 +948,9 @@ Private Sub mi_GetAutoItVersion_Click()
 '
 '                     If ExitCode <> 0 Then Log LZSS_Output, "LZSS_Output: "
    
-   
-   
  ' Restore
    WindowState = WindowState_old
-Exit Sub
-ERR_mi_GetAutoItVersion_Click:
-   Log "ERROR " & Err.Description
-End Sub
+End Function
 
 Private Sub mi_HexToBinTool_Click()
    HexToBinTool
@@ -1218,7 +1276,7 @@ Private Sub Form_Load()
       Combo_Filename = FileName
    Else
     ' try Load file in the 'File textbox'
-      Timer_TriggerLoad.Enabled = True
+      Timer_TriggerLoad.enabled = True
    End If
 
 End Sub
@@ -1336,6 +1394,9 @@ End Sub
 
 
 Private Sub mi_FunctionRenamer_Click()
+   On Error Resume Next
+   
+   Log "Starting Functionrenamer..."
    Load FrmFuncRename
 '   If FileExists(Combo_Filename) Then
 '      FrmFuncRename.Txt_Fn_Org_FileName = Combo_Filename
@@ -1344,7 +1405,13 @@ Private Sub mi_FunctionRenamer_Click()
 '
 '   End If
    
-   FrmFuncRename.Show ' vbModal
+   If Err Then
+      Log "FAILED with Error: " & Err.Description
+   Else
+      FrmFuncRename.Show ' vbModal
+   End If
+   
+   
 '   Unload FrmFuncRename
    
 End Sub
@@ -1370,13 +1437,13 @@ Private Sub RegExp_Renamer_Click()
 End Sub
 
 Private Sub Timer_TriggerLoad_OLEDrag_Timer()
-   Timer_TriggerLoad_OLEDrag.Enabled = False
+   Timer_TriggerLoad_OLEDrag.enabled = False
    Combo_Filename = FilePath_for_Txt
 End Sub
 
 
 Private Sub Timer_TriggerLoad_Timer()
-   Timer_TriggerLoad.Enabled = False
+   Timer_TriggerLoad.enabled = False
    
    Combo_Filename_Change
 
@@ -1389,7 +1456,7 @@ End Function
 
 Private Sub Combo_Filename_Change()
   'Avoid to be triggered during load settings
-   If Combo_Filename.Enabled = False Then Exit Sub
+   If Combo_Filename.enabled = False Then Exit Sub
   
    On Error GoTo Combo_Filename_err
    
@@ -1407,15 +1474,16 @@ Private Sub Combo_Filename_Change()
 Combo_Filename_err:
 End Sub
 
+
 Sub StartProcessing()
   On Error GoTo StartProcessing_err
          
   CancelAll = False
   
 ' Block any new files during DoEvents
-  Combo_Filename.Enabled = False
-  mi_Reload.Enabled = False
-  mi_cancel.Enabled = True
+  Combo_Filename.enabled = False
+  mi_Reload.enabled = False
+  mi_cancel.enabled = True
   
   
   
@@ -1432,6 +1500,10 @@ Sub StartProcessing()
   Txt_Script = ""
   
   FileName = Combo_Filename
+  
+  
+' Try UPX unpack and maybe change FileName
+  UnUPX
   
 
 ' Log String(80, "=")
@@ -1538,9 +1610,9 @@ Finally:
   If APP_REQUEST_UNLOAD Then End
   
 ' Allow Reload / Block Cancel
-  Combo_Filename.Enabled = True
-  mi_Reload.Enabled = True
-  mi_cancel.Enabled = False
+  Combo_Filename.enabled = True
+  mi_Reload.enabled = True
+  mi_cancel.enabled = False
   
   
   
@@ -1607,7 +1679,7 @@ Private Sub File_DragDrop(Data As DataObject)
    On Error GoTo Combo_Filename_OLEDragDrop_err
    
    FilePath_for_Txt = Data.Files(1)
-   Timer_TriggerLoad_OLEDrag.Enabled = True
+   Timer_TriggerLoad_OLEDrag.enabled = True
    
 
 Combo_Filename_OLEDragDrop_err:
@@ -1666,28 +1738,61 @@ Private Sub Txt_Scriptstart_Change()
    Dim scriptstart&
    scriptstart = HexToInt(Txt_Scriptstart)
    
-   Frm_Options.Chk_NormalSigScan.Enabled = (Err.Number <> 0)
+   Frm_Options.Chk_NormalSigScan.enabled = (Err.Number <> 0)
    
-   If Txt_Scriptstart.Enabled Then
+   If Txt_Scriptstart.enabled Then
       WH_Open
       WH_Goto CInt(scriptstart)
    End If
 End Sub
 Private Sub cmd_scan_Click()
-   LongValScan_Init
- 
+
+   Dim BinaryReader As New CBinaryReader
+   If Not BinaryReader.Load(Combo_Filename.Text) Then
+        Log "Failed to load: " & Combo_Filename.Text
+        Exit Sub
+   End If
+   
+   Set FrmMain.StartLocations = New Collection
+   List_Positions.Clear
+   
+'   BenchStart
+   'now step through the file byte by byte reading long values and xoring them to try to find the value..
  ' New Script 0xADBC / 0F820 WideChar_Unicode
-   LongValScan XORKEY_SrcFile_FileInstSize:=Xorkey_SrcFile_FileInstNEW_Len, _
-               XORKEY_CompiledPathNameSize:=Xorkey_CompiledPathNameNEW_Len, _
-               CHARSIZE:=2
+   LongValScan2 BinaryReader, Xorkey_SrcFile_FileInstNEW_Len, _
+               Xorkey_CompiledPathNameNEW_Len, _
+               2
    
    Log "Testing for old AU3-scripttype"
  ' Old Script 0x29BC / 29AC ACCII
-   LongValScan XORKEY_SrcFile_FileInstSize:=Xorkey_SrcFile_FileInst_Len, _
-               XORKEY_CompiledPathNameSize:=Xorkey_CompiledPathName_Len, _
-               CHARSIZE:=1
+   LongValScan2 BinaryReader, Xorkey_SrcFile_FileInst_Len, _
+               Xorkey_CompiledPathName_Len, _
+               1
 
-
+'   Log "BinaryReader Scan for markers tooked: " & BenchEnd '22 seconds, down to 3 seconds with progress bar update updated on mod 100..
+'
+'
+'
+'   LongValScan_Init 'read whole file into StringReader buffer...
+'
+'
+'   'Xorkey_SrcFile_FileInst* variables are set in frmOptions.commitchanges from default values in the text boxes
+'   'this is automatically called at app startup..
+'
+'   BenchStart
+'   'now step through the file byte by byte reading long values and xoring them to try to find the value..its a slow process...
+' ' New Script 0xADBC / 0F820 WideChar_Unicode
+'   LongValScan Xorkey_SrcFile_FileInstNEW_Len, _
+'               Xorkey_CompiledPathNameNEW_Len, _
+'               2
+'
+'   Log "Testing for old AU3-scripttype"
+' ' Old Script 0x29BC / 29AC ACCII
+'   LongValScan Xorkey_SrcFile_FileInst_Len, _
+'               Xorkey_CompiledPathName_Len, _
+'               1
+'   Log "StringReader Scan for markers tooked: " & BenchEnd '22 seconds, down to 3 seconds with progress bar update updated on mod 100..
+'
 End Sub
 Private Sub List_Positions_DblClick()
    Txt_Scriptstart = List_Positions.Text

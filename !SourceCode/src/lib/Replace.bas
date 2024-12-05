@@ -85,7 +85,7 @@ Private Function ContainsOnly0(ByRef s) As Boolean
 End Function
 
 
-Private Static Sub ReplaceBin(ByRef Result, _
+Private Static Sub ReplaceBin(ByRef result, _
     ByRef Text, ByRef Search, _
     ByRef sOld, ByRef sNew, _
     ByVal Start As Long, ByRef Count As Long, _
@@ -115,7 +115,7 @@ Private Static Sub ReplaceBin(ByRef Result, _
               If Start = 0 Then Exit For
               
             ' Patch Result
-              Mid$(Result, Start) = sNew
+              Mid$(result, Start) = sNew
               
               Start = Start + OldLen
 
@@ -132,8 +132,10 @@ Private Static Sub ReplaceBin(ByRef Result, _
             ' Wenn kein weiter Treffer - Schleife verlassen
               If Start = 0 Then Exit For
               
-            ' Patch Result
-              Mid$(Result, Start) = sNew
+              If sOld <> sNew Then
+               ' Patch Result
+                 Mid$(result, Start) = sNew
+              End If
               
               Start = Start + OldLen
 
@@ -152,13 +154,13 @@ Private Static Sub ReplaceBin(ByRef Result, _
          Count = UBound(Text_Splited)
          
        ' ... und wiederzusammensetzen :)
-         Result = Join(Text_Splited, sNew)
+         result = Join(Text_Splited, sNew)
          
    End Select
 
 End Sub
 
-Private Static Sub OBSOLATED_ReplaceBin(ByRef Result, _
+Private Static Sub OBSOLATED_ReplaceBin(ByRef result, _
     ByRef Text, ByRef Search, _
     ByRef sOld, ByRef sNew As String, _
     ByVal Start As Long, ByRef Count As Long _
@@ -189,9 +191,9 @@ Private Static Sub OBSOLATED_ReplaceBin(ByRef Result, _
     Select Case NewLen
     Case OldLen 'einfaches Überschreiben:
 
-      Result = Text
+      result = Text
       For Count = 1 To Count
-        MidB$(Result, Start) = sNew
+        MidB$(result, Start) = sNew
         Start = InStrB(Start + OldLen, Search, sOld)
         If Start = 0 Then Exit Sub
       Next Count
@@ -247,10 +249,10 @@ Private Static Sub OBSOLATED_ReplaceBin(ByRef Result, _
 
       'Ergebnis zusammenbauen:
       If ReadPos > TextLen Then
-        Result = LeftB$(Buffer, WritePos - 1)
+        result = LeftB$(Buffer, WritePos - 1)
       Else
         MidB$(Buffer, WritePos) = MidB$(Text, ReadPos)
-        Result = LeftB$(Buffer, WritePos + LenB(Text) - ReadPos)
+        result = LeftB$(Buffer, WritePos + LenB(Text) - ReadPos)
       End If
       Exit Sub
 
@@ -304,14 +306,14 @@ Private Static Sub OBSOLATED_ReplaceBin(ByRef Result, _
 
       'Ergebnis zusammenbauen:
       If ReadPos > TextLen Then
-        Result = LeftB$(Buffer, WritePos - 1)
+        result = LeftB$(Buffer, WritePos - 1)
       Else
         BufferPosNext = WritePos + TextLen - ReadPos
         If BufferPosNext < BufferLen Then
           MidB$(Buffer, WritePos) = MidB$(Text, ReadPos)
-          Result = LeftB$(Buffer, BufferPosNext)
+          result = LeftB$(Buffer, BufferPosNext)
         Else
-          Result = LeftB$(Buffer, WritePos - 1) & MidB$(Text, ReadPos)
+          result = LeftB$(Buffer, WritePos - 1) & MidB$(Text, ReadPos)
         End If
       End If
       Exit Sub
@@ -319,13 +321,13 @@ Private Static Sub OBSOLATED_ReplaceBin(ByRef Result, _
     End Select
 
   Else 'Kein Treffer:
-    Result = Text
+    result = Text
     Count = 0
   End If
 
 End Sub
 
-Private Static Sub ReplaceBin0(ByRef Result, _
+Private Static Sub ReplaceBin0(ByRef result, _
     ByRef Text, ByRef Search, _
     ByRef sOld, ByRef sNew, _
     ByVal Start As Long, ByVal Count As Long _
@@ -356,9 +358,9 @@ Private Static Sub ReplaceBin0(ByRef Result, _
     Select Case NewLen
     Case OldLen 'einfaches Überschreiben:
     
-      Result = Text
+      result = Text
       For Count = 1 To Count
-        Mid$(Result, Start) = sNew
+        Mid$(result, Start) = sNew
         Start = InStr(Start + OldLen, Search, sOld)
         If Start = 0 Then Exit Sub
       Next Count
@@ -413,10 +415,10 @@ Private Static Sub ReplaceBin0(ByRef Result, _
       
       'Ergebnis zusammenbauen:
       If ReadPos > TextLen Then
-        Result = Left$(Buffer, WritePos - 1)
+        result = Left$(Buffer, WritePos - 1)
       Else
         Mid$(Buffer, WritePos) = Mid$(Text, ReadPos)
-        Result = Left$(Buffer, WritePos + Len(Text) - ReadPos)
+        result = Left$(Buffer, WritePos + Len(Text) - ReadPos)
       End If
       Exit Sub
     
@@ -470,14 +472,14 @@ Private Static Sub ReplaceBin0(ByRef Result, _
       
       'Ergebnis zusammenbauen:
       If ReadPos > TextLen Then
-        Result = Left$(Buffer, WritePos - 1)
+        result = Left$(Buffer, WritePos - 1)
       Else
         BufferPosNext = WritePos + TextLen - ReadPos
         If BufferPosNext < BufferLen Then
           Mid$(Buffer, WritePos) = Mid$(Text, ReadPos)
-          Result = Left$(Buffer, BufferPosNext)
+          result = Left$(Buffer, BufferPosNext)
         Else
-          Result = Left$(Buffer, WritePos - 1) & Mid$(Text, ReadPos)
+          result = Left$(Buffer, WritePos - 1) & Mid$(Text, ReadPos)
         End If
       End If
       Exit Sub
@@ -485,7 +487,7 @@ Private Static Sub ReplaceBin0(ByRef Result, _
     End Select
   
   Else 'Kein Treffer:
-    Result = Text
+    result = Text
   End If
 
 End Sub

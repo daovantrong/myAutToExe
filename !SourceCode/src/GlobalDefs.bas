@@ -41,14 +41,22 @@ Public IsCommandlineMode As Boolean
 Public IsOpt_QuitWhenFinish As Boolean
 Public IsOpt_RunSilent As Boolean
 
+' perform Update on every 100th call
+Public Const LAZY_UPDATE& = 100
+Private m_Lazy_UpdateSteps As Single
 
-
-Public Sub GUIEvent_ProcessBegin(Target&, Optional BarLevel& = 0, Optional Skipable As Boolean = False)
+Public Sub GUIEvent_ProcessBegin(ByVal Target&, Optional BarLevel& = 0, Optional Skipable As Boolean = False)
    FrmMain.GUIEvent_ProcessBegin Target, BarLevel, Skipable
+   
+   m_Lazy_UpdateSteps = (Target - BarLevel) / LAZY_UPDATE
+   If m_Lazy_UpdateSteps < 1 Then m_Lazy_UpdateSteps = 1
+   
 End Sub
 
 Public Sub GUIEvent_ProcessUpdate(CurrentValue&, Optional BarLevel& = 0)
-   FrmMain.GUIEvent_ProcessUpdate CurrentValue, BarLevel
+ ' this speeds it up a ton
+   If (CurrentValue Mod m_Lazy_UpdateSteps) = 0 Then _
+      FrmMain.GUIEvent_ProcessUpdate CurrentValue, BarLevel
 End Sub
 Public Sub GUIEvent_ProcessEnd(Optional BarLevel& = 0)
    FrmMain.GUIEvent_ProcessEnd BarLevel

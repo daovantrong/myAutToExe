@@ -459,10 +459,16 @@ Public Function BenchStart()
    BenchtimeA = GetTickCount
 
 End Function
-Public Function BenchEnd()
+Public Function BenchEnd() As Long
 
    BenchtimeB = GetTickCount
-   Debug.Print Time & " - " & BenchtimeB - BenchtimeA
+   
+   Dim Ticks&
+   Ticks = BenchtimeB - BenchtimeA
+   
+   Debug.Print Time & " - " & Ticks
+   
+   BenchEnd = Ticks
 
 End Function
 
@@ -813,11 +819,11 @@ End Sub
 
 
 
-Public Function FileLoad$(FileName$)
+Public Function FileLoad$(FileName$, Optional MaxLength& = -1)
    Dim File As New FileStream
    With File
       .Create FileName, False, False, True
-      FileLoad = .FixedString(-1)
+      FileLoad = .FixedString(MaxLength)
       .CloseFile
    End With
 End Function

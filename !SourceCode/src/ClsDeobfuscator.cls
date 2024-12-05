@@ -200,7 +200,7 @@ Private Sub DeObfuscate_Chr_Encode()
         ChrStringNew.Clear
          
        'separate Chr's
-        Dim Chrs_Match As match
+        Dim Chrs_Match As Match
         For Each Chrs_Match In Chrs.Execute(ChrStrings_Matches(0))
            
           ' Concat Chrs to a ChrString
@@ -450,7 +450,7 @@ Private Sub DeObfuscate_Chr_Encode_old()
         Dim bSkipChrStringReplace As Boolean
         bSkipChrStringReplace = False
          
-        Dim Chrs_Match As match
+        Dim Chrs_Match As Match
         For Each Chrs_Match In Chrs.Execute(ChrStrings_Matches(0))
 
             Dim ChrCode&
@@ -478,10 +478,11 @@ Private Sub DeObfuscate_Chr_Encode_old()
        ' replace ChrString in line
          If bSkipChrStringReplace = False Then
             ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
-         End If
        
-       ' save modified Line
-         ScriptLines(Line_idx) = Line
+         ' save modified Line
+           ScriptLines(Line_idx) = Line
+           
+         End If
          
       Loop ' next ChrString in Line
 
@@ -829,8 +830,15 @@ GUIEvent_ProcessBegin 6
        GUIEvent_ProcessUpdate 6
        
        GUIEvent_ProcessUpdate 5
+       
        ' Example: &CHR(101)&""
-       .Pattern = RE_WSpace("Chr", "\(", RE_255DigitNumber, "\)", "&", """")
+       
+       ' but exclude CHR(0..9) or CHR(34) or 10 or 13 than are line break / enter / tab etc
+       ' via negative lookahead
+       Dim ExcludeSomeCHRs$
+       ExcludeSomeCHRs = "(?!(?:[0-9]|10|13|34)\s*\))"
+       
+       .Pattern = RE_WSpace("Chr", "\(", ExcludeSomeCHRs & RE_255DigitNumber, "\)", "&", """")
        If .Test(NewScript) Then
           DetectScriptObfuscated = DE_OBFUSC_TYPE_CHR_ENCODE_OLD
        End If
@@ -1056,7 +1064,7 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
  '  FnNameLoadTBL$ = strCropAndDelete(NewScript, "global $Os" & vbCrLf, "()")
       
   ' Get
-    Dim FnNameLoadTBL_Match As match
+    Dim FnNameLoadTBL_Match As Match
     FnNameLoadTBL = RE_FindPattern(NewScript, _
                  "[ -~]*?" & RE_Literal("global $Os") & RE_NewLine & _
                  RE_AnyChars & RE_Group("[0-9A-Fa-f_]{12}") & RE_AnyChars, _
@@ -1694,7 +1702,7 @@ Private Sub z_DeObfu_Replace_CacheVarNames(CodeSnipped$, ObfuName$, ByRef ObfuVa
          
          Set ObfuVarTree = New Collection
          
-         Dim Var As match
+         Dim Var As Match
          For Each Var In ObfuVar.Execute(CodeSnipped)
             
             Dim SubMatchLen&
@@ -1784,7 +1792,7 @@ Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional I
   
   
     ' Go through all matches and search'n'replace them with a new name
-      Dim GlobalVar_Match As match
+      Dim GlobalVar_Match As Match
       For Each GlobalVar_Match In GlobalVar.Execute(CodeSnipped)
    
          Dim SearchString$
@@ -2023,9 +2031,9 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
          Dim bShellExecuteFound As Boolean
          bShellExecuteFound = False
 
-         Dim match As match
-         For Each match In .Execute(Data)
-            With match
+         Dim Match As Match
+         For Each Match In .Execute(Data)
+            With Match
               'Skip ShellExecute
                If Mid(Data, .FirstIndex + 1 - 5, 5) <> c("Shell") Then
                   QuickReplace Data, .value, NewStr, .FirstIndex + 1, 1

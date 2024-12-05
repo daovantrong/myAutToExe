@@ -127,9 +127,11 @@ public:
 	void	SetInputBuffer(UCHAR *bBuf, ULONG nSize) { m_bUserData = bBuf; m_nDataSize = nSize; }
 	void	SetOutputBuffer(UCHAR *bBuf) { m_bUserCompData = bBuf; }
 	void	SetCompressionLevel(UINT nCompressionLevel);	// Set the hash chain limit
-	void	SetMonitorCallback(JB01_MonitorProc lpfnMonitor) { m_lpfnMonitor = lpfnMonitor; }
+  void	SetMonitorCallback(JB01_MonitorProc lpfnMonitor) { m_lpfnMonitor = lpfnMonitor; }
 
 	ULONG	GetCompressedSize(void) { return m_nUserCompPos; }
+  ULONG	GetFileSize(const char *szFile);
+
 
 	// Monitor functions
 //	UINT	GetPercentComplete(void) { return ((UINT)(((double)m_nUserDataPos/(double)m_nDataSize) * 100.0)); }
@@ -195,7 +197,6 @@ private:
 
 
 	// Functions
-	ULONG		GetFileSize(const char *szFile);
 	int			AllocMem(void);
 	void		FreeMem(void);
 	inline void	WriteUserCompData(void);		// Write compressed data to file/mem

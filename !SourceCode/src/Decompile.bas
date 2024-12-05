@@ -1,6 +1,6 @@
 Attribute VB_Name = "DeCompiler"
 Option Explicit
-
+Public SuppressMsgBox As New Collection
 
 
 
@@ -79,7 +79,10 @@ Dim bIsProbablyOldScript As Boolean
 Dim bIsNewScriptType As Boolean
 
 Dim PEFile_EOF_Offset&
-Dim PEFile_EndOfResourceData_Offset&
+
+Dim PEFile_ResourceDataStart_Offset&
+Dim PEFile_ResourceDataEnd_Offset&
+Dim PEFile_ResourceData_Size&
 
 Dim ScriptData As StringReader
 
@@ -180,7 +183,7 @@ End Sub
 ''    v1 = v1 * 1812433253 '6C078965
 '     v1 = Mul(v1, 0, 1812433253, 0) '6C078965
 '
-''     MsgBox v1
+''     myMsgBox v1
 ''     v2 = Int(v1 / &H40000000 / 4)
 ''     ' 9B2 252ADAA2            '2482 623565474
 ''     ' 9B2 252ADAA2- 9B2 00000000
@@ -251,7 +254,7 @@ Private Function DeCryptNew(ByVal Data$, Seed&)
    
    
    
- '  MsgBox _
+ '  myMsgBox _
       "Sorry Decryptions for new au3 Files is not implemented yet." & vbCrLf & _
       "(...and so you can't extract files whose source you don't have.)" & vbCrLf & _
       "" & vbCrLf & _
@@ -321,6 +324,29 @@ Private Function RandV2&()
    
 End Function
 
+Private Function TestForV3_3() As Boolean
+   FL_verbose "Testing for AutoIT3.3 Script..."
+   With File
+      
+      IsValidPEFile
+      .Position = PEFile_ResourceDataStart_Offset
+      
+      Dim Start&
+         Start = .FindString( _
+            StrConv("SCRIPT" & vbNullChar, vbUnicode), _
+            searchRange:=PEFile_ResourceData_Size)
+            
+
+      TestForV3_3 = -1 <> Start
+      If TestForV3_26 Then
+         FL_verbose "...FAILED!"
+      Else
+         
+         .Position = Start
+         
+      End If
+   End With
+End Function
 
 
 
@@ -455,7 +481,7 @@ Private Function TestForV3_0() As Boolean
          ElseIf FrmMain.Chk_verbose.value = vbChecked Then
             Script_CRC_Calculated = Script_CRC_Calculated Xor Script_KEY
             log_verbose "Writing back corrected CRC: " & H32(Script_CRC_Calculated)
-            If vbYes = MsgBox("Do you like to write back corrected CRC-value to " & .FileName & " ? ", vbYesNo Or vbDefaultButton2, "Testing for AHK/AutoIT3.0 Script") Then
+            If vbYes = myMsgBox("Do you like to write back corrected CRC-value to " & .FileName & " ? ", vbYesNo Or vbDefaultButton2, "Testing for AHK/AutoIT3.0 Script") Then
                .Readonly = False
                .CloseFile
             
@@ -516,10 +542,13 @@ Private Sub FindStartOfScriptAlternative()
       
          bIsNewScriptType = False
          
-         If TestForV3_26 Then
+         If TestForV3_3 Then
+            Log "Script Type 3.3+ found."
+            bIsNewScriptType = True
+         
+         ElseIf TestForV3_26 Then
             Log "Script Type 3.2.5+ found."
             bIsNewScriptType = True
-            
          
          ElseIf TestForV3_2 Then
             Log "Script Type 3.2 found."
@@ -557,18 +586,21 @@ Log "AlternativeSigScan for 'FILE'-signature in au3-body..."
 '^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Search for that !
      
 '     .FindString HexvaluesToString("FF 6D B0 CE")  'FF 6D B0 CE       ÿm°Î
-      If FindLocation(DeCrypt(AU3_SubTypeStr, 5882), "FILE-(old)signature", True) = -1 Then  '16FA
+      If FindLocation(DeCrypt(AU3_ResTypeFile, 5882), "FILE-(old)signature", True) = -1 Then  '16FA
                  '.FindString HexvaluesToString("6B 43 CA 52")
          
-         If FindLocation(DeCryptNew(AU3_SubTypeStr, FILE_DecryptionKey), "FILE-(new)signature", True) = -1 Then  '6382) '18EE
+         If FindLocation(DeCryptNew(AU3_ResTypeFile, FILE_DecryptionKey), "FILE-(new)signature", True) = -1 Then  '6382) '18EE
             
 '            If LongValScan = False Then
-            
+               
+               'TODO: Take care for new AU3 3.3 that stores the script inside .rsrc
                ' Not Found - Search for signature of new Aut3Script
                  If IsValidPEFile Then
                     Log "Alternative search fail - assuming end of exe-stub as start of script. This is very vague but may work..."
                     If (File.Length - PEFile_EOF_Offset) < &H40 Then
-                       Err.Raise ERR_NO_AUT_EXE, , "At the end must be at least 0x40 bytes at the end... Please enter start of script manually."
+                       Err.Raise ERR_NO_AUT_EXE, , _
+                           "At the end must be at least 0x40 bytes at the end... " & _
+                           "Please enter start of script manually. "
                     Else
                        File.Position = PEFile_EOF_Offset + AU3SigSize
                     End If
@@ -647,7 +679,7 @@ FL "SrcFile_FileInst: " & SrcFile_FileInst
          
       Else
 Log "WARNING: unknown SrcFile_FileInst!"
-         Au3SrcFile_FileInst = vbYes = MsgBox("Press YES to process this as an AUTOIT SCRIPT." & vbCrLf & "Press NO to process this as an AUTOHOTKEY SCRIPT.", vbQuestion + vbYesNo, "Unknown SrcFile_FileInst : " & SrcFile_FileInst)
+         Au3SrcFile_FileInst = vbYes = myMsgBox("Press YES to process this as an AUTOIT SCRIPT." & vbCrLf & "Press NO to process this as an AUTOHOTKEY SCRIPT.", vbQuestion + vbYesNo, "Unknown SrcFile_FileInst : " & SrcFile_FileInst)
       End If
 
     ' Now seek back to script start position....
@@ -857,6 +889,7 @@ End Sub
 '//   Not indented lines are for log purpose only (and not so important)
 Public Sub Decompile()
    Dim FilePointerFallBackOnError&
+   Dim isScriptAsResource As Boolean
    
    
    isAutoIT2Script = False
@@ -875,7 +908,7 @@ Public Sub Decompile()
       .Position = 0
       
     ' Chk_NormalSigScan is disabled when Txt_Scriptstart is set
-      If Frm_Options.Chk_NormalSigScan.Enabled = False Then
+      If Frm_Options.Chk_NormalSigScan.enabled = False Then
          .Position = HexToInt(FrmMain.Txt_Scriptstart)
          .Move AU3SigSize
      
@@ -925,12 +958,14 @@ Public Sub Decompile()
        
       Else
          Log "      EndOf_PE-ExeFile : " & H32(PEFile_EOF_Offset)
-         Log "      EndOf_PE-ExeFile_ResourceData : " & H32(PEFile_EndOfResourceData_Offset)
-   
+         Log "      EndOf_PE-ExeFile_ResourceData : " & H32(PEFile_ResourceDataEnd_Offset)
          
+         isScriptAsResource = ScriptStartPos < PEFile_EOF_Offset
+   
+      '  Save Icon
          HandleIconFile File.FileName
          
-         
+      '  Handle AHK
          Dim isAHK11_Script As Boolean
          isAHK11_Script = SaveAHK11_Script(FileName)
       
@@ -981,7 +1016,7 @@ Public Sub Decompile()
          FL "Unexpected Script subtype: " & "0x" & H32(SubType.int32) & " " & SubType.Data
         'Ask user for Script subtype
          Dim MsgBoxResult&
-         MsgBoxResult = MsgBox("Is this an AutoIT3 file?", vbQuestion + vbYesNoCancel + _
+         MsgBoxResult = myMsgBox("Is this an AutoIT3 file?", vbQuestion + vbYesNoCancel + _
                         IIf(IsAutoIT3File, vbDefaultButton1, vbDefaultButton2))
          If MsgBoxResult = vbCancel Then
             Err.Raise ERR_CANCEL_ALL, , "User hit CANCEL on the question: ""Is this an AutoIT3 file?"""
@@ -990,7 +1025,7 @@ Public Sub Decompile()
          bIsOldScript = vbNo = MsgBoxResult
          
          If bIsOldScript Then
-            isAutoIT2Script = vbYes = MsgBox("Is this an AutoIT 2 file?", vbQuestion + vbYesNo + _
+            isAutoIT2Script = vbYes = myMsgBox("Is this an AutoIT 2 file?", vbQuestion + vbYesNo + _
                         IIf(IsAutoIT2File, vbDefaultButton1, vbDefaultButton2))
          End If
          
@@ -1028,7 +1063,7 @@ Public Sub Decompile()
             FL "Type2 = " & Type2 & "  Normally you would get 'Error: Unsupported Version of AutoIt script.' here"
            
           ' Ask user for Script Type2
-            bIsNewScriptType = vbYes = MsgBox("Is this a new tokenise AutoIT3 file(=Ver 3.2.6 -Aug2007- and higher) ?", vbQuestion + vbYesNo)
+            bIsNewScriptType = vbYes = myMsgBox("Is this a new tokenise AutoIT3 file(=Ver 3.2.6 -Aug2007- and higher) ?", vbQuestion + vbYesNo)
 
 
          Else
@@ -1153,7 +1188,7 @@ Processing_Finished:
                FrmMain.Txt_Scriptstart.ForeColor = vbRed
                Dim msgboxResult_InvalidFileMaker&
                '(Please delete script start value textbox to disable.)
-               msgboxResult_InvalidFileMaker = MsgBox("Invalid File Maker found - continue anyway?", vbYesNoCancel, "Manually extract mode enabled.")
+               msgboxResult_InvalidFileMaker = myMsgBox("Invalid File Maker found - continue anyway?", vbYesNoCancel, "Manually extract mode enabled.")
                If vbYes = msgboxResult_InvalidFileMaker Then
                   ResTypeFILE = ResType
                   
@@ -1196,7 +1231,7 @@ Processing_Finished:
          
          If SrcFile_FileInst = ">>>AUTOIT SCRIPT<<<" Then
          ElseIf SrcFile_FileInst = ">>>AUTOIT NO CMDEXECUTE<<<" Then
-          'Note: Script was compiled using '#NoAutoIt3Execute' to block
+          'Note: Script was compiled using '#NoAutoIt3Execute' to block /AutoIt3ExecuteLine
          
          ElseIf SrcFile_FileInst = ">AUTOIT UNICODE SCRIPT<" Then
          ElseIf SrcFile_FileInst = ">AUTOIT SCRIPT<" Then
@@ -1229,7 +1264,7 @@ Processing_Finished:
               If 0 = InStr(1, CompiledPathName, SrcFile_FileInst, vbTextCompare) Then
                  Log Space(8 + 4) & "WARNING: unknown SrcFile_FileInst(should something like >AUTOIT SCRIPT< or >AUTOHOTKEY SCRIPT<)!"
                      If AHK_ForceNAPassword Then
-                     'If vbYes = MsgBox("Do you like to force it to be an AHK-Script with 'N/A' as passphrase?", vbYesNo, "Force AHK-Script") Then
+                     'If vbYes = myMsgBox("Do you like to force it to be an AHK-Script with 'N/A' as passphrase?", vbYesNo, "Force AHK-Script") Then
                         Log "User Forced: AHK SCRIPT compiled with 'N/A' as passphrase"
                         bIsAHK_NoDeCompileScript = True
                         bIsAHK_Script = True
@@ -1298,6 +1333,7 @@ Processing_Finished:
             'Note: AHK saves the mainscript as *.tmp
             If (CompiledPathName.Name Like "*>*") Or _
                (CompiledPathName.Ext Like "*tmp*") Or _
+               (CompiledPathName.Ext Like "*tok*") Or _
                (FileCount = 1) Then
                
                OutFileName.Ext = Switch(bIsAHK_Script, ".ahk", _
@@ -1402,7 +1438,8 @@ Processing_Finished:
                         Xor (KeyByte And &HFF)
                         
    
-                  If 0 = (StrCharPos Mod &H8000) Then myDoEvents
+                  If 0 = (StrCharPos Mod &H8000) Then _
+                     myDoEvents
    
                   
                Next
@@ -1443,7 +1480,7 @@ Processing_Finished:
                      Log "   Calculate ADLER32: " & H32(ScriptData_CRC_Calculated)
                      Log "   CRC from script  : " & H32(ScriptData_CRC)
                      
-                     MsgBox "The checksum from the ExeArc_Header and" & vbCrLf & _
+                     myMsgBox "The checksum from the ExeArc_Header and" & vbCrLf & _
                               "the calculated checksum on the decrypted scriptdata differs." & vbCrLf & _
                               "Well either decryption failed or the scriptdata is corrupted." & vbCrLf & _
                                vbCrLf & _
@@ -1538,6 +1575,8 @@ Resume Finally
 
 Finally:
    On Error Resume Next
+   
+   
 
    If FileCount > 1 Then
    
@@ -1550,7 +1589,7 @@ Finally:
       FL "End of script data"
       ' if there are more than 8 bytes overlay save them to *.overlay file
       ' For clearity reason I pasted overlay logging to a seperated function
-      Decompile_Log_ProcessOverlay .Length - .Position, .FixedString(-1), bIsOldScript
+      Decompile_Log_ProcessOverlay .Length - .Position, .FixedString(-1), bIsOldScript, isScriptAsResource
       ' ==> Exe Processing finished
    Else
       Log "Skip saving overlay at " & H32(.Position) & " since there were no files extracted so far."
@@ -1606,7 +1645,7 @@ With ScriptData
             Loop Until (Len(LZSS_Signature_new) = 4) Or (Len(LZSS_Signature_new) = 0)
             
             If (Len(LZSS_Signature_new) = 4) Then
-'                  If vbYes = MsgBox("Do you want to force it to : " & ExpectedSignature & " so this stream can be decompressed?" & vbCrLf & vbCrLf & "Note: If signature looks weird probably decryption fail and this is of no use", vbYesNo + vbDefaultButton1 + vbExclamation, "LZSS_Signature of decrypted data is '" & LZSS_Signature & "'") Then
+'                  If vbYes = myMsgBox("Do you want to force it to : " & ExpectedSignature & " so this stream can be decompressed?" & vbCrLf & vbCrLf & "Note: If signature looks weird probably decryption fail and this is of no use", vbYesNo + vbDefaultButton1 + vbExclamation, "LZSS_Signature of decrypted data is '" & LZSS_Signature & "'") Then
                OverWriteSignature LZSS_Signature_new
                LZSS_Signature = LZSS_Signature_new
             End If
@@ -1697,31 +1736,41 @@ Private Sub SetCreationNLastWriteTime(OutFileName As ClsFilename, pCreationTime 
 End Sub
 
 
-Private Sub Decompile_Log_ProcessOverlay(overlaySize&, overlaybytes$, bIsOldScript As Boolean)
+Private Sub Decompile_Log_ProcessOverlay( _
+                        overlaySize&, overlaybytes$, _
+                        bIsOldScript As Boolean, isScriptAsResource As Boolean)
    
-   With File
-      
-Log "  FileLen: " & H32(.Length) & "  => Overlay: " & H32(overlaySize)
-
-Dim tmp As New StringReader
-tmp = Left(overlaybytes, &H20)
-Log "  overlaybytes: " & ValuesToHexString(tmp) & "  " & tmp
-      Dim overlaySkipBytes As Long
-      overlaySkipBytes = (IIf(bIsOldScript, 3, 2) * 4)
-      If overlaySize > overlaySkipBytes Then
-         
-         Log ">>>ATTENTION: There are more overlay data than usual <<<"
-         Dim FileName_Overlay$
-         FileName_Overlay = .FileName & ".overlay"
-         Log "saving overlaydata to: " & FileName_Overlay
-         
-         FileSave FileName_Overlay, _
-                  Mid(overlaybytes, overlaySkipBytes + 1) ' +1 since mid starts counting at 1
-      
-      End If
+   If isScriptAsResource Then
    
-   End With
-
+      log_verbose "Skip saving overlay data since the script was stored inside the Exe .rsrc section."
+      
+   Else
+      
+      With File
+         
+   Log "  FileLen: " & H32(.Length) & "  => Overlay: " & H32(overlaySize)
+   
+   Dim tmp As New StringReader
+   tmp = Left(overlaybytes, &H20)
+   Log "  overlaybytes: " & ValuesToHexString(tmp) & "  " & tmp
+         Dim overlaySkipBytes As Long
+         overlaySkipBytes = (IIf(bIsOldScript, 3, 2) * 4)
+         If overlaySize > overlaySkipBytes Then
+            
+            Log ">>>ATTENTION: There are more overlay data than usual <<<"
+            Dim FileName_Overlay$
+            FileName_Overlay = .FileName & ".overlay"
+            Log "saving overlaydata to: " & FileName_Overlay
+            
+            FileSave FileName_Overlay, _
+                     Mid(overlaybytes, overlaySkipBytes + 1) ' +1 since mid starts counting at 1
+         
+         End If
+      
+      End With
+      
+   End If
+   
 End Sub
 Private Function ReadPassword() As String
    Dim PassLenXorKey&
@@ -1962,7 +2011,7 @@ Private Sub Decompile_HandleAHK_ExtraDecryption(SizeUncompressed&)
    Dim bIsAboveAHK_Ver1_0_48_3 As Boolean
    If FrmMain.Chk_verbose.value = vbChecked Then
       
-      bIsAboveAHK_Ver1_0_48_3 = (vbYes = MsgBox( _
+      bIsAboveAHK_Ver1_0_48_3 = (vbYes = myMsgBox( _
       "This AHK-File was compiled with Decompile Passphrase 'N/A' option. myAutToExe needs to know if that was compiled with the new AHK (= Version 1.0.48.03 and above). So is this a new AHK-File ?", _
       vbYesNo Or (vbDefaultButton2 And Not (bIsPossiblyAboveAHK_Ver1_0_48_3)), _
       "AHK-Extra Decryption"))
@@ -2103,10 +2152,18 @@ Private Function IsValidPEFile() As Boolean
                PEFile_EOF_Offset = .PointertoRawData + .RawDataSize
             End With
             
-            PEFile_EndOfResourceData_Offset = .ResourceTableAddress + _
-                                .ResourceTableAddressSize
             
-            PEFile_EndOfResourceData_Offset = PE_info.RVAToRaw(PEFile_EndOfResourceData_Offset)
+            
+            PEFile_ResourceDataStart_Offset = .ResourceTableAddress
+            PEFile_ResourceDataStart_Offset = PE_info.RVAToRaw(PEFile_ResourceDataStart_Offset)
+            
+            
+            PEFile_ResourceDataEnd_Offset = .ResourceTableAddress + _
+                                .ResourceTableAddressSize
+            PEFile_ResourceDataEnd_Offset = PE_info.RVAToRaw(PEFile_ResourceDataEnd_Offset)
+            
+            
+            PEFile_ResourceData_Size = .ResourceTableAddressSize
 
          End With
       End If
@@ -2159,7 +2216,7 @@ Function IsTextFile() As Boolean
             .Position = 0
             
             Dim dummyLocations As Collection
-            Set dummyLocations = .FindStrings(Chr(0))
+            Set dummyLocations = .FindStrings(Chr(0), 2)
             
             IsTextFile = (dummyLocations.Count = 0)
          End If
@@ -2229,7 +2286,8 @@ Public Function AHK_ExtraDecryption(ScriptData As StringReader, ByVal AHK_Sub_Ke
          tmpByte = (tmpByte - AHK_Sub_Key) And &HFF
          tmpBuff(StrCharPos) = tmpByte
       
-         If 0 = (StrCharPos Mod &H8000) Then myDoEvents
+         If 0 = (StrCharPos Mod &H8000) Then _
+            myDoEvents
          
       Next
       
@@ -2296,7 +2354,8 @@ Public Function AHK_ExtraDecryptionNew(ScriptData As StringReader, ByVal AHK_Sub
          Byte_H = (CInt(Byte_H) - AHK_Sub_Key_H + Carry) And &HFF
          tmpBuff(StrCharPos + 1) = Byte_H
       
-         If 0 = (StrCharPos Mod &H8000) Then myDoEvents
+         If 0 = (StrCharPos Mod &H8000) Then _
+            myDoEvents
          
       Next
       
@@ -2342,14 +2401,18 @@ LongValScanInit_err:
    Log "ERR_LongValScanInit_err: " & Err.Description
 End Sub
 
+
+
 Public Function LongValScan(XORKEY_SrcFile_FileInstSize&, _
                             XORKEY_CompiledPathNameSize&, _
                             Optional CHARSIZE = 2) As Boolean
 On Error GoTo LongValScan_err
+
    With ScriptData
 
       GUIEvent_ProcessBegin .Length
-
+      GUI_SkipEnable
+      
 '      .DisableAutoMove = True
       .Position = 0
          
@@ -2360,7 +2423,7 @@ On Error GoTo LongValScan_err
          ScriptStartPos = .Position
          
          GUIEvent_ProcessUpdate ScriptStartPos
-         GUI_SkipEnable
+         
       
             
          ' >>>AUTOIT SCRIPT<<<
@@ -2421,6 +2484,101 @@ On Error GoTo LongValScan_err
       GUI_SkipDisable
       
 '      .DisableAutoMove = False
+   End With
+
+Exit Function
+LongValScan_err:
+
+      GUIEvent_ProcessEnd
+      GUI_SkipDisable
+End Function
+
+
+Public Function LongValScan2(BinaryReader As CBinaryReader, _
+                            XORKEY_SrcFile_FileInstSize&, _
+                            XORKEY_CompiledPathNameSize&, _
+                            Optional CHARSIZE = 2) As Boolean
+On Error GoTo LongValScan_err
+
+   With BinaryReader
+
+      GUIEvent_ProcessBegin .Length
+      GUI_SkipEnable
+      
+      '.DisableAutoMove = True
+      .Position = 0
+         
+      Do
+'Debug.Assert .Position <> &H7F62C
+         
+         Dim ScriptStartPos&
+         ScriptStartPos = .Position
+         
+         GUIEvent_ProcessUpdate ScriptStartPos
+         
+      
+            
+         ' >>>AUTOIT SCRIPT<<<
+         Dim SrcFile_FileInstSize&
+'         SrcFile_FileInstSize = .int32 Xor 44476 ' &HADBC ('StringKey: 0x29BC_10684)
+         SrcFile_FileInstSize = .int32 Xor XORKEY_SrcFile_FileInstSize ' &HADBC
+
+
+     '    log_verbose "Pos: " & H32(.Position) & " - SrcFile_FileInstSize: " & H32(SrcFile_FileInstSize)
+        ' ">>>AUTOIT NO CMDEXECUTE<<<" -> Len 26
+        ' ">>>AUTOIT SCRIPT<<<" -> Len 19
+
+         If RangeCheck(SrcFile_FileInstSize, 26, 0) Then
+         
+            .Move SrcFile_FileInstSize * CHARSIZE
+         
+            Dim CompiledPathNameSize&
+
+            CompiledPathNameSize = .int32 Xor XORKEY_CompiledPathNameSize '&HF820 ('StringKey: 0x29AC_10668)
+          ' Min "C:\aut39.tmp" : Max MaxPathLen
+'            log_verbose "Pos: " & H32(.Position) & " - CompiledPathNameSize: " & H32(CompiledPathNameSize)
+            
+            If RangeCheck(CompiledPathNameSize, 256) Then
+               .Move CompiledPathNameSize * CHARSIZE
+               
+               Dim IsCompressed&
+               IsCompressed = .int8
+               If RangeCheck(IsCompressed, 1, 0) Then
+                  'Found
+                  '.Position = ScriptStartPos - 4 ' -4 because of 'FILE'
+                  LongValScan2 = True
+                  
+                  'Exit Do
+                  
+                  
+                  Dim Location&
+                  Location = ScriptStartPos ' - _
+                     Len(AU3_ResTypeFile) - _
+                     Len(MD5_HASH_EMPTY_STRING) - _
+                     Len(AU3_SubTypeStr) - _
+                     Len(AU3_TypeStr) - _
+                     AU3SigSize
+                     
+                  FrmMain.StartLocations.Add ScriptStartPos
+                  Log "  Found #" & FrmMain.StartLocations.Count & " 0x" & H32(Location)
+
+                  FrmMain.updateStartLocations_List
+                  
+               End If
+               
+            End If
+         End If
+         
+         .Position = ScriptStartPos
+         
+         .Move 1
+         
+      Loop Until .EOS
+      
+      GUIEvent_ProcessEnd
+      GUI_SkipDisable
+      
+      '.DisableAutoMove = False
    End With
 
 Exit Function
@@ -2500,4 +2658,30 @@ Attribute IsValidFileName.VB_Description = "Checks for correct FileName"
       Kill FileName
    End If
    
+End Function
+Function myMsgBox(Prompt, _
+   Optional Buttons As VbMsgBoxStyle = vbOKOnly, _
+   Optional Title, Optional HelpFile, Optional Context _
+   ) As VbMsgBoxResult
+   On Error Resume Next
+   
+   Dim enabled As Boolean
+   enabled = Frm_Options.chk_MsgBoxCache = vbChecked
+
+   If enabled Then
+      Dim msgHash$
+      msgHash = Left(Prompt, 16)
+      
+      Dim msgAnswer As VbMsgBoxResult
+      msgAnswer = SuppressMsgBox(msgHash)
+   End If
+   
+   If Err <> 0 Then
+      msgAnswer = MsgBox(Prompt, Buttons, Title, HelpFile, Context)
+      
+      If enabled Then _
+         SuppressMsgBox.Add msgAnswer, msgHash
+         
+   End If
+   myMsgBox = msgAnswer
 End Function

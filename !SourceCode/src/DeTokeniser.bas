@@ -314,7 +314,7 @@ Sub DeToken()
  '           log String(40, "_")
          
 '------- Operators -----------
-         Case &H40 To &H56
+         Case &H40 To &H58
 '            Atom = Choose((Cmd - &H40 + 1), ",", "=", ">", "<", "<>", ">=", "<=", "(", ")", "+", "-", "/", "", "&", "[", "]", "==", "^", "+=", "-=", "/=", "*=", "&=")
          '                     Au3Manual AcciChar
             
@@ -342,6 +342,10 @@ Sub DeToken()
                Case &H54: Atom = "/=" '5       2F
                Case &H55: Atom = "*=" '4       2A
                Case &H56: Atom = "&=" '6       26
+               Case &H57: Atom = "?" '6       26
+               Case &H58: Atom = ":" '6       26
+               
+               
             End Select
             TypeName = "operator"
             FL_verbose """" & Atom & """   Type: " & TypeName

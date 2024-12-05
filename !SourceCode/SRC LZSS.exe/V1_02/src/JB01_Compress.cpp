@@ -9,6 +9,10 @@
 #include <windows.h>
 #include "jb01_compress.h"
 
+//#include <io.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // GetFileSize()
@@ -22,20 +26,33 @@
 
 ULONG JB01_Compress::GetFileSize(const char *szFile)
 {
-	HANDLE	hFile;
+  FILE* myFile;
+  if ( (myFile = fopen(szFile, "rb") ) == NULL)
+    return -JB01_E_READINGSRC;				// Error
+
+//  HANDLE	hFile;
 	ULONG	nSize;
 
-	hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
-		FILE_ATTRIBUTE_NORMAL, NULL);
+//	hFile = CreateFile(szFile, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING,
+//		FILE_ATTRIBUTE_NORMAL, NULL);
 
-	if ( hFile == INVALID_HANDLE_VALUE )
-		return 0;
+//	if ( hFile == INVALID_HANDLE_VALUE )
+//		return 0;
+ // hFile = (HANDLE) _get_osfhandle( _fileno(myFile) );
 
-	nSize = ::GetFileSize(hFile, NULL);
+	//nSize = ::GetFileSize(hFile, NULL);
 
-	CloseHandle(hFile);
+  struct _stat buf;
+  _fstat(_fileno(myFile), &buf);
+  nSize = buf.st_size;
 
+  if (myFile)  fclose(myFile);
+
+
+//	CloseHandle(hFile);
 	return nSize;
+
+
 
 } // GetFileSize()
 
