@@ -216,12 +216,8 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
             FrmMain.Txt_Script = ScriptData
           
           ' Save ScriptData to file
-            Dim IncludeFile As New FileStream
-            With IncludeFile
-               .Create IncludePathNew.FileName, True, False, False
-               .Data = ScriptData
-               .CloseFile
-            End With
+            FileSave IncludePathNew.FileName, ScriptData
+
            
          Else
          
@@ -386,12 +382,7 @@ Public Sub AHK_SeperateIncludes(ByRef ScriptData As StringReader, OutputPath$)
          End With
          
        ' Get IncludeData
-         Dim IncludeFile As New FileStream
-         With IncludeFile
-            .Create IncludeFileName.FileName, True, False, False
-            .FixedString(-1) = Match.SubMatches(1)
-            .CloseFile
-         End With
+         Match.SubMatches(1) = FileLoad(IncludeFileName.FileName)
          
       Next
       

@@ -1,6 +1,7 @@
 Attribute VB_Name = "ErrorHelper"
 Option Explicit
 
+Public ErrThrow_LastDllError&
 
 Private Declare Function FormatMessage Lib "kernel32" _
   Alias "FormatMessageA" ( _
@@ -39,6 +40,8 @@ Private Const SUBLANG_GERMAN = &H1
 ' Eine der Get-/Set- LastError Konstanten
 Private Const ERROR_ACCESS_DENIED = 5& ' Zugriff verweigert
 
+
+
 Private FormatMessageBuff As String * 256
 
 Public Sub RaiseDllError(Location$, FuncName$, ParamArray FuncParams())
@@ -68,4 +71,31 @@ Public Sub RaiseDllError(Location$, FuncName$, ParamArray FuncParams())
   End If
 End Sub
  
+Public Sub ErrThrowSimple()
+
+   With Err
+      .Raise .Number, .Source, .Description, .HelpFile, .HelpContext
+   End With
+
+End Sub
+ 
+ 
+Public Sub ErrThrow()
+   
+   With Err
+      Dim Number&, Source$, Description$, HelpFile$, HelpContext&
+      
+      Number = .Number
+      Source = .Source
+      Description = .Description
+      HelpFile = .HelpFile
+      HelpContext = .HelpContext
+      ErrThrow_LastDllError = .LastDllError
+      
+    ' disable local errorHandler
+      On Error GoTo 0
+      .Raise Number, Source, Description, HelpFile, HelpContext
+      
+   End With
+End Sub
 

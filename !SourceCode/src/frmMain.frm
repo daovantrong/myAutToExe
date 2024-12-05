@@ -10,6 +10,17 @@ Begin VB.Form FrmMain
    OLEDropMode     =   1  'Manual
    ScaleHeight     =   9465
    ScaleWidth      =   9300
+   Begin VB.CommandButton Cmd_Skip 
+      Appearance      =   0  'Flat
+      Caption         =   "Skip >>>"
+      Height          =   220
+      Left            =   8400
+      TabIndex        =   17
+      ToolTipText     =   "Skip current step"
+      Top             =   6360
+      Visible         =   0   'False
+      Width           =   855
+   End
    Begin VB.ListBox List_Positions 
       Height          =   2010
       Left            =   6840
@@ -148,12 +159,12 @@ Begin VB.Form FrmMain
       Width           =   9135
    End
    Begin VB.ListBox ListLog 
-      Height          =   2010
+      Height          =   1815
       Left            =   120
       OLEDropMode     =   1  'Manual
       TabIndex        =   0
       ToolTipText     =   "Double click to see more !"
-      Top             =   6480
+      Top             =   6600
       Width           =   9135
    End
    Begin VB.ListBox List_Source 
@@ -169,12 +180,33 @@ Begin VB.Form FrmMain
       Width           =   9135
    End
    Begin VB.TextBox Txt_Script 
-      Height          =   5775
+      Appearance      =   0  'Flat
+      Height          =   5655
       Left            =   120
       MultiLine       =   -1  'True
       OLEDropMode     =   1  'Manual
       TabIndex        =   3
       Top             =   600
+      Width           =   9135
+   End
+   Begin VB.Shape Sh_ProgressBar 
+      FillColor       =   &H00FFC0C0&
+      FillStyle       =   0  'Solid
+      Height          =   135
+      Index           =   1
+      Left            =   120
+      Top             =   6480
+      Visible         =   0   'False
+      Width           =   9135
+   End
+   Begin VB.Shape Sh_ProgressBar 
+      FillColor       =   &H00FF0000&
+      FillStyle       =   0  'Solid
+      Height          =   135
+      Index           =   0
+      Left            =   120
+      Top             =   6360
+      Visible         =   0   'False
       Width           =   9135
    End
    Begin VB.Menu mu_Tools 
@@ -186,6 +218,10 @@ Begin VB.Form FrmMain
       Begin VB.Menu mi_FunctionRenamer 
          Caption         =   "&FunctionRenamer"
          Shortcut        =   {F12}
+      End
+      Begin VB.Menu mi_HexToBinTool 
+         Caption         =   "&HexToBin_Binary() parser"
+         Shortcut        =   {F8}
       End
       Begin VB.Menu mi_SeperateIncludes 
          Caption         =   "&Seperate includes of *.au3"
@@ -214,7 +250,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
-
 Option Explicit
 
 
@@ -243,7 +278,100 @@ Const MD5_CRACKER_URL$ = "http://hashkiller.com/api/api.php?md5="
 
 '   http://www.milw0rm.com/cracker/info.php?'
 
+Public WithEvents Console As Console
+Attribute Console.VB_VarHelpID = -1
 
+
+'Public LogData As New clsStrCat
+Private LogData()
+
+Dim GUIEvent_InitialWidth(0 To 1) As Long
+
+Dim GUIEvent_ProcessScale(0 To 1) As Double
+Dim GUIEvent_Max(0 To 1) As Long
+
+Dim GUIEvent_Width_before(0 To 1) As Long
+
+
+Public Sub GUIEvent_ProcessBegin(Target&, Optional BarLevel& = 0, Optional Skipable As Boolean = False)
+On Error GoTo ERR_GUIEvent_ProcessBegin
+   With Sh_ProgressBar(BarLevel)
+      .Visible = True
+'      .Tag = .Width
+      .Width = GUIEvent_InitialWidth(BarLevel)
+      
+      GUIEvent_Max(BarLevel) = Target
+      
+    ' Avoid a division by Zero
+      If Target > 0 Then
+         GUIEvent_ProcessScale(BarLevel) = .Width / Target
+      Else
+         GUIEvent_ProcessScale(BarLevel) = 1
+      End If
+   End With
+   
+   GUIEvent_Width_before(BarLevel) = 0
+   
+   If BarLevel = 0 Then
+      
+      If Skipable Then
+         GUI_SkipEnable
+      Else
+         GUI_SkipDisable
+      End If
+      
+   End If
+   
+'   myDoEvents
+   
+ERR_GUIEvent_ProcessBegin:
+End Sub
+
+Public Sub GUIEvent_ProcessUpdate(CurrentValue&, Optional BarLevel& = 0)
+On Error GoTo ERR_GUIEvent_ProcessUpdate
+   With Sh_ProgressBar(BarLevel)
+      
+      .Width = CurrentValue * GUIEvent_ProcessScale(BarLevel)
+      
+      If (.Width - GUIEvent_Width_before(BarLevel)) > 10 Then
+         GUIEvent_Width_before(BarLevel) = .Width
+         
+         On Error GoTo 0
+         myDoEvents
+         
+      End If
+   End With
+ERR_GUIEvent_ProcessUpdate:
+End Sub
+
+Public Sub GUIEvent_Increase(PerCentToIncrease As Double, Optional BarLevel& = 0)
+   
+   Dim NewValue&
+   NewValue = GUIEvent_ProcessScale(BarLevel) * PerCentToIncrease
+
+   With Sh_ProgressBar(BarLevel)
+      .Width = .Width + NewValue
+   End With
+End Sub
+
+Public Sub GUIEvent_ProcessEnd(Optional BarLevel& = 0)
+On Error GoTo ERR_GUIEvent_ProcessEnd
+   With Sh_ProgressBar(BarLevel)
+   
+'      .Width = .Tag
+      .Visible = False
+   End With
+   
+   If BarLevel = 0 Then
+      Cmd_Skip.Visible = False
+   End If
+
+
+
+'   myDoEvents
+   
+ERR_GUIEvent_ProcessEnd:
+End Sub
 Sub FL_verbose(Text)
    log_verbose H32(File.Position) & " -> " & Text
 End Sub
@@ -269,9 +397,20 @@ End Sub
 
 '/////////////////////////////////////////////////////////
 '// log -Add an entry to the Log
-Public Sub Log(TextLine$)
+Public Sub Log(TextLine$, Optional LinePrefix$ = "")
 On Error Resume Next
-   ListLog.AddItem TextLine
+   
+ ' Output Text /split into line and output it line wise
+   Dim Line
+   For Each Line In Split(TextLine, vbCrLf)
+      ListLog.AddItem LinePrefix & Line
+      
+'      LogData.Concat LinePrefix & Line & vbCrLf
+      ArrayAdd LogData, LinePrefix & Line
+      
+      
+   Next
+   
 '   ListLog.AddItem H32(GetTickCount) & vbTab & TextLine
  
  ' Process windows messages (=Refresh display)
@@ -279,10 +418,10 @@ On Error Resume Next
        ' Scroll to last item ; when there are more than &h7fff items there will be an overflow error
       Dim ListCount&
       ListLog.ListIndex = ListLog.ListCount - 1
-      DoEvents
+      myDoEvents
       
    ElseIf (Rnd < 0.1) Then
-      DoEvents
+      myDoEvents
       
    End If
 End Sub
@@ -331,22 +470,72 @@ Private Sub Cmd_About_Click()
    FrmAbout.Show vbModal
 End Sub
 
+Private Sub ListLogShowCaption()
+   Log Me.Caption
+   Log String(80, "=")
+End Sub
+
 Private Sub ListLogClear()
    ListLog.Clear
+   
+'   LogData.Clear
+    ArrayDelete LogData
+   
+End Sub
+
+
+Private Sub Cmd_Skip_Click()
+   Cmd_Skip.Visible = False
+   Skip = True
+End Sub
+
+Private Sub Console_OnOutput(TextLine As String, ProgramName As String)
+ 
+ ' cut last newline
+   Dim NewLinePos&
+   NewLinePos = InStrRev(TextLine, vbCrLf)
+   If NewLinePos > 0 Then
+      Dec NewLinePos
+   End If
+   
+   
+   Log Left(TextLine, NewLinePos), ProgramName & ": "
+
+End Sub
+
+Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
+   Select Case KeyCode
+'      Case vbKeyDelete, vbKeyBack
+'         ListLogClear
+         
+      Case vbKeyEscape
+         CancelAll = True
+
+   End Select
+
+
 End Sub
 
 Private Sub ListLog_KeyUp(KeyCode As Integer, Shift As Integer)
    Select Case KeyCode
       Case vbKeyDelete, vbKeyBack
          ListLogClear
+         
    End Select
+   
+   Form_KeyDown KeyCode, Shift
 
 End Sub
 
-Private Sub ListLog_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+
+Private Sub ListLog_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
    If Button = MouseButtonConstants.vbRightButton Then
       ListLogClear
    End If
+End Sub
+
+Private Sub mi_HexToBinTool_Click()
+   HexToBinTool
 End Sub
 
 'Copies hash to clipboard and does an online query.
@@ -440,7 +629,106 @@ Private Sub cmd_scan_Click()
    List_Positions.Visible = True
 End Sub
 
+Private Sub HexToBinTool()
+
+   Dim FileName As New ClsFilename
+   FileName.FileName = InputBox("FileName:", "", Txt_Filename)
+   
+   If FileName.FileName = "" Then Exit Sub
+   
+
+   Dim Data$
+   Data = FileLoad(FileName.FileName)
+
+   
+   
+   Dim myRegExp As New RegExp
+   With myRegExp
+
+      
+      .Pattern = RE_WSpace(RE_Group("\w*?") & "\(", """0x", _
+                            "[0-9A-Fa-f]" & "*?", """", "\)")
+      Dim matches As MatchCollection
+      Set matches = .Execute(Data)
+      Dim FunctionName$
+      If matches.Count < 1 Then
+         
+         FunctionName = "FnNameOfBinaryToString"
+      Else
+      
+         FunctionName = matches(0).SubMatches(0)
+      End If
+   
+      FunctionName = InputBox("FunctionName:", "", FunctionName)
+      
+
+      
+      .Global = True
+      .Pattern = RE_WSpace(RE_Literal(FunctionName) & "\(", """0x", _
+                            RE_Group("[0-9A-Fa-f]" & "*?"), """", "\)")
+                            
+      Set matches = .Execute(Data)
+      Dim Match As Match
+      For Each Match In matches
+         With Match
+         
+            Dim IsPrintable As Boolean
+            Dim BinData$
+            BinData = MakeAutoItString(HexStringToString(.SubMatches(0), IsPrintable))
+            
+            If IsPrintable Then
+               Log "Replacing: " & BinData & " <= " & .value
+               ReplaceDo Data, .value, EncodeUTF8(BinData), .FirstIndex, 1
+            Else
+               Log "Skipped replace(not printable): " & BinData & " <= " & .value
+            End If
+            
+         End With
+      Next
+      
+      
+      
+   End With
+   
+   If matches.Count Then
+      FileName.Name = FileName.Name & "_HexToBin"
+       
+    ' Save
+      FileSave FileName.FileName, Data
+
+       
+       Log matches.Count & " replacements done."
+       Log "File save to: " & FileName.FileName
+   Else
+      Log "Nothing found."
+   End If
+   
+   
+
+End Sub
+
 Private Sub Form_Load()
+   
+ ' Create ConsoleObj
+   Set Console = New Console
+   
+
+   GUIEvent_InitialWidth(0) = Sh_ProgressBar(0).Width
+   GUIEvent_InitialWidth(1) = Sh_ProgressBar(1).Width
+'
+'   Dim myRegExp As New RegExp
+'   With myRegExp 'New RegExp
+'      .Global = True
+'      .MultiLine = True
+'
+'      myRegExp.Pattern = "(?:SHELLEXECUTE)*(EXECUTE\(\s*\$A\s*\))?"
+'
+'      Dim test$, Out$
+'      test = "SHELLEXECUTE($A) | WHILE EXECUTE($A) | EXECUTE($A606)"
+'      Out = myRegExp.Replace(test, "--RP--")
+'
+'   End With
+
 
 '   Dim str$, i&
 '   Dim leni%
@@ -466,6 +754,9 @@ Private Sub Form_Load()
    'Extent Listbox width
    Listbox_SetHorizontalExtent ListLog, 6000
    
+   ListLogClear
+   ListLogShowCaption
+
  
  ' Commandlinesupport   :)
    ProcessCommandline
@@ -543,35 +834,37 @@ Private Sub ProcessCommandline()
 End Sub
 
 
-Public Function GetLogdata$()
-   Dim LogData As New clsStrCat
-   LogData.Clear
-   Dim i
-   If (ListLog.ListCount >= 0) Then
-      For i = 0 To ListLog.ListCount
-         LogData.Concat (ListLog.List(i) & vbCrLf)
-      Next
-   Else
-      For i = 0 To &H7FFE
-         LogData.Concat (ListLog.List(i) & vbCrLf)
-      Next
-      LogData.Concat "<Data cut due to VB-listbox.ListCount bug :( >"
-      
-'   Do While ListLog.ListCount < 0
-'      LogData.Concat (ListLog.List(&H7FFF) & vbCrLf)
-'      ListLog.RemoveItem &H7FFF
-'   Loop
-   
-   End If
-   
-   GetLogdata = LogData.value
-   
+Public Function Log_GetData$()
+   Log_GetData = Join(LogData, vbCrLf)
 End Function
+'   Dim LogData As New clsStrCat
+'   LogData.Clear
+'   Dim i
+'   If (ListLog.ListCount >= 0) Then
+'      For i = 0 To ListLog.ListCount
+'         LogData.Concat (ListLog.List(i) & vbCrLf)
+'      Next
+'   Else
+'      For i = 0 To &H7FFE
+'         LogData.Concat (ListLog.List(i) & vbCrLf)
+'      Next
+'      LogData.Concat "<Data cut due to VB-listbox.ListCount bug :( >"
+'
+''   Do While ListLog.ListCount < 0
+''      LogData.Concat (ListLog.List(&H7FFF) & vbCrLf)
+''      ListLog.RemoveItem &H7FFF
+''   Loop
+'
+'   End If
+'
+'   Log_GetData = LogData.value
+'
+'End Function
 
 Private Sub Form_Unload(Cancel As Integer)
    FormSettings_Save
   
- 'Close might be clicked 'inside' some DoEvents so
+ 'Close might be clicked 'inside' some myDoEvents so
  'in case it was do a hard END
    End
 End Sub
@@ -581,10 +874,12 @@ End Sub
 Private Sub List_Positions_DblClick()
    Txt_Scriptstart = List_Positions.Text
    List_Positions.Visible = False
+   
+   Txt_FileName_Change
 End Sub
 
 Private Sub ListLog_DblClick()
-   frmLogView.txtlog = GetLogdata()
+   frmLogView.txtlog = Log_GetData
    frmLogView.Show
 End Sub
 
@@ -608,8 +903,8 @@ Private Sub mi_FunctionRenamer_Click()
 '
 '   End If
    
-   FrmFuncRename.Show vbModal
-   Unload FrmFuncRename
+   FrmFuncRename.Show ' vbModal
+'   Unload FrmFuncRename
    
 End Sub
 
@@ -629,8 +924,8 @@ End Sub
 
 
 Private Sub RegExp_Renamer_Click()
-   FrmRegExp_Renamer.Show vbModal
-   Unload FrmRegExp_Renamer
+   FrmRegExp_Renamer.Show ' vbModal
+'   Unload FrmRegExp_Renamer
 End Sub
 
 Private Sub Timer_TriggerLoad_OLEDrag_Timer()
@@ -686,16 +981,21 @@ Private Sub Txt_FileName_Change()
    If cmd_scan.Visible Then
    'If FileExists(Txt_Filename) Then
       
+      
+      CancelAll = False
+      
      'Clear Log (expect when run via commandline)
-      If IsCommandlineMode = False Then ListLog.Clear
+      If IsCommandlineMode = False Then
+         ListLogClear
+         ListLogShowCaption
+      End If
       Txt_Script = ""
       
       FileName = Txt_Filename
       
-      Log String(80, "=")
+
+'      Log String(80, "=")
 '      log "           -=  " & Me.Caption & "  =-"
-      Log Me.Caption
-      Log String(80, "=")
          
       Decompile
          Log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
@@ -705,18 +1005,20 @@ Private Sub Txt_FileName_Change()
       FileName = ExtractedFiles("MainScript")
          On Error Resume Next
       DeToken
+         If Err = ERR_CANCEL_ALL Then GoTo Txt_Filename_err:
          If Err Then Log "ERR: " & Err.Description
 
-         On Error Resume Next
          Log String(79, "=")
-      
-      
+         On Error Resume Next
+         
+         
       DeObfuscate.DeObfuscate
-         If Err Then Log "ERR: " & Err.Description
+         If Err = ERR_CANCEL_ALL Then GoTo Txt_Filename_err:
          Select Case Err
          Case 0, ERR_NO_OBFUSCATE_AUT
             If Chk_RestoreIncludes.value = vbChecked Then _
                SeperateIncludes
+               
                
          Case Else
             Log Err.Description
@@ -726,14 +1028,11 @@ Private Sub Txt_FileName_Change()
 
       CheckScriptFor_COMPILED_Macro
  
-' ErrorHandle for For-Each-Loop
+ 
 Err.Clear
 GoTo Txt_Filename_err
-
-' Decompile Err Handler
-
       
-      
+' ErrorHandle for resume from Errors
 DeToken:
       Log String(79, "=")
       DeToken
@@ -765,7 +1064,10 @@ Txt_Filename_err:
     Case ERR_NO_OBFUSCATE_AUT
        Log Err.Description
        Resume Txt_Filename_err
-       
+    
+    Case ERR_CANCEL_ALL
+       Log "Processing CANCELED!  " & Err.Description
+       Resume Finally
        
     Case Else
        Log Err.Description
@@ -773,7 +1075,7 @@ Txt_Filename_err:
     End Select
 '-----------------------------------------------
    
-    
+Finally:
     'Save Log Data
     On Error Resume Next
     
@@ -782,9 +1084,8 @@ Txt_Filename_err:
     
     Log ""
     Log "Saving Logdata to : " & FileName.FileName
-    File.Create FileName.FileName, True
-    File.FixedString(-1) = GetLogdata
-    File.CloseFile
+    FileSave FileName.FileName, Log_GetData
+
     
     
     IsCommandlineMode = False
@@ -820,23 +1121,27 @@ End Select
 End Function
 
 
-Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    File_DragDrop Data
 End Sub
 
-Private Sub List_Source_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub List_Source_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    File_DragDrop Data
 End Sub
 
-Private Sub ListLog_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub ListLog_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    File_DragDrop Data
 End Sub
 
-Private Sub Txt_Script_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Txt_Filename_KeyDown(KeyCode As Integer, Shift As Integer)
+   Form_KeyDown KeyCode, Shift
+End Sub
+
+Private Sub Txt_Script_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    File_DragDrop Data
 End Sub
 
-Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    File_DragDrop Data
 End Sub
 
@@ -870,6 +1175,11 @@ End Sub
 
 Private Sub Txt_Script_KeyDown(KeyCode As Integer, Shift As Integer)
    Cancel = KeyCode <> vbKeySpace
+   
+   If KeyCode = vbKeyEscape Then
+      CancelAll = True
+   End If
+   
 End Sub
 
 Private Sub Txt_Scriptstart_Change()
@@ -880,3 +1190,6 @@ Private Sub Txt_Scriptstart_Change()
    Chk_NormalSigScan.Enabled = (Err.Number <> 0)
    
 End Sub
+
+
+

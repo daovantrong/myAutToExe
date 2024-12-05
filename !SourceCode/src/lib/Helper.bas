@@ -6,7 +6,9 @@ Dim myRegExp As New RegExp
 
 
 Public Cancel As Boolean
+Public CancelAll As Boolean
 
+Public Skip As Boolean
 
 'Konstantendeklationen für Registry.cls
 
@@ -112,19 +114,27 @@ Function KeyPressed(Key) As Boolean
    KeyPressed = GetAsyncKeyState(Key)
 End Function
 
-Public Function HexStringToString$(ByVal HexString$)
+Public Function HexStringToString$(ByVal HexString$, Optional ByRef IsPrintable As Boolean)
    HexStringToString = Space(Len(HexString) \ 2)
+   
+   IsPrintable = True
    For i = 1 To Len(HexString) Step 2
-      Mid$(HexStringToString, (i \ 2) + 1) = Chr("&h" & Mid$(HexString, i, 2))
+      Dim tmpChar&
+      tmpChar = "&h" & Mid$(HexString, i, 2)
+      If IsPrintable Then
+         IsPrintable = RangeCheck(tmpChar, &HFF, &H20)
+      End If
+      
+      Mid$(HexStringToString, (i \ 2) + 1) = Chr(tmpChar)
    Next
 End Function
 
 Public Function HexvaluesToString$(Hexvalues$)
-   Dim tmpchar
-   For Each tmpchar In Split(Hexvalues)
+   Dim tmpChar
+   For Each tmpChar In Split(Hexvalues)
       'HexvaluesToString = HexvaluesToString & ChrB("&h" & tmpchar) & ChrB(0)
       'Note ChrB("&h98") & ChrB(0) is not correct translated
-      HexvaluesToString = HexvaluesToString & Chr("&h" & tmpchar)
+      HexvaluesToString = HexvaluesToString & Chr("&h" & tmpChar)
    Next
 End Function
 
@@ -459,7 +469,11 @@ Public Function RE_Replace_Literal(TextWithLiterals) As String
 
 
 End Function
-
+Private Sub RE_Mask_Whitespace(Text)
+   ReplaceDo Text, vbCr, "\r"
+   ReplaceDo Text, vbLf, "\n"
+   ReplaceDo Text, vbTab, "\t"
+End Sub
 
 Private Function RE_Mask(Text, CharsToMask$, _
    Optional CharMaskSearch$ = "", _
@@ -469,10 +483,16 @@ Private Function RE_Mask(Text, CharsToMask$, _
       
      ' Mask MetaChars like with a preciding '\'
       .Pattern = CharMaskSearch & "[" & CharsToMask & "]"
+      
+     'Attention Text is passed byref - so don use Text =...!
       RE_Mask = .Replace(Text, CharMaskReplace & "$&")
    
    
    End With
+
+'   RE_Mask_Whitespace Text
+   
+'   RE_Mask = Text
 
 End Function
 
@@ -678,3 +698,50 @@ End Function
 'End Sub
 '
 '
+
+Public Sub myDoEvents()
+   DoEvents
+   
+   Skip_Test
+   CancelAll_Test
+End Sub
+
+Public Sub Skip_Test()
+   If Skip = True Then
+      
+      Skip = False
+      Err.Raise ERR_SKIP, , "User pressed the skip key."
+      
+   End If
+  
+End Sub
+
+
+
+Public Sub CancelAll_Test()
+   If CancelAll = True Then
+      
+      CancelAll = False
+      Err.Raise ERR_CANCEL_ALL, , "User pressed the cancel key."
+      
+   End If
+  
+End Sub
+
+Public Function FileLoad$(FileName$)
+   Dim File As New FileStream
+   With File
+      .Create FileName, False, False, True
+      FileLoad = .FixedString(-1)
+      .CloseFile
+   End With
+End Function
+
+Public Sub FileSave(FileName$, Data$)
+   Dim File As New FileStream
+   With File
+      .Create FileName, True, False, False
+      .FixedString(-1) = Data
+      .CloseFile
+   End With
+End Sub

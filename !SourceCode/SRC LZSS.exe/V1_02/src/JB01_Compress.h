@@ -132,7 +132,8 @@ public:
 	ULONG	GetCompressedSize(void) { return m_nUserCompPos; }
 
 	// Monitor functions
-	UINT	GetPercentComplete(void) { return ((UINT)(((double)m_nUserDataPos/(double)m_nDataSize) * 100.0)); }
+//	UINT	GetPercentComplete(void) { return ((UINT)(((double)m_nUserDataPos/(double)m_nDataSize) * 100.0)); }
+	UINT	GetPercentComplete(void) { return ((m_nUserDataPos / m_nDataSize) * 100); }
 
 private:
 	// User supplied buffers and counters

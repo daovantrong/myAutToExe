@@ -17,7 +17,7 @@ Begin VB.Form frmLogView
    LinkTopic       =   "Form1"
    ScaleHeight     =   7845
    ScaleWidth      =   11670
-   StartUpPosition =   3  'Windows-Standard
+   StartUpPosition =   3  'Windows Default
    Begin VB.TextBox txtlog 
       BeginProperty Font 
          Name            =   "Courier New"
@@ -31,10 +31,20 @@ Begin VB.Form frmLogView
       Height          =   3135
       Left            =   0
       MultiLine       =   -1  'True
-      ScrollBars      =   2  'Vertikal
+      ScrollBars      =   2  'Vertical
       TabIndex        =   0
       Top             =   0
       Width           =   4575
+   End
+   Begin VB.CommandButton cmd_Quit 
+      Cancel          =   -1  'True
+      Caption         =   "Quit"
+      Height          =   255
+      Left            =   4920
+      TabIndex        =   1
+      TabStop         =   0   'False
+      Top             =   120
+      Width           =   555
    End
 End
 Attribute VB_Name = "frmLogView"
@@ -43,6 +53,10 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+
+Private Sub cmd_Quit_Click()
+   Me.Hide
+End Sub
 
 Private Sub Form_Resize()
 On Error Resume Next

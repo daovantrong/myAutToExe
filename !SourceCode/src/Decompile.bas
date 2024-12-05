@@ -102,8 +102,8 @@ End Sub
 
 '/////////////////////////////////////////////////////////
 '// log -Add an entry to the Log
-Public Sub Log(TextLine$)
-   FrmMain.Log TextLine
+Public Sub Log(TextLine$, Optional LinePrefix$)
+   FrmMain.Log TextLine, LinePrefix
 End Sub
 
 '/////////////////////////////////////////////////////////
@@ -176,6 +176,8 @@ Private Function GetEncryptStrNew(LenEncryptionSeed&, StrEncryptionSeed, _
      'Double size on new type because of Unicode
       Dim StrLenToRead
       StrLenToRead = StrLen + StrLen
+      
+'      RangeCheck StrLenToRead, hFile.Length - hFile.Position, 0, "GetEncryptStrNew() tried to read a string of is 0x" & H32(StrLenToRead) & " byte thats bigger than the file."
       
       GetEncryptStrNew = StrConv( _
             DeCryptNew(hFile.FixedString(StrLenToRead), StrEncryptionSeed + StrLen) _
@@ -814,22 +816,20 @@ Public Sub Decompile()
     ' --- Save Stub  - if not PEFile ---
       
       If Not IsValidPEFile Then
-       If ScriptStartPos > 0 Then
-          Log "This is no PE-Exe File & Script don't start at Offset 0 -> Saving StubData"
-     
+         If ScriptStartPos > 0 Then
+            Log "This is no PE-Exe File & Script don't start at Offset 0 -> Saving StubData"
         
-        Dim FileName_FileStub$
-        FileName_FileStub = FileName.NameWithExt & ".stub"
-        Log "Copy FileStubData into: " & FileName_FileStub
-        
-        Dim FileStub As New FileStream
-        FileStub.Create FileName.Path & FileName_FileStub, True, False, False
-        FileStub.FixedString(-1) = FileReadPart(.FileName, 0, ScriptStartPos)
-        FileStub.CloseFile
+           
+            Dim FileName_FileStub$
+            FileName_FileStub = FileName.NameWithExt & ".stub"
+            Log "Copy FileStubData into: " & FileName_FileStub
+            
+            FileSave FileName.Path & FileName_FileStub, _
+                     FileReadPart(.FileName, 0, ScriptStartPos)
+          
+         End If
        
-       End If
-       
-     Else
+      Else
        Log "      EndOf_PE-ExeFile : " & H32(PEFile_EOF_Offset)
                    
       ' ==> Create output fileName
@@ -839,7 +839,8 @@ Public Sub Decompile()
         
         Log "Extracting ExeIcon/s to: " & Quote(IconFileName.FileName)
         ShellEx App.Path & "\" & "ExtractExeIcon.exe", _
-                Quote(File.FileName) & " " & Quote(IconFileName.FileName)
+                Quote(File.FileName) & " " & Quote(IconFileName.FileName), vbNormalFocus
+                
 
 '        Dim IconFile As New FileStream
 '        With IconFile
@@ -851,7 +852,7 @@ Public Sub Decompile()
 '         .CloseFile
 '        End With
         
-     End If
+      End If
     
       RangeCheck .Position, .Length, 0, "ERROR: ScriptStartPosition is outside the file! -", "Decompile"
     
@@ -1024,9 +1025,15 @@ Processing_Finished:
             
                FrmMain.Txt_Scriptstart.FontBold = True
                FrmMain.Txt_Scriptstart.ForeColor = vbRed
-               If vbNo = MsgBox("Invalid File Maker found - continue anyway?", vbYesNo, "Manually extract mode enabled.(Please delete script start value textbox to disable.)") Then
+               Dim msgboxResult_InvalidFileMaker&
+               msgboxResult_InvalidFileMaker = MsgBox("Invalid File Maker found - continue anyway?", vbYesNoCancel, "Manually extract mode enabled.(Please delete script start value textbox to disable.)")
+               If vbNo = msgboxResult_InvalidFileMaker Then
                   ExtractedFiles.Add File.FileName, "MainScript"
                   GoTo Processing_Finished
+                  
+               ElseIf vbCancel = msgboxResult_InvalidFileMaker Then
+                  Err.Raise ERR_CANCEL_ALL, , "Decompilation canceled because of InvalidFileMaker"
+                  
                End If
             End If
       
@@ -1236,7 +1243,7 @@ Processing_Finished:
                      Xor (KeyByte And &HFF)
                      
 
-               If 0 = (StrCharPos Mod &H8000) Then DoEvents
+               If 0 = (StrCharPos Mod &H8000) Then myDoEvents
 
                
             Next
@@ -1361,19 +1368,25 @@ Processing_Finished:
                  
                Log "Expanding script data to """ & OutFileName.NameWithExt & """ at " & OutFileName.Path
                   
-                ' Run "LZSS.exe -d *.debug *.au3" to extract the script (...and wait for it execution to finish)
-                  ShellEx App.Path & "\" & "lzss.exe", _
+                ' Run "LZSS.exe -d *.debug *.au3" to extract the script (...and wait for its execution to finish)
+                  Dim LZSS_Output$, ExitCode&
+                  LZSS_Output = Console.ShellExConsole( _
+                           App.Path & "\" & "lzss.exe", _
+                           "-d " & Quote(.FileName) & " " & Quote(OutFileName.FileName), _
+                           ExitCode)
+               
+                  If ExitCode <> 0 Then Log LZSS_Output, "LZSS_Output: "
+                  
+'                  ShellEx App.Path & "\" & "lzss.exe", _
                         "-d " & Quote(.FileName) & " " & Quote(OutFileName.FileName)
                   
+                ' Closes and deletes TmpFile
                   .CloseFile
                End With
                
       
              ' Read data from new script file
-               Dim outFile As New FileStream
-               outFile.Create OutFileName.FileName, False, False, False
-               outFile.Position = 0
-               .Data = outFile.FixedString(-1)
+               .Data = FileLoad(OutFileName.FileName)
 
              ' Handle AHK-Scripts
                If bIsAHK_Script Then
@@ -1393,12 +1406,9 @@ Processing_Finished:
                      AHK_SeperateIncludes ScriptData, OutFileName.Path
                      
                   End If
-                  
-                  outFile.CloseFile
-                  
+                                    
                   Log "Saving decrypted data to """ & OutFileName.NameWithExt & """ at " & OutFileName.Path
-                  outFile.Create OutFileName.FileName, True, False, False
-                  outFile.Data = .Data
+                  FileSave OutFileName.FileName, .Data
 
                End If
             
@@ -1406,22 +1416,29 @@ Processing_Finished:
             '... data was not compress, so just save the script data
                Log "Saving script to """ & OutFileName.NameWithExt & """ at " & OutFileName.Path
             
-               outFile.Create OutFileName.FileName, True, False, False
-               outFile.Data = .Data
+               FileSave OutFileName.FileName, .Data
             
             End If
             
 
             Log "Setting Creation and LastWrite time"
             Err.Clear
-            Retval = SetFileTime(outFile.hFile, pCreationTime, 0, pLastWrite)
-            If Retval = 0 Then
-               Retval = Err.LastDllError
-               Log "LastDllError: " & Retval
-            End If
             
+            Dim outFile As New FileStream
+            With outFile
+               
+               .Create OutFileName.FileName, False, False, False
+               
+               Retval = SetFileTime(outFile.hFile, pCreationTime, 0, pLastWrite)
+               If Retval = 0 Then
+                  Retval = Err.LastDllError
+                  Log "LastDllError: " & Retval
+               End If
+               
+               .CloseFile
+            End With
           
-            outFile.CloseFile
+
             
             
           ' Show scriptdata
@@ -1476,16 +1493,12 @@ Log "  overlaybytes: " & ValuesToHexString(tmp) & "  " & overlaybytes
       Dim overlaySkipBytes As Long
       overlaySkipBytes = (IIf(bIsOldScript, 3, 2) * 4)
       If overlaySize > overlaySkipBytes Then
-         Dim ovlFile As New FileStream
-         With ovlFile
-            .Create File.FileName & ".overlay", True, False, False
-            Log ">>>ATTENTION: There are more overlay data than usual <<<"
-            Log "saving overlaydata to: " & .FileName
-            
-            .Data = Mid(overlaybytes, overlaySkipBytes + 1)
-            
-            .CloseFile
-         End With
+         
+         Log ">>>ATTENTION: There are more overlay data than usual <<<"
+         Log "saving overlaydata to: " & .FileName
+         
+         FileSave .FileName & ".overlay", _
+                  Mid(overlaybytes, overlaySkipBytes + 1)
       
       End If
    
@@ -1568,12 +1581,27 @@ End Sub
    
 Private Sub Decompile_HandleAHK_ExtraDecryption(SizeUncompressed&)
              
- ' Just look if this is Version 1_0_48_3
+ ' Just look if this is Version 1_0_48_3 or above
    Dim bIsPossiblyAboveAHK_Ver1_0_48_3
    Dim AHKStub As New StringReader
-   AHKStub.Data = FileReadPart(File.FileName, 0, ScriptStartPos)
-   AHKStub.Position = 0
-   bIsPossiblyAboveAHK_Ver1_0_48_3 = (AHKStub.FindString("1.0.48.03") <> 0)
+   With AHKStub
+      .Data = FileReadPart(File.FileName, 0, ScriptStartPos)
+      .Position = 0
+'      .DisableAutoMove = False
+      
+      
+      Dim verPos$
+      verPos = .FindString("1.0.48.")
+      If (verPos <> 0) Then
+         Dim AHK_1_0_48_SubVer%
+         AHK_1_0_48_SubVer = .FixedString(2)
+         bIsPossiblyAboveAHK_Ver1_0_48_3 = (AHK_1_0_48_SubVer >= 3)
+      Else
+         
+      End If
+   End With
+
+   
    
    Dim bIsAboveAHK_Ver1_0_48_3 As Boolean
    If FrmMain.Chk_verbose.value = vbChecked Then
@@ -1594,18 +1622,44 @@ Private Sub Decompile_HandleAHK_ExtraDecryption(SizeUncompressed&)
 ' need to be skipped
 
     If bIsAboveAHK_Ver1_0_48_3 Then
+      
+
+       Dim AHK16_Ver_Add As Long
+       Select Case AHK_1_0_48_SubVer
+         Case 3
+            AHK16_Ver_Add = 0
+
+         Case 4
+            AHK16_Ver_Add = InputBox("AHK v1.0.48.04 - is not known yet. But you may try to enter somekey - note: subVersion.03 has 0 and subVersion.05 has 700 as key.", , 0)
+            
+         Case 5
+            AHK16_Ver_Add = 700
+            
+       End Select
+       
       'init AHK_Sub_Key
-       Dim AHK_Sub_Key_New As Long
-       AHK_Sub_Key_New = SizeUncompressed And 65535 '&hffff
+       Dim AHK16_Sub_Key As Long
+       AHK16_Sub_Key = (SizeUncompressed And 65535) + (AHK16_Ver_Add And 65535) '&hffff
+       
+       Dim AHK16_Sub_Key_Heuristic As Long
+       ScriptData.Position = 0
+      '"; <COMPILER: v1.0.48.5> " -> "; " -> 3B 20 -> 203B
+       AHK16_Sub_Key_Heuristic = (ScriptData.int16 - &H203B) And &HFFFF
+       
+       If AHK16_Sub_Key <> AHK16_Sub_Key_Heuristic Then
+         AHK16_Sub_Key = InputBox("The HeuristicAHKSub-Key is " & AHK16_Sub_Key_Heuristic & " and the version depending is " & AHK16_Sub_Key & vbCrLf & _
+                  "Please enter which I should use.", , AHK16_Sub_Key_Heuristic)
+       End If
+
+       
        
 '      if SizeUncompressed =0 then AHK_Sub_Key    = &h0400
-       If AHK_Sub_Key_New = 0 Then AHK_Sub_Key_New = &H400
+       If AHK16_Sub_Key = 0 Then AHK16_Sub_Key = &H400
 
-'      AHK_Ver_Add = &H0000 'v1.0.48.3
                          
-       Log "AHK 16bit substraction key: " & H16(AHK_Sub_Key_New)
-       Log "Appling AHK extra decryption(v1.0.48.3)..."
-       ScriptData = AHK_ExtraDecryptionNew(ScriptData, AHK_Sub_Key_New)
+       Log "AHK 16bit substraction key: " & H16(AHK16_Sub_Key)
+       Log "Appling AHK extra decryption(v1.0.48." & AHK_1_0_48_SubVer & ")..."
+       ScriptData = AHK_ExtraDecryptionNew(ScriptData, AHK16_Sub_Key)
     
     Else
 
@@ -1663,8 +1717,8 @@ Private Function ADLER32$(Data As StringReader)
    With Data
 '            Dim a
             
-            Dim l&, H&
-            H = 0: l = 1
+            Dim L&, H&
+            H = 0: L = 1
 '            a = GetTickCount
 ' taken out for performance reason
 '               .EOS = False
@@ -1673,7 +1727,7 @@ Private Function ADLER32$(Data As StringReader)
 '                 'The largest prime less than 2^16
 '                  l = (.int8 + l) Mod 65521 '&HFFF1
 '                  H = (H + l) Mod 65521 '&HFFF1
-'                  If (l And 8) Then DoEvents
+'                  If (l And 8) Then myDoEvents
 '               Loop
 '
 '            Debug.Print "a: ", GetTickCount - a 'Benchmark: 20203
@@ -1685,15 +1739,15 @@ Private Function ADLER32$(Data As StringReader)
 '               tmpBuff = .mvardata
                For StrCharPos = 1 To Len(.mvardata)
                   'The largest prime less than 2^16
-                  l = (AscB(MidB$(tmpBuff, StrCharPos, 1)) + l) Mod 65521 '&HFFF1
-                  H = (H + l) Mod 65521 '&HFFF1
+                  L = (AscB(MidB$(tmpBuff, StrCharPos, 1)) + L) Mod 65521 '&HFFF1
+                  H = (H + L) Mod 65521 '&HFFF1
                   
-                  If 0 = (StrCharPos Mod &H8000) Then DoEvents
+                  If 0 = (StrCharPos Mod &H8000) Then myDoEvents
 
                Next
 '            Debug.Print "b: ", GetTickCount - a 'Benchmark: 5969
 
-      ADLER32 = H16(H) & H16(l)
+      ADLER32 = H16(H) & H16(L)
    End With
 End Function
 
@@ -1766,6 +1820,7 @@ Sub CheckScriptFor_COMPILED_Macro()
             .SetFocus
          End With
       End If
+      .CloseFile
    End With
       
 End Sub
@@ -1790,7 +1845,7 @@ Public Function AHK_ExtraDecryption(ScriptData As StringReader, ByVal AHK_Sub_Ke
          tmpByte = (tmpByte - AHK_Sub_Key) And &HFF
          tmpBuff(StrCharPos) = tmpByte
       
-         If 0 = (StrCharPos Mod &H8000) Then DoEvents
+         If 0 = (StrCharPos Mod &H8000) Then myDoEvents
          
       Next
       
@@ -1857,7 +1912,7 @@ Public Function AHK_ExtraDecryptionNew(ScriptData As StringReader, ByVal AHK_Sub
          Byte_H = (CInt(Byte_H) - AHK_Sub_Key_H + Carry) And &HFF
          tmpBuff(StrCharPos + 1) = Byte_H
       
-         If 0 = (StrCharPos Mod &H8000) Then DoEvents
+         If 0 = (StrCharPos Mod &H8000) Then myDoEvents
          
       Next
       
@@ -1883,6 +1938,8 @@ Public Function LongValScan() As Boolean
    
 On Error GoTo LongValScan_err
   FrmMain.List_Positions.Clear
+  
+  Log "Testing all possible script start locations..."
    
   Set ScriptData = New StringReader
 ' Copy filedata into String
@@ -1893,6 +1950,8 @@ On Error GoTo LongValScan_err
    
    With ScriptData
 
+      GUIEvent_ProcessBegin .Length
+
 '      .DisableAutoMove = True
       .Position = 0
          
@@ -1901,6 +1960,8 @@ On Error GoTo LongValScan_err
          
          Dim ScriptStartPos&
          ScriptStartPos = .Position
+         
+         GUIEvent_ProcessUpdate ScriptStartPos
       
             
          ' >>>AUTOIT SCRIPT<<<
@@ -1923,7 +1984,13 @@ On Error GoTo LongValScan_err
                   LongValScan = True
                   
                   'Exit Do
-                  FrmMain.List_Positions.AddItem Right(H32(ScriptStartPos - &H2C), 6)
+                  Dim Location&
+                  Location = ScriptStartPos - &H2C
+                  
+                  FrmMain.List_Positions.AddItem Right(H32(Location), 6)
+                  
+                  Log "  Found #" & FrmMain.List_Positions.ListCount & " 0x" & H32(Location)
+
                End If
                
             End If
@@ -1934,6 +2001,8 @@ On Error GoTo LongValScan_err
          .Move 1
          
       Loop Until .EOS
+      
+      GUIEvent_ProcessEnd
       
 '      .DisableAutoMove = False
    End With

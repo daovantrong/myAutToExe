@@ -12,6 +12,8 @@ Private Const WAIT_FAILED As Long = &HFFFFFFFF
 Private Const WAIT_TIMEOUT As Long = 258&
 Private Const WAIT_ABANDONED As Long = (STATUS_ABANDONED_WAIT_0 + 0)
 
+Private Const ERROR_INVALID_PARAMETER As Long = 87
+
 Private Const STANDARD_RIGHTS_REQUIRED As Long = &HF0000
 Private Const SYNCHRONIZE As Long = &H100000
 Private Const PROCESS_QUERY_INFORMATION As Long = (&H400)
@@ -19,7 +21,7 @@ Private Const PROCESS_DUP_HANDLE As Long = (&H40)
 Private Const PROCESS_TERMINATE As Long = (&H1)
 Private Const PROCESS_VM_OPERATION As Long = (&H8)
 Private Const PROCESS_ALL_ACCESS As Long = (STANDARD_RIGHTS_REQUIRED Or SYNCHRONIZE Or &HFFF)
-Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessId As Long) As Long
+Private Declare Function OpenProcess Lib "kernel32.dll" (ByVal dwDesiredAccess As Long, ByVal bInheritHandle As Long, ByVal dwProcessID As Long) As Long
 Public Declare Function GetTickCount Lib "kernel32.dll" () As Long
 
 Public Declare Function MoveFile Lib "kernel32" Alias "MoveFileA" (ByVal lpExistingFileName As String, ByVal lpNewFileName As String) As Long
@@ -31,6 +33,10 @@ Public Const SW_NORMAL As Long = 1
 Public Const SW_RESTORE As Long = 9
 Public Const SW_SHOW As Long = 5
 Public Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+
+Public Console As New Console
+
+'________________ FILETIME _______________________
 
 
 Public Type FILETIME
@@ -52,7 +58,6 @@ Public Type SYSTEMTIME
    wMilliseconds As Integer
 End Type
 
-
 Public Declare Function FileTimeToSystemTime Lib "kernel32.dll" (ByRef lpFileTime As FILETIME, ByRef lpSystemTime As SYSTEMTIME) As Long
 
 Public Const UTF16_BOM$ = "ÿþ" 'Chr(&HFF) & Chr(&HFE)
@@ -60,9 +65,16 @@ Public Const UTF8_BOM$ = "ï»¿" 'Chr(&HEF) & Chr(&HBB)& Chr(&HBF)
 'Public Const bUnicodeEnable As Boolean = True
 
 
+
+
+
 'The LB_GETHORIZONTALEXTENT message is useful to retrieve the current value of the horizontal extent:
 Const LB_GETHORIZONTALEXTENT = &H193
 Const LB_SETHORIZONTALEXTENT = &H194
+
+
+
+
 Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal _
     hwnd As Long, ByVal wMsg As Long, ByVal wParam As Long, _
     lParam As Any) As Long
@@ -70,6 +82,8 @@ Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal _
 ' Set the horizontal extent of the control (in pixel).
 ' If this value is greater than the current control's width
 ' an horizontal scrollbar appears.
+
+
 
 Sub Listbox_SetHorizontalExtent(lb As Listbox, ByVal newWidth As Long)
     SendMessage lb.hwnd, LB_SETHORIZONTALEXTENT, newWidth, ByVal 0&
@@ -100,14 +114,16 @@ On Error GoTo ShellEx_err
        Do
           Retval = GetExitCodeProcess(hProcess, ExitCode)
 '               RetVal = WaitForSingleObject(hProcess, 100)
-          DoEvents
+          myDoEvents
        Loop While Retval And (ExitCode = STILL_ACTIVE)
        
        ShellEx = ExitCode
     Else
   'Commented out because sometimes there are false positives( PID get's invalid betweem Shell() and OpenProcess()
 '      RaiseDllError "ShellEx()", "OpenProcess", "PROCESS_QUERY_INFORMATION", 0, "PID: " & PID
-      Log "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
+      If Err.LastDllError <> ERROR_INVALID_PARAMETER Then
+         Log "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
+      End If
       
 '      Err.Raise vbObjectError, , "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
     End If

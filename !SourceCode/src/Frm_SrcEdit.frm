@@ -195,7 +195,7 @@ Function AddItem(Text$, _
 '   Debug.Print Txt_ItemCount
 '   Dim i
 '   For i = 0 To 100000
-   DoEvents
+   myDoEvents
  '  Next
    
 End Function
@@ -219,7 +219,7 @@ On Error Resume Next
    End With
    
    
- DoEvents
+ myDoEvents
 End Sub
 
 Private Sub HScroll_Change()

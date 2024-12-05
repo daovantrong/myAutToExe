@@ -151,8 +151,8 @@ int main(int argc, char* argv[])
 		nRes = oCompress.Compress();
 		DWORD dwTime2 = timeGetTime();
 
-		printf("\rCompressed           : %d%% (%d%%)  ", oCompress.GetPercentComplete(), (UINT)(100 - (((float)oCompress.GetCompressedSize() / (float)nUncompressedSize)*100.0)));
-		printf("\nCompression time     : %.2fs (including fileIO)\n", ((float)(dwTime2-dwTime1)) / 1000.0);
+		printf("\rCompressed           : %d%% (%d%%)  ", oCompress.GetPercentComplete(), 100 - ( oCompress.GetCompressedSize()  / nUncompressedSize) * 100  );
+		printf("\nCompression time     : %.2fs (including fileIO)\n", ((dwTime2-dwTime1)) / 1000.0);
 
 		if (nRes != JB01_E_OK)
 		{
@@ -162,8 +162,8 @@ int main(int argc, char* argv[])
 
 		// Print the output size
 		printf("Output file size     : %d\n", oCompress.GetCompressedSize());
-		printf("Compression ratio    : %.2f%%\n", 100 - (((float)oCompress.GetCompressedSize() / (float)nUncompressedSize)*100.0) );
-		printf("Compression ratio    : %.3f bpb\n", ((float)oCompress.GetCompressedSize() * 8.0) / (float)nUncompressedSize);
+		printf("Compression ratio    : %.2f%%\n", 100 - ((oCompress.GetCompressedSize() / nUncompressedSize) * 100) );
+		printf("Compression ratio    : %.3f bpb\n", (oCompress.GetCompressedSize() * 8) / nUncompressedSize);
 
 		return 0;
 	}
@@ -190,7 +190,7 @@ int main(int argc, char* argv[])
 		DWORD dwTime2 = timeGetTime();
 
 		printf("\rDecompressed         : %d%%  ", oDecompress.GetPercentComplete());
-		printf("\nCompression time     : %.2fs (including fileIO)\n", ((float)(dwTime2-dwTime1)) / 1000.0);
+		printf("\nCompression time     : %.2fs (including fileIO)\n", ((dwTime2-dwTime1)) / 1000.0);
 
 		if (nRes != JB01_E_OK)
 		{

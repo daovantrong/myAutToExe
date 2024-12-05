@@ -4,15 +4,33 @@ Begin VB.Form FrmRegExp_Renamer
    ClientHeight    =   8115
    ClientLeft      =   60
    ClientTop       =   450
-   ClientWidth     =   11295
+   ClientWidth     =   12810
    LinkTopic       =   "Form1"
    ScaleHeight     =   8115
-   ScaleWidth      =   11295
+   ScaleWidth      =   12810
    StartUpPosition =   3  'Windows Default
+   Begin VB.CommandButton cmd_RegExpSave 
+      Appearance      =   0  'Flat
+      Caption         =   "Save"
+      Height          =   255
+      Left            =   840
+      TabIndex        =   16
+      Top             =   1560
+      Width           =   735
+   End
+   Begin VB.CommandButton cmd_RegExpLoad 
+      Appearance      =   0  'Flat
+      Caption         =   "Load"
+      Height          =   255
+      Left            =   120
+      TabIndex        =   15
+      Top             =   1560
+      Width           =   735
+   End
    Begin VB.CheckBox chk_Simple 
       Caption         =   "Simple"
       Height          =   375
-      Left            =   10320
+      Left            =   11880
       Style           =   1  'Graphical
       TabIndex        =   12
       ToolTipText     =   "Enables Simple Mode - that do not adds 0001,0002... to each match"
@@ -23,7 +41,7 @@ Begin VB.Form FrmRegExp_Renamer
       Appearance      =   0  'Flat
       Caption         =   "&Test"
       Height          =   495
-      Left            =   10320
+      Left            =   11880
       TabIndex        =   11
       Top             =   1200
       Width           =   615
@@ -32,7 +50,7 @@ Begin VB.Form FrmRegExp_Renamer
       Appearance      =   0  'Flat
       Caption         =   "?"
       Height          =   495
-      Left            =   10920
+      Left            =   12480
       TabIndex        =   10
       Top             =   1200
       Width           =   255
@@ -41,7 +59,7 @@ Begin VB.Form FrmRegExp_Renamer
       Appearance      =   0  'Flat
       Caption         =   "&Save"
       Height          =   495
-      Left            =   10320
+      Left            =   11880
       TabIndex        =   9
       Top             =   600
       Width           =   855
@@ -52,7 +70,7 @@ Begin VB.Form FrmRegExp_Renamer
       Left            =   8400
       TabIndex        =   6
       Top             =   1800
-      Width           =   2775
+      Width           =   4335
       Begin VB.ListBox List_Matches 
          Appearance      =   0  'Flat
          Height          =   5880
@@ -61,17 +79,17 @@ Begin VB.Form FrmRegExp_Renamer
          List            =   "FrmRegExp_Renamer.frx":0002
          TabIndex        =   8
          Top             =   240
-         Width           =   2535
+         Width           =   4095
       End
       Begin VB.TextBox txt_Matches 
          BorderStyle     =   0  'None
          Height          =   5055
-         Left            =   120
+         Left            =   240
          MultiLine       =   -1  'True
          TabIndex        =   7
          Text            =   "FrmRegExp_Renamer.frx":0004
          Top             =   240
-         Width           =   2535
+         Width           =   3975
       End
    End
    Begin VB.ListBox List_log 
@@ -92,18 +110,27 @@ Begin VB.Form FrmRegExp_Renamer
       TabIndex        =   4
       Text            =   "<Drag some au3-file in here>"
       Top             =   120
-      Width           =   10095
+      Width           =   11655
    End
    Begin VB.TextBox txt_ReplaceString 
       Appearance      =   0  'Flat
       BorderStyle     =   0  'None
-      Height          =   1095
+      BeginProperty Font 
+         Name            =   "Courier New"
+         Size            =   8.25
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   975
       Left            =   120
       MultiLine       =   -1  'True
       TabIndex        =   3
       Text            =   "FrmRegExp_Renamer.frx":0030
       Top             =   600
-      Width           =   10095
+      Width           =   11655
    End
    Begin VB.Frame Frame1 
       Caption         =   "Preview"
@@ -118,23 +145,34 @@ Begin VB.Form FrmRegExp_Renamer
          Left            =   120
          MultiLine       =   -1  'True
          TabIndex        =   2
-         Text            =   "FrmRegExp_Renamer.frx":01AA
+         Tag             =   ">>>  Dear VB6-Dev: Please note that right behind me is another TextBox  <<<"
+         Text            =   "FrmRegExp_Renamer.frx":01AF
          Top             =   240
          Width           =   7935
       End
       Begin VB.TextBox txt_Original 
          BorderStyle     =   0  'None
-         Height          =   4215
+         Height          =   4815
          Left            =   120
          MultiLine       =   -1  'True
          TabIndex        =   1
-         Text            =   "FrmRegExp_Renamer.frx":01D2
+         Text            =   "FrmRegExp_Renamer.frx":0281
          Top             =   240
-         Width           =   3735
+         Width           =   7935
       End
    End
+   Begin VB.CommandButton cmd_Quit 
+      Cancel          =   -1  'True
+      Caption         =   "Quit"
+      Height          =   255
+      Left            =   12120
+      TabIndex        =   14
+      TabStop         =   0   'False
+      Top             =   120
+      Width           =   555
+   End
    Begin VB.Label Label1 
-      Caption         =   """<RegExpSearchstring>"" -> ""<ReplaceString>"" ; Comments"
+      Caption         =   """<RegExpSearchPattern(Variable)>"" -> ""<ReplaceString>"" ; Comments"
       Height          =   255
       Left            =   105
       TabIndex        =   13
@@ -149,7 +187,7 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
 Dim ScriptData As StringReader
-
+Const LOAD_SAVE_FILENAME$ = "myAutToExe_RegExpRenamerSearchPatter.txt"
 
 'Private Enum TSearchReplacePattern
    Const Pattern_Search& = 0
@@ -211,7 +249,30 @@ Private Sub cmd_help_Click()
    ShellExecute 0, "open", "Doc\regexp.htm", "", "", 0
 End Sub
 
+Private Sub cmd_Quit_Click()
+   Me.Hide
+End Sub
+
+Private Sub cmd_RegExpLoad_Click()
+   On Error Resume Next
+   
+   txt_ReplaceString = FileLoad(LOAD_SAVE_FILENAME)
+   If Err Then Log Err.Description
+   
+End Sub
+
+Private Sub cmd_RegExpSave_Click()
+   On Error Resume Next
+   
+   FileSave LOAD_SAVE_FILENAME, txt_ReplaceString
+   If Err Then Log Err.Description
+   
+End Sub
+
 Private Sub Cmd_Save_Click()
+
+   OpenAndFill FileName.FileName
+   
    ScriptData.Data = Apply(ScriptData.Data)
    
    Dim OutputFileName As New ClsFilename
@@ -219,15 +280,9 @@ Private Sub Cmd_Save_Click()
    OutputFileName.FileName = FileName.FileName
    OutputFileName.Name = OutputFileName.Name & "_Renamed"
    
-   Dim OutputFile As New FileStream
-   With OutputFile
-      .Create OutputFileName.FileName, True, False, False
-      .Position = 0
-      .FixedString(-1) = ScriptData.Data
-      .setEOF
-      .CloseFile
-   End With
-   
+   FileSave OutputFileName.FileName, _
+            DecodeUTF8(Mid(ScriptData.Data, 4))
+            
    txt_Original = ScriptData.Data
 
    
@@ -238,7 +293,7 @@ Private Sub Cmd_Test_Click()
 End Sub
 
 Private Sub Form_Load()
-   txt_FileName = "e:\intel2400\Programmierung\Projekte\AutToExe\!Test\CBS Bot (Chr Obfuscated)\1.93\LauncherGUI.au3"
+   'Txt_Filename = "!Test\CBS Bot (Chr Obfuscated)\1.93\LauncherGUI.au3"
 End Sub
 
 Private Sub List_Matches_Click()
@@ -322,7 +377,7 @@ Private Sub FindMatches(Data$, RE_Search$) ' As MatchCollection
 '      Dim SearchReplace_Matches As MatchCollection
       Set SearchReplace_Matches = .Execute(Data)
       
-      Log SearchReplace_Matches.Count & " matches found."
+      Log SearchReplace_Matches.count & " matches found."
 '      Set FindMatches = SearchReplace_Matches
     
     ' show Matches
@@ -330,13 +385,19 @@ Private Sub FindMatches(Data$, RE_Search$) ' As MatchCollection
       For Each Match In SearchReplace_Matches
          With Match
 '            txt_Matches = txt_Matches & vbCrLf & .value
-            List_Matches.AddItem .value
+            If .SubMatches.count <= 1 Then
+                List_Matches.AddItem Replace(.value, Match.SubMatches(0), "=>" & .SubMatches(0) & "<=")
+            
+            Else
+                List_Matches.AddItem .value
+            
+            End If
            
             
 '            On Error Resume Next
 '            txt_Original.SelStart = .FirstIndex
 '            txt_Original.SelLength = .Length
-'            DoEvents
+'            myDoEvents
             
          End With
          
@@ -387,7 +448,7 @@ End Function
 Public Sub RE_Replace_SplitMatches(Data$, SearchReplace_Matches As MatchCollection, ByRef Replace_FixData)
 
  ' Dim Array for splited Data
-   ReDim Replace_FixData((2 * SearchReplace_Matches.Count))
+   ReDim Replace_FixData((2 * SearchReplace_Matches.count))
 
    Dim StrReader As New StringReader
    With StrReader
@@ -401,7 +462,7 @@ Public Sub RE_Replace_SplitMatches(Data$, SearchReplace_Matches As MatchCollecti
       For Each Match In SearchReplace_Matches
         
         Dim MatchStart&, MatchLen&
-        If Match.SubMatches.Count = 0 Then
+        If Match.SubMatches.count = 0 Then
          ' No SubMatches so use normal match data
            MatchStart = Match.FirstIndex
            MatchLen = Match.Length
@@ -450,65 +511,90 @@ Private Sub DoSearchReplace(Data$, RE_Search$, RE_Replace$, Optional Comments = 
    Else
    
    
-      Dim Replace_FixData
-      RE_Replace_SplitMatches Data, SearchReplace_Matches, Replace_FixData
+'      Dim Replace_FixData
+'      RE_Replace_SplitMatches Data, SearchReplace_Matches, Replace_FixData
+'
+'      Dim VarCount&
+'      VarCount = 1
+'
+'    ' Note Replace_FixData is an Array that contains in
+'    ' the first field the match and in
+'    ' the next field the data between
+'    ' and so on
+'      Dim i
+'      For i = LBound(Replace_FixData) To UBound(Replace_FixData) - 1 Step 2
+'
+'
+'         Dim StrToReplace_Old$
+'         StrToReplace_Old = Replace_FixData(i + 1)
+'
+'       ' Make New String / Replace
+'         Dim StrToReplace_New$
+'         StrToReplace_New = RE_Replace & H16(VarCount)
+'
+'         Dim DupFinder As New Collection
+'         On Error Resume Next
+'
+'       ' Filter duplicates for StrToReplace_Old
+'         DupFinder.Add StrToReplace_New, StrToReplace_Old
+'         If Err = 0 Then
+'          ' Okay VarName is new and unique
+'            Inc VarCount
+'
+'         Else
+'          ' VarName already exists load existing
+'            StrToReplace_New = DupFinder(StrToReplace_Old)
+'         End If
+'
+'         Replace_FixData(i + 1) = StrToReplace_New
+'
+'
+'      Next
+'
+'     'Join/Make New String(with replacements applied)
+'      Data = Join(Replace_FixData, "")
+'
+''---------------------------------------------
       
-      Dim VarCount&
-      VarCount = 1
+      If SearchReplace_Matches.count = 0 Then Exit Sub
+      If SearchReplace_Matches(0).SubMatches.count = 0 Then
+         Dim ErrText$
+         ErrText = "ERROR! - There are SubMatches. Please put the NamePatter of the RegExpSearchPattern into round parentheses()."
+         txt_Replace = ErrText
+         Log ErrText
+         
+         Exit Sub
+      End If
       
-    ' Note Replace_FixData is an Array that contains in
-    ' the first field the match and in
-    ' the next field the data between
-    ' and so on
-      Dim i
-      For i = LBound(Replace_FixData) To UBound(Replace_FixData) - 1 Step 2
-         
-         
-         Dim StrToReplace_Old$
-         StrToReplace_Old = Replace_FixData(i + 1)
-         
-       ' Make New String / Replace
-         Dim StrToReplace_New$
-         StrToReplace_New = RE_Replace & H16(VarCount)
-               
-         Dim DupFinder As New Collection
-         On Error Resume Next
-         DupFinder.Add StrToReplace_New, StrToReplace_Old
-         If Err = 0 Then
-          ' Okay VarName is new and unique
-            Inc VarCount
-         Else
-          ' VarName already exists load existing
-            StrToReplace_New = DupFinder(StrToReplace_Old)
-         End If
-         
-         Replace_FixData(i + 1) = StrToReplace_New
+      
+      Dim DuplicatesFilter As New clsDuplicateFilter
+      DuplicatesFilter.Clear
    
-      
+   
+      Dim Match As Match
+      Dim VarCount&
+      VarCount = 0
+      GUIEvent_ProcessBegin SearchReplace_Matches.count
+   
+      For Each Match In SearchReplace_Matches
+         With Match
+            Dim SearchValue$
+            SearchValue = .SubMatches(0)
+            If DuplicatesFilter.IsUnique(SearchValue) Then
+               ReplaceDo Data, SearchValue, RE_Replace & H16(VarCount)
+               
+               GUIEvent_ProcessUpdate VarCount
+'               myDoEvents
+               
+               Inc VarCount
+            End If
+   
+         End With
+   
       Next
-      
-     'Join/Make New String(with replacements applied)
-      Data = Join(Replace_FixData, "")
-      
-      
-   '   Dim DuplicatesFilter As New clsDuplicateFilter
-   '   DuplicatesFilter.Clear
-   '
-   '
-   '   Dim Match As Match
-   '   Dim VarCount&
-   '   VarCount = 0
-   '
-   '   For Each Match In SearchReplace_Matches
-   '      With Match
-   '         If DuplicatesFilter.IsUnique(.value) Then
-   '            ReplaceDo Data, .value, RE_Replace & H16(VarCount)
-   '            Inc VarCount
-   '         End If
-   '
-   '      End With
-   '
-   '   Next
+   
+      GUIEvent_ProcessEnd
+   
    End If
    txt_Replace = Data
    
@@ -599,13 +685,13 @@ Apply_err:
 Select Case Err
    Case 0
    Case Else
-      Log "ERROR: " & Err.Description
+      Log "ERROR during DoSearchReplace(): " & Err.Description
 End Select
 
 End Function
 
 
-Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    On Error GoTo Txt_FileName_OLEDragDrop_err
    
    txt_FileName = Data.Files(1)

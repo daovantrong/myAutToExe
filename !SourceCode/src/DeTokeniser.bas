@@ -1,5 +1,8 @@
 Attribute VB_Name = "DeTokeniser"
 Option Explicit
+Public Const DETOKENISE_MAKER$ = "; DeTokenise by "
+#Const LineBreak_BeforeAndAfterFunctions = False
+
 Const AUTOIT_SourceCodeLine_MAXLEN& = 4096
 
 Const whiteSpaceTerminal$ = " "
@@ -31,6 +34,13 @@ Sub DeToken()
 '
 '      End If
       
+    ' Since that may be depend on the countrysettings...
+      Dim DecimalKomma$
+      Const Int64_TestValue As Currency = 1234.1234
+    ' ... get it!
+      DecimalKomma = Split(Int64_TestValue, "1234")(1)
+      
+      
       .Create FileName.FileName, False, False, True
       
       
@@ -56,9 +66,16 @@ Sub DeToken()
       
       FrmMain.List_Source.Clear
       FrmMain.List_Source.Visible = True
+      
+    ' ProgressBarInit
+      GUIEvent_ProcessBegin Lines
    
       Dim SourceCodeLine()
-      ReDim SourceCodeLine(0)
+      ArrayDelete SourceCodeLine
+      
+    ' Reset AddWhiteSpace on first item
+      Dim bWasLastAnOperator As Boolean
+      bWasLastAnOperator = True
       
       
       
@@ -123,15 +140,14 @@ Sub DeToken()
             Debug.Assert Cmd = 5
          
          Case &H10 To &H1F
-            Dim int64 As Currency
-            int64 = .int64Value
+            Dim Int64 As Currency
+            Int64 = .int64Value
             'int64 = H32(.longValue)
             'int64 = H32(.longValue) & int64
             'Replace 123,45 -> 12345
-            Atom = Replace(Replace(CStr(int64), ",", ""), ".", "")
-            
+            Atom = Replace(CStr(Int64), DecimalKomma, "")
             TypeName = "Int64"
-            FL_verbose TypeName & ": " & int64
+            FL_verbose TypeName & ": " & Int64
             
             Debug.Assert Cmd = &H10
          
@@ -142,7 +158,7 @@ Sub DeToken()
             Double_ = .DoubleValue
            
            'Replace 123,11 -> 123.11
-            Atom = Replace(CStr(Double_), ",", ".")
+            Atom = Replace(CStr(Double_), DecimalKomma, ".")
             
             TypeName = "64Bit-float"
             FL_verbose TypeName & ": " & Double_
@@ -156,6 +172,11 @@ Sub DeToken()
            'Get StrLength and load it
             size = .longValue
             FL_verbose "StringSize: " & H32(size)
+            
+            If size > (.Length - .Position) Then
+               Err.Raise vbObjectError, , "Invalid string size(bigger than the file)!"
+            End If
+            
             RawString = .FixedStringW(size)
            
            'XorDecode String
@@ -172,7 +193,7 @@ Sub DeToken()
                tmpBuff(pos + 1) = tmpBuff(pos + 1) Xor XorKey_h
 '               DecodeString = tmpBuff
                
-               'If 0 = (pos Mod &H8000) Then DoEvents
+               'If 0 = (pos Mod &H8000) Then myDoEvents
             Next
             
             DecodeString = tmpBuff
@@ -196,12 +217,13 @@ Sub DeToken()
                Atom = DecodeString
                bAddWhiteSpace = True
               
-              'LineBreak after and before 'Functions'
-               If Atom = "ENDFUNC" Then
-                  Atom = Atom & vbCrLf
-               ElseIf Atom = "FUNC" Then
-                  Atom = vbCrLf & Atom
-               End If
+               #If LineBreak_BeforeAndAfterFunctions Then
+                  If Atom = "ENDFUNC" Then
+                     Atom = Atom & vbCrLf
+                  ElseIf Atom = "FUNC" Then
+                     Atom = vbCrLf & Atom
+                  End If
+               #End If
 
             
             Case &H31 'FunctionCall with params
@@ -319,7 +341,9 @@ Sub DeToken()
                SourceCodeLine_Len - AUTOIT_SourceCodeLine_MAXLEN & " chars longer than " & _
                AUTOIT_SourceCodeLine_MAXLEN & " - Please remove some spaces manually to make it shorter."
             End If
-          
+
+          ' Processbar update
+            GUIEvent_ProcessUpdate SourceCodeLineCount
           
           ' Add SourceCodeLine to SourceCode
             SourceCode(SourceCodeLineCount) = SourceCodeLineFinal
@@ -330,7 +354,6 @@ Sub DeToken()
             If bVerbose Then Frm_SrcEdit.LineBreak
            
           ' Reset AddWhiteSpace on next item
-            Dim bWasLastAnOperator As Boolean
             bWasLastAnOperator = True
             DelayedReturn False
            
@@ -386,13 +409,27 @@ Err.Clear
 DeToken_Err:
 Select Case Err
    Case 0
+   Case ERR_CANCEL_ALL
+      ErrThrowSimple
+   
    Case Else
+     
+     Dim ErrSourceCodeLine$
+     ErrSourceCodeLine = Join(SourceCodeLine, whiteSpaceTerminal)
+     
      Dim ErrText$
      ErrText = "ERROR: " & Err.Description & vbCrLf & _
       "FileOffset: " & H32(.Position) & vbCrLf & _
-      "when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & Join(SourceCodeLine, whiteSpaceTerminal)
+      "when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & ErrSourceCodeLine
      Log ErrText
      MsgBox ErrText, vbCritical, "Unexpected Error during detokenising"
+     
+    'Set incomplete SourceCodeLine
+     SourceCode(SourceCodeLineCount) = ErrSourceCodeLine & " <- " & ErrText
+     Inc SourceCodeLineCount
+
+    'Cut down SourceCodeArray to Error
+     ReDim Preserve SourceCode(SourceCodeLineCount)
      
      Resume DeToken_Finally
 End Select
@@ -400,6 +437,8 @@ DeToken_Finally:
    .CloseFile
   End With
     
+' ProgressBar Finish
+  GUIEvent_ProcessEnd
   
   If FrmMain.Chk_TmpFile = vbUnchecked Then
      Log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
@@ -411,7 +450,8 @@ DeToken_Finally:
   
 '   If bUnicodeEnable Then
       Dim ScriptData$
-      ScriptData = Join(SourceCode, vbCrLf)
+      ScriptData = Join(SourceCode, vbCrLf) & vbCrLf & _
+                  DETOKENISE_MAKER & FrmMain.Caption & vbCrLf
 
 '      Dim FileName_UTF16 As New ClsFilename
 '      FileName_UTF16.FileName = FileName.FileName
@@ -428,7 +468,7 @@ DeToken_Finally:
 '   End If
   
   FrmMain.Log "Converting Unicode to UTF8, since Tidy don't support unicode."
-  SaveScriptData UTF8_BOM & EncodeUTF8(ScriptData)
+  SaveScriptData UTF8_BOM & EncodeUTF8(ScriptData), True
    
   Log "Token expansion succeed."
    

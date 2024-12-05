@@ -14,7 +14,7 @@ Begin VB.Form FrmFuncRename
       Height          =   495
       Left            =   9360
       Style           =   1  'Graphical
-      TabIndex        =   27
+      TabIndex        =   7
       Top             =   645
       Width           =   855
    End
@@ -22,7 +22,7 @@ Begin VB.Form FrmFuncRename
       Appearance      =   0  'Flat
       Height          =   4515
       Left            =   0
-      TabIndex        =   26
+      TabIndex        =   27
       Top             =   4560
       Width           =   1695
    End
@@ -30,7 +30,7 @@ Begin VB.Form FrmFuncRename
       Caption         =   "AutoAdd"
       Height          =   375
       Left            =   0
-      TabIndex        =   25
+      TabIndex        =   26
       Top             =   1800
       Width           =   1575
    End
@@ -38,14 +38,14 @@ Begin VB.Form FrmFuncRename
       BorderStyle     =   0  'None
       Height          =   345
       Left            =   6000
-      TabIndex        =   21
+      TabIndex        =   22
       Top             =   4200
       Width           =   6255
       Begin VB.TextBox Txt_SearchSync 
          Appearance      =   0  'Flat
          Height          =   285
          Left            =   0
-         TabIndex        =   23
+         TabIndex        =   24
          Text            =   "Select below some text to search for"
          Top             =   0
          Width           =   2775
@@ -54,7 +54,7 @@ Begin VB.Form FrmFuncRename
          Caption         =   "Find n&ext"
          Height          =   255
          Left            =   2880
-         TabIndex        =   22
+         TabIndex        =   23
          Top             =   0
          Visible         =   0   'False
          Width           =   975
@@ -74,7 +74,7 @@ Begin VB.Form FrmFuncRename
          ForeColor       =   &H000000C0&
          Height          =   240
          Left            =   3960
-         TabIndex        =   24
+         TabIndex        =   25
          Top             =   0
          Width           =   2235
       End
@@ -83,14 +83,14 @@ Begin VB.Form FrmFuncRename
       BorderStyle     =   0  'None
       Height          =   450
       Left            =   0
-      TabIndex        =   17
+      TabIndex        =   18
       Top             =   4080
       Width           =   6015
       Begin VB.TextBox Txt_SearchSync_Org 
          Appearance      =   0  'Flat
          Height          =   285
          Left            =   0
-         TabIndex        =   19
+         TabIndex        =   20
          Text            =   "Select below some text to search for"
          Top             =   120
          Width           =   2775
@@ -99,7 +99,7 @@ Begin VB.Form FrmFuncRename
          Caption         =   "Find &next"
          Height          =   255
          Left            =   2805
-         TabIndex        =   18
+         TabIndex        =   19
          Top             =   120
          Visible         =   0   'False
          Width           =   975
@@ -119,7 +119,7 @@ Begin VB.Form FrmFuncRename
          ForeColor       =   &H000000C0&
          Height          =   240
          Left            =   3840
-         TabIndex        =   20
+         TabIndex        =   21
          Top             =   120
          Width           =   2235
       End
@@ -127,7 +127,7 @@ Begin VB.Form FrmFuncRename
    Begin VB.TextBox Txt_Include 
       Height          =   285
       Left            =   10320
-      TabIndex        =   16
+      TabIndex        =   17
       Text            =   "Txt_Include"
       Top             =   1800
       Width           =   2175
@@ -136,7 +136,7 @@ Begin VB.Form FrmFuncRename
       Caption         =   "v  &Remove func assignment  v"
       Height          =   375
       Left            =   5040
-      TabIndex        =   11
+      TabIndex        =   12
       Top             =   1800
       Width           =   2895
    End
@@ -162,7 +162,7 @@ Begin VB.Form FrmFuncRename
       Caption         =   "^&Add func search 'n' replace^"
       Height          =   375
       Left            =   1560
-      TabIndex        =   10
+      TabIndex        =   11
       ToolTipText     =   "Short cut: double click or 'Enter'"
       Top             =   1800
       Width           =   3375
@@ -173,7 +173,7 @@ Begin VB.Form FrmFuncRename
       Left            =   5160
       MultiLine       =   -1  'True
       ScrollBars      =   3  'Both
-      TabIndex        =   15
+      TabIndex        =   16
       Text            =   "FrmFuncRename.frx":0000
       Top             =   4560
       Width           =   5535
@@ -182,7 +182,7 @@ Begin VB.Form FrmFuncRename
       Appearance      =   0  'Flat
       Height          =   1785
       Left            =   5040
-      TabIndex        =   13
+      TabIndex        =   14
       Top             =   2280
       Width           =   4815
    End
@@ -220,7 +220,7 @@ Begin VB.Form FrmFuncRename
       Left            =   1680
       MultiLine       =   -1  'True
       ScrollBars      =   3  'Both
-      TabIndex        =   14
+      TabIndex        =   15
       Text            =   "FrmFuncRename.frx":000D
       Top             =   4560
       Width           =   3255
@@ -229,7 +229,7 @@ Begin VB.Form FrmFuncRename
       Appearance      =   0  'Flat
       Height          =   1785
       Left            =   0
-      TabIndex        =   12
+      TabIndex        =   13
       Top             =   2280
       Width           =   4815
    End
@@ -255,7 +255,7 @@ Begin VB.Form FrmFuncRename
       Caption         =   "&Save"
       Height          =   615
       Left            =   7080
-      TabIndex        =   7
+      TabIndex        =   8
       Top             =   1125
       Width           =   855
    End
@@ -263,7 +263,7 @@ Begin VB.Form FrmFuncRename
       Caption         =   "&Load"
       Height          =   615
       Left            =   7920
-      TabIndex        =   8
+      TabIndex        =   9
       Top             =   1125
       Width           =   735
    End
@@ -271,9 +271,19 @@ Begin VB.Form FrmFuncRename
       Caption         =   "Help"
       Height          =   615
       Left            =   8640
-      TabIndex        =   9
+      TabIndex        =   10
       Top             =   1125
       Width           =   735
+   End
+   Begin VB.CommandButton cmd_Quit 
+      Cancel          =   -1  'True
+      Caption         =   "Quit"
+      Height          =   255
+      Left            =   11880
+      TabIndex        =   28
+      TabStop         =   0   'False
+      Top             =   10
+      Width           =   555
    End
    Begin VB.Line Line 
       BorderWidth     =   3
@@ -308,9 +318,9 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
-'Private File_Org As New FileStream
-'Private File_Inc As New FileStream
-
+'Limit for occurence to search for
+Const FIND_OCCURENCE_MAX& = 30
+Const FILENAME_SEARCH_REPLACE_DATA$ = "myAutToExe_SearchReplaceData.txt"
 Private File_Org_FileName As New ClsFilename
 
 Private Script_Org As New StringReader
@@ -383,13 +393,8 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
    Dim myRegEx As New RegExp
    
  ' Open file
-   Dim File_Org As New FileStream
    Dim SearchAndReplBuff$
-   With File_Org
-      .Create File_Org_FileName.FileName, False, False
-      SearchAndReplBuff = .FixedString(-1)
-      .CloseFile
-   End With
+   SearchAndReplBuff = FileLoad(File_Org_FileName.FileName)
    
  ' Search and Replace
    Dim SearchAndReplaceJob_Line$
@@ -400,6 +405,7 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
    Dim MousePointer_Backup%
    MousePointer_Backup = MousePointer
    MousePointer = vbHourglass
+   FrmMain.Show
 
    Dim KeepFunctions As Boolean
    KeepFunctions = (Chk_DontDeleteFunctions = vbChecked)
@@ -420,7 +426,7 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
       
        ' Delete Function (& insert include)
          Dim FunctionBody_ReplaceText$
-         FunctionBody_ReplaceText = IIf(KeepFunctions, "", ";  ") & _
+         FunctionBody_ReplaceText = vbCrLf & IIf(KeepFunctions, "", ";  ") & _
                                     "Func " & SearchAndReplace_ReplaceWith
          
          If SearchAndReplace_Include <> "" Then
@@ -452,13 +458,11 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
          With myRegEx
             If KeepFunctions = False Then
                   
-               myRegEx.Pattern = RE_NewLine & RE_NewLine & _
-                                    RE_WSpace("Func", SearchAndReplace_LookFor) & _
+               myRegEx.Pattern = RE_WSpace("", "Func", SearchAndReplace_LookFor) & _
                                        RE_AnyCharsNL & _
-                                    "EndFunc" & RE_AnyChars & _
-                                 RE_NewLine
+                                    "EndFunc" & RE_AnyChars
             Else
-               myRegEx.Pattern = RE_WSpace("Func", SearchAndReplace_LookFor)
+               myRegEx.Pattern = RE_WSpace("", "Func", SearchAndReplace_LookFor)
             
             End If
                           
@@ -482,21 +486,19 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
    End With
    
    
-   MousePointer = MousePointer_Backup
 '   Cmd_DoSearchAndReplace.Enabled = False
    
  
  
  
  ' save file
-   Dim File_Org_Save As New FileStream
-   With File_Org_Save
-      .Create File_Org_FileName.Path & File_Org_FileName.Name & "_FuncRenamed.au3", True, False, False
-      .FixedString(-1) = SearchAndReplBuff
-      Log "Search&Replace complete.  Output File: " & .FileName
-      .CloseFile
-   End With
+   Dim FileName_Org_Save$
+   FileName_Org_Save = File_Org_FileName.Path & File_Org_FileName.Name & "_Func" & _
+                                       IIf(KeepFunctions, "Keeped", "Renamed") & _
+                                       ".au3"
    
+   FileSave FileName_Org_Save, SearchAndReplBuff
+   Log "Search&Replace complete.  Output File: " & FileName_Org_Save
   
 
 
@@ -510,19 +512,18 @@ Select Case Err
 
 End Select
 
+   MousePointer = MousePointer_Backup
+   Me.Show
+
+
 End Sub
 
 
 Private Sub OpenAndFill(FileName$, ScriptData As StringReader, FuncList, List_Func As Listbox)
-' Open RightFile
-   Dim InputFile As New FileStream
-   With InputFile
-      .Create FileName, False, False, True
-      ScriptData.Data = .FixedString(-1)
-      .CloseFile
-   End With
+ ' Open RightFile
+   ScriptData.Data = FileLoad(FileName)
    
-'Seperate functions
+ ' Seperate functions
 '   Txt_Fn_Org = ScriptData.Data
 
    FuncList = Split(ScriptData.Data, vbCrLf & "Func ", , vbTextCompare)
@@ -549,6 +550,10 @@ Private Sub Cmd_AddSearchAndReplace_Click()
 End Sub
 
 
+
+Private Sub cmd_Quit_Click()
+   Me.Hide
+End Sub
 
 Private Sub Cmd_Remove_assign_Click()
    SearchAndReplace_RemoveItems
@@ -596,22 +601,22 @@ End Sub
 ' Purpose   :
 '---------------------------------------------------------------------------------------
 '
+
+
+
 Private Sub LoadSearchReplaceData()
    
 'Load Data
    Dim Textlines
-   Dim myfile As New FileStream
-   
-   
-
 On Error GoTo LoadSearchReplaceData_Err
-
-   With myfile
-   .Create "SearchReplaceData.txt", False, False, True
-      Textlines = Split(.FixedString(-1), vbCrLf)
-   .CloseFile
-   End With
    
+   Dim LoadFileName As New ClsFilename
+   With LoadFileName
+      .FileName = Txt_Fn_Org_FileName
+      .NameWithExt = FILENAME_SEARCH_REPLACE_DATA
+      Textlines = Split(FileLoad(.FileName), vbCrLf)
+   End With
+
    With List_Fn_Assigned
 
 'seperate Org & Inc Functions
@@ -697,6 +702,9 @@ LoadSearchReplaceData_Err:
 Select Case Err
    Case 0
 
+   Case ERR_CANCEL_ALL
+      Log "Load list canceled by user !"
+      
    Case Else
       MsgBox Err.Description, vbCritical, "Error " & Hex(Err.Number) & "  in Formular FrmFuncRename.LoadSearchReplaceData()"
 
@@ -709,15 +717,13 @@ Private Sub Cmd_Save_Click()
    SaveSearchReplaceData
 End Sub
 Private Sub SaveSearchReplaceData()
-   Dim myfile As New FileStream
-   
-
 On Error GoTo SaveSearchReplaceData_Err
+   Dim SaveFileName As New ClsFilename
+   With SaveFileName
+      .FileName = Txt_Fn_Org_FileName
+      .NameWithExt = FILENAME_SEARCH_REPLACE_DATA
 
-   With myfile
-   .Create "SearchReplaceData.txt", True
-      .FixedString(-1) = GetListBoxData(List_Fn_Assigned)
-   .CloseFile
+      FileSave .FileName, GetListBoxData(List_Fn_Assigned)
    End With
 
 Err.Clear
@@ -764,6 +770,10 @@ Private Function GetListBoxData$(Listbox As Listbox)
    GetListBoxData = LogData.value
    
 End Function
+
+Private Sub Command1_Click()
+
+End Sub
 
 Private Sub File_Includes_Click()
    Dim tmpFileName$
@@ -892,8 +902,8 @@ End Sub
 Private Sub List_Fn_String_Org_Fill()
    List_Fn_String_Org.Clear
  
-   Dim Matches As MatchCollection
-   GetStrings Txt_Fn_Org, Matches
+   Dim matches As MatchCollection
+   GetStrings Txt_Fn_Org, matches
    
    
    Dim ItemStringMaxLength&: ItemStringMaxLength = 0
@@ -901,7 +911,7 @@ Private Sub List_Fn_String_Org_Fill()
    
    
    Dim item As Match
-   For Each item In Matches
+   For Each item In matches
       
       If ItemStringMaxLength < Len(item) Then
             ItemStringMaxLength = Len(item)
@@ -1013,10 +1023,14 @@ End Sub
 '
 'End Sub
 
-Private Sub GetStrings(Textbox As Textbox, Matches As MatchCollection) 'Strings As Variant)
+Private Sub GetStrings(Textbox As Textbox, matches As MatchCollection) 'Strings As Variant)
    
    RemoveComments Textbox
-     
+   
+ ' Cut out function
+'  Note: This will give wrong result if there is a string like "blah EndFunc" - however this is unlikely to happen
+   Textbox = Left(Textbox.Text, 6 + InStrRev(Textbox.Text, "EndFunc"))
+   
    Dim myRegExp As New RegExp
    With myRegExp 'New RegExp
       .Global = True
@@ -1025,20 +1039,20 @@ Private Sub GetStrings(Textbox As Textbox, Matches As MatchCollection) 'Strings 
       .Pattern = "(([""']).*?\2)+"
       
 '      Dim Matches As MatchCollection
-      Set Matches = .Execute(Textbox.Text)
+      Set matches = .Execute(Textbox.Text)
       
 
    End With
 End Sub
 Private Sub RemoveComments(Textbox As Textbox) 'Strings As Variant)
    
-   Const StringBody_SingleQuoted As String = "[^']*"
-   Const String_SingleQuoted = "(?:'" & StringBody_SingleQuoted & "')+"
-
-   Const StringBody_DoubleQuoted As String = "[^""]*"
-   Const String_DoubleQuoted As String = "(?:""" & StringBody_DoubleQuoted & """)+"
-   
-   Const StringPattern As String = String_DoubleQuoted & "|" & String_SingleQuoted
+'   Const StringBody_SingleQuoted As String = "[^']*"
+'   Const String_SingleQuoted = "(?:'" & StringBody_SingleQuoted & "')+"
+'
+'   Const StringBody_DoubleQuoted As String = "[^""]*"
+'   Const String_DoubleQuoted As String = "(?:""" & StringBody_DoubleQuoted & """)+"
+'
+'   Const StringPattern As String = String_DoubleQuoted & "|" & String_SingleQuoted
   ' /r => carriage return @CR, chr(13)   -   /n => linefeed        @LF, chr(10)
   ' 2 - in Windows it's @CR@LF        -   1 - in Linux/Unix it's just @LF
   ' 0 - at the end of the file there is none of these
@@ -1047,7 +1061,7 @@ Private Sub RemoveComments(Textbox As Textbox) 'Strings As Variant)
 ' LineComment_EntiredLine should include the LineBreak in the match -> so whole line
   ' can be deleted - while at 'NotEntiredLineComments' the line break is keept as it is.
   ' BlockCommentEnd is in there for the case there's a line like this: " #ce ;some comment"
-   Const LineComment As String = RE_NewLine & WhiteSpaces & ";[^\r\n]*"
+   Const LineComment As String = "(?:" & RE_NewLine & WhiteSpaces & ")?" & ";[^\r\n]*"
    
 
    Const BlockCommentStart As String = RE_NewLine & WhiteSpaces & "\#c(?:s|omments-start)"
@@ -1140,10 +1154,13 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
          Log "Rejected - function argument differ:" & Logtmp
          Exit Function
       End If
-      If vbYes <> MsgBox("Number of argument of both function differs( " & numArgOrg & " <> " & numArgInc & " )." & vbCrLf & _
+      If vbNo = MsgBox("Number of argument of both function differs( " & numArgOrg & " <> " & numArgInc & " )." & vbCrLf & _
                          "Add them anyway?", vbQuestion + vbYesNoCancel + vbDefaultButton2, "Attention") Then
          Log "Rejected by user function argument differ" & Logtmp
          Exit Function
+      ElseIf vbCancel Then
+         Err.Raise ERR_CANCEL_ALL
+         
       End If
    End If
    
@@ -1180,6 +1197,9 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
 '      If vbNo = MsgBox("Local strings don't match continue anyway?", vbYesNo + vbDefaultButton2) Then
          Exit Function
       ElseIf result = Result_True Then
+      ElseIf result = Result_Undefined Then
+         Err.Raise ERR_CANCEL_ALL
+      
       Else
 '         Stop
          Exit Function
@@ -1312,7 +1332,7 @@ Select Case Err
 End Select
 End Sub
 
-Private Sub Txt_Fn_Inc_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Txt_Fn_Inc_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    On Error GoTo Txt_Fn_Inc_FileName_OLEDragDrop_err
    
    Txt_Fn_Inc_FileName = Data.Files(1)
@@ -1334,17 +1354,17 @@ End Sub
 Private Sub Txt_Fn_Inc_KeyUp(KeyCode As Integer, Shift As Integer)
    Send_TxtFn_Inc_TO_Txt_SearchSync
 End Sub
-Private Sub Txt_Fn_Inc_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Txt_Fn_Inc_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
    Send_TxtFn_Inc_TO_Txt_SearchSync
 End Sub
 
-Private Function GetNumOccurrenceIn&(SearchText$, FindStr$)
+Private Function GetNumOccurrenceIn&(SearchText$, FindStr$, Optional MaxOccurrence& = &H7FFFFFFF)
    Do
       Dim FoundPos&
       FoundPos = InStr(FoundPos + 1, SearchText, FindStr, vbTextCompare)
       If FoundPos = 0 Then Exit Do
       Inc GetNumOccurrenceIn
-   Loop While FoundPos
+   Loop While FoundPos And (GetNumOccurrenceIn < MaxOccurrence)
    
 End Function
 
@@ -1370,7 +1390,7 @@ Private Sub Txt_Fn_Org_FileName_Change()
 
 End Sub
 
-Private Sub Txt_Fn_Org_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Txt_Fn_Org_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
    On Error GoTo Txt_Fn_Org_FileName_OLEDragDrop_err
    
    Txt_Fn_Org_FileName = Data.Files(1)
@@ -1389,7 +1409,7 @@ End Select
 End Sub
 
 
-Private Sub Txt_Fn_Org_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Txt_Fn_Org_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
    If Txt_Fn_Org.SelStart Then
       Txt_Fn_Org.SetFocus
    End If
@@ -1429,7 +1449,7 @@ Private Sub SeekToSearchString(SearchText$, FnList As Listbox, FnData As Textbox
 End Sub
 
 
-Private Sub Txt_Fn_Org_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+Private Sub Txt_Fn_Org_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
    Send_TxtFn_Org_TO_Txt_SearchSync
 End Sub
 
@@ -1493,7 +1513,7 @@ Private Sub SearchSync(SearchText$, FuncList, Fn_List As Listbox, Fn_Data As Tex
       SearchBuffer.ConcatVariant FuncList(Fn_List.ItemData(item))
    Next
    
-   NumOccurrenceFound = GetNumOccurrenceIn(SearchBuffer.value, SearchText)
+   NumOccurrenceFound = GetNumOccurrenceIn(SearchBuffer.value, SearchText, FIND_OCCURENCE_MAX)
    
    FindNext.Visible = (NumOccurrenceFound > 1)
    
@@ -1503,9 +1523,12 @@ Private Sub SearchSync(SearchText$, FuncList, Fn_List As Listbox, Fn_Data As Tex
    ElseIf NumOccurrenceFound = 1 Then
       Status = "found."
       SeekToSearchString SearchText, Fn_List, Fn_Data
-   Else
+   ElseIf NumOccurrenceFound < FIND_OCCURENCE_MAX Then
       Status = "found at " & NumOccurrenceFound & " locations."
       SeekToSearchString SearchText, Fn_List, Fn_Data
+   Else
+      Status = "" & NumOccurrenceFound & " and more items !!!"
+
    End If
    
 End Sub

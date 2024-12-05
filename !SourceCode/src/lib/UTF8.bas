@@ -25,8 +25,8 @@ Private Declare Function WideCharToMultiByte Lib "kernel32" (ByVal CodePage As L
 Public Function DecodeUTF8(ByVal sValue As String) As String
 
   If Len(sValue) = 0 Then Exit Function
-  DecodeUTF8 = WToA(sValue, CP_ACP)
-  DecodeUTF8 = AToW(DecodeUTF8, CP_UTF8)
+'  DecodeUTF8 = WToA(StrConv(sValue, vbUnicode), CP_ACP)
+  DecodeUTF8 = AToW(StrConv(sValue, vbFromUnicode), CP_UTF8)
 
 End Function
 
