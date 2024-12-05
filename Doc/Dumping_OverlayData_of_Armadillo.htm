@@ -1,0 +1,566 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 11 (filtered)">
+<title>Dumping AutoIT overlay data of Armadillo/Themida with ollydebug</title>
+<style>
+<!--
+ /* Font Definitions */
+ @font-face
+	{font-family:Wingdings;
+	panose-1:5 0 0 0 0 0 0 0 0 0;}
+@font-face
+	{font-family:Tahoma;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+@font-face
+	{font-family:Verdana;
+	panose-1:2 11 6 4 3 5 4 4 2 4;}
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:10.0pt;
+	font-family:Verdana;}
+h1
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:Arial;}
+h2
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-style:italic;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.remarks, li.remarks, div.remarks
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:8.0pt;
+	font-family:Verdana;
+	color:gray;}
+p.comments, li.comments, div.comments
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	background:#F3F3F3;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+p.strings, li.strings, div.strings
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	background:#F3F3F3;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+p.keywords, li.keywords, div.keywords
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	background:#F3F3F3;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	color:blue;}
+p.literals, li.literals, div.literals
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	background:#F3F3F3;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+span.stringszchn
+	{font-family:"Courier New";}
+span.keywordszchn
+	{font-family:"Courier New";
+	color:blue;}
+span.literalszchn
+	{font-family:"Courier New";}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=DE link=blue vlink=purple>
+
+<div class=Section1>
+
+<h1><span lang=EN-GB>What Armadillo and Themida does</span></h1>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>A compiled AutoIT exe consists of two
+parts: the ‘real Exe’ or the interpreter part aka Aut2Exe\AutoItSC.bin and the
+compiled script, that is a normal *.a3x that was just attached to this
+‘Aut2Exe\AutoItSC.bin’. Packer like UPX just compresses the
+‘Aut2Exe\AutoItSC.bin’ part, but must leave the attached *.a3x(sometimes also
+called overlay data) untouched. Armadillo also compress/encrypt the *.a3x part
+so how that is possible?<br>
+<br>
+Well it hooks(intersects) the APIs(=functions window provides to very program)
+Aut2Exe\AutoItSC.bin normally use from Windows to load the attached *.a3x. In
+detail these are the APIs CreateFile, ReadFile, SetFilePointer and CloseFile
+from Kernel32.dll. </span></p>
+
+<p class=MsoNormal><span lang=EN-GB>So how this plays together? </span></p>
+
+<p class=MsoNormal><span lang=EN-GB>1. The Armadillo hook on CreateFile checks
+if the exe opens it self and if that is the case it memorise this file handle
+(= some ID Windows gives you when you open a file) that is used by the ReadFile
+hook on determine if AutoIt reads from the exe. &nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>2. The ReadFile hook checks -in cause the
+exe is opened it self- the position AutoIT likes to read from. When it reads
+above the end of the Autoit-exe on the disk, it just decrypts/decompress the
+*.a3x data in memory and streams it into the return of read file.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>3. The interpreter part receives the
+uncompressed *.a3x data just as normal an can process…</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Furthermore Armadillo also hooks
+SetFilePointer to keep track of possible changes in the start position for
+readfile and closeFile is hooked to know when read is finished(=close) and it
+can discard the file handle.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-GB
+style='font-family:Tahoma'>Fortunately this data lays in memory in one piece so
+we can easy dump it with ollydebug or winhex.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<h3><span lang=EN-GB>Identifying Armadillo:</span></h3>
+
+<p class=MsoNormal><span lang=EN-GB>Look for the string “.pdata” at the start
+of a File:</span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img width=642 height=254
+src="img_dumping/image011.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Note: ‘.pdata’ as PE-Section is also common
+for normal 64-bit exe so that is just a weak mark</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Look for the String “PDATA000”</span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img width=642 height=214
+src="img_dumping/image012.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Armadillo uses that to mark its
+protected/packed data.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<h3><span lang=EN-GB>Identifying Themida/WinLicense:</span></h3>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Look for „WinLicen“ in the Exe header</span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img width=643 height=207
+src="img_dumping/image013.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Of course that can be easy change – there
+are better ways of detect for ex. the program PEiD.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>However so far to that part. </span><span
+lang=EN-GB style='font-family:Wingdings'>J</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<h1><span lang=EN-GB>Dumping OverlayData of Armadillo/Themida with Winhex</span></h1>
+
+<p class=MsoNormal><span class=MsoHyperlink><a
+href="http://free.pages.at/pepspace/Winhex_15.4.7z"><i><span lang=EN-GB
+style='font-size:8.0pt'>http://free.pages.at/pepspace/Winhex_15.4.7z</span></i></a></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Dump with Winhex only works if the app
+stays open and don’t quit right after it was started.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>1. When the app is running start Winhex.
+Press alt+F9 to bring up the RAM tab.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>open the entired RAM of the process(in case
+there are two the one with the higher PID)</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>2. press ctrl+PageDown to go to the very
+end of the RAM. Press ctrl+F to bring up the Text search dialog and enter
+“EA06” and as direction search “upwards”. </span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>3. Press Alt+2 to mark the end of the
+selection as you see in the screenshot</span></p>
+
+<p class=MsoNormal><img border=0 width=605 height=357
+src="img_dumping/image008.jpg"></p>
+
+<p class=MsoNormal><span lang=EN-GB>Press F3 to find next EA06. From ‘EA06’ got
+back 16(=0x10) Byte to include normal AutoIt signature that looks like this:<br>
+<span style='color:#BFBFBF'>0003DBF0 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+00 00 ................<br>
+</span></span><span lang=PT-BR>0003DC00 A3 48 4B BE 98 6C 4A A9 99 4C 53 0A 86
+D6 48 7D £HK¾˜lJ©™LS.†ÖH}<br>
+0003DC10 41 55 33 21 45 41 30 36 AB 99 D0 DE 88 5E 49 DF AU3!EA06«™ÐÞˆ^Iß</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>There press Alt+1 the mark the beginning of
+the selection.</span></p>
+
+<p class=MsoNormal><img border=0 width=605 height=357
+src="img_dumping/image009.jpg"></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>4.Press ctrl+shift+n to save the selection
+to a new file. Name it ‘dump.a3x’ and you should be able to run it with AutoIT
+if you have installed it (and associated it with *.a3x files)</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span lang=EN-GB>Or use that
+script: </span></p>
+
+<p class=MsoNormal style='text-autospace:none'><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>///////////////////////////////////////////////////////////////////</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>// Winhex Template
+File</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>//</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>// Purpose: Extract
+Compiled AutoIT Script data from and AutoIT exe</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>// Usage: (Copy this
+script in Winhex and name it ‘AutoItExtract-EA06.whs’)</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Run Winhex RAM-Edit(Alt+F9) and select the running AutoIT-exe,<br>
+//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;[select entire Memory]</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>//&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Press Enter to bring up StartupCenter and run script from there</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>//</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>// Download regged
+Winhex: http://free.pages.at/pepspace/Winhex_15.4.7z</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>// Move to EOF</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; <span class=keywordszchn>Assign</span>
+EOF GetSize</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; <span class=keywordszchn>Dec</span>
+EOF</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; <span class=keywordszchn>Goto</span>
+EOF</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>// Find upwards &amp;
+mark end</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; <span class=keywordszchn>Find</span>
+<span class=stringszchn><span style='color:gray'>&quot;EA06&quot;</span></span>
+Up</span></p>
+
+<p class=keywords><span lang=EN-GB>&nbsp;&nbsp; </span><span lang=EN-GB
+style='color:red'>IfFound</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; </span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;&nbsp; //
+Include match (CurrentPos+3)</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+class=keywordszchn>Assign</span> a3x_End CurrentPos</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+class=keywordszchn>Assign</span> a3x_End (a3x_End+<span class=literalszchn><span
+style='color:#FF6600'>3</span></span>)</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;&nbsp; // Find
+upwards &amp; mark start</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+class=keywordszchn>Find</span> <span class=stringszchn><span style='color:gray'>&quot;EA06&quot;
+</span></span>Up</span></p>
+
+<p class=keywords><span lang=EN-GB>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
+lang=EN-GB style='color:red'>IfFound</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// Move to AutoIT Header begin(CurrentPos-0x14)</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span class=keywordszchn>Assign</span> a3x_Start CurrentPos</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span class=keywordszchn>Assign</span> a3x_Start (a3x_Start-<span
+class=literalszchn><span style='color:#FF6600'>0x14</span></span>)</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// MarkBlock</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span class=keywordszchn>Block1</span> a3x_Start</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span class=keywordszchn>Block2</span> a3x_End</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=comments><span lang=EN-GB style='color:#339966'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+// Save to AutoIt Exec File</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span class=keywordszchn>CopyIntoNewFile</span> <span class=stringszchn><span
+style='color:gray'>&quot;myDumped.a3x&quot;</span></span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style='color:red'>Else</span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span class=keywordszchn>MessageBox</span> <span class=stringszchn><span
+style='color:gray'>&quot;Error: Second EA06-Marker not found!&quot;</span></span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span
+style='color:red'>EndIf</span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; <span style='color:red'>Else</span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;<span
+class=keywordszchn>MessageBox</span> <span class=stringszchn><span
+style='color:gray'>&quot;Error: First EA06-Marker not found!&quot;</span></span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB
+style='font-family:"Courier New"'>&nbsp;&nbsp; <span style='color:red'>EndIf</span></span></p>
+
+<p class=MsoNormal style='background:#F3F3F3'><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>However it’s important to know how to do it
+without script and the idea/concepts behind. Also imagine that script will do
+it some malicious user ‘hacks’ the AutoIT Script so that there is no ‘EA06’. :)</span></p>
+
+<h1><span lang=EN-GB>&nbsp;</span></h1>
+
+<h1><span lang=EN-GB>…and with Olly Debug</span></h1>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><i><span lang=EN-GB style='font-size:8.0pt'>RE-Pack with
+ollydbg &amp; winhex</span></i></p>
+
+<p class=MsoNormal><i><span lang=EN-GB style='font-size:8.0pt'><a
+href="http://free.pages.at/pepspace/myTools.exe">http://free.pages.at/pepspace/myTools.exe</a></span></i></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>1. Enable the Protection against
+‘OutputDebugString exploit’ option in</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Hide Debugger v1.2.3f by
+Asterix(Plugins\HideDebugger.dll) as you see below</span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img border=0 width=204 height=104
+src="img_dumping/image001.jpg">&nbsp;<img border=0 width=130 height=149
+src="img_dumping/image002.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>…else armadillo will make ollydebug to
+crash when you run it.</span></p>
+
+<p class=remarks><span lang=EN-GB>If you don’t see the ‘Plugins’ in the menu
+bar, check the path to the </span></p>
+
+<p class=remarks><span lang=EN-GB>Plugin Dir in Options\
+Appearance\[Directories]</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>2. Load the Exe that is packed by Armadillo
+by dragging it into ollydbg, File/Open or with F3. Then press F9 to run it.</span></p>
+
+<p class=remarks><span lang=EN-GB>Incase you get an exception like this press
+Shift+F9 several time to pass it to the program </span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img border=0 width=308 height=149
+src="img_dumping/image003.jpg"></span></p>
+
+<p class=remarks><span lang=EN-GB>Until the program runs(runs&amp;quit)</span></p>
+
+<p class=remarks><span lang=EN-GB>To avoid pressing Shift+F9 all the time open
+the options(alt+o)/[Exception], Enable ‘ignore the following exceptions’ and
+then click on the ‘Add Last Exception’</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>3. Press Alt+M to open the Process Memory
+Window.</span></p>
+
+<p class=remarks><span lang=EN-GB>Double click on the .text section of the Exe
+you loaded (it’s nearly always loaded at address 0x00401000). Ensure that there
+is something else than only 00’s… to ensure that app was successfully unpacked.
+Close this dump window. </span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img border=0 width=302 height=131
+src="img_dumping/image004.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>In the Process Memory Window press Alt+L to
+bring up the search window<br>
+&nbsp;<img border=0 width=197 height=113 src="img_dumping/image005.jpg"><br>
+Enter ‘EA06’ as search string. Then press ctrg+L to find next .(Don’t miss to
+switch back from the dump window to the Process Memory Window before you press
+ctrl+L) until there are no more matches.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>For dumping use the last dump windows there
+you found ‘EA06’ as you see on the screenshot. The type of that memory region
+should be ‘Priv’ate.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img border=0 width=374 height=256
+src="img_dumping/image006.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>4.Dumping(Saving the RAM data to disk) is
+done like this:</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Right click in the dump window and choose
+Backup/Save data to file.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB><img border=0 width=233 height=110
+src="img_dumping/image007.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Now the save as dialog box come up, where
+you can save the data.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>That’s drag the *.mem into myAutToExe and
+hope that now it can be decompiled correctly.</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<h3><span lang=EN-GB>Thermida AntiDebug Specs</span></h3>
+
+<p class=MsoNormal><span lang=EN-GB>(Just ignore this if you've never step
+though asm code with an debugger)</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>Checks first byte of an API for 0xCC</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>^- so avoid setting a breakpoint directly
+to for ex. CreateFile (instead set on the next instruction in CreateFile)</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>\\.\NTICE&nbsp; \\.\SICE \\.\SIWVID [No
+comment] ;)</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&quot;ntice.sys&quot; &nbsp;[No comment] ;)</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&quot;iceext.sys&quot;&nbsp;&nbsp; Numega
+Softice Extension for hiding softice</span></p>
+
+<p class=MsoNormal>&quot;Syser.sys&quot; Syser Kernel Debugger
+(http://www.sysersoft.com)</p>
+
+<p class=MsoNormal><span lang=EN-GB>&quot;HanOlly.sys&quot; from
+'HanOlly_edition_for_themida_1.9'</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&quot;extrem.sys&quot;
+&quot;FRDTSC.SYS&quot; standardname of 'PhantOm'plugin for Ollydebug (change
+this in Ollydbg.ini![Plugin PhantOm]!)</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&quot;Filem&quot; &quot;REGMON&quot;
+&quot;regsys&quot; &quot;sysregm&quot; &quot;PROCMON&quot;&nbsp; yaya the
+powertools from Sysinterals </span></p>
+
+<p class=MsoNormal><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-GB>HKEY_LOCAL_MACHINE\SOFTWARE\NuMega\DriverStudio</span></p>
+
+</div>
+
+</body>
+
+</html>

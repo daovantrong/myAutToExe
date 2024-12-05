@@ -1,0 +1,379 @@
+<html>
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<meta name=Generator content="Microsoft Word 11 (filtered)">
+<title>Analysing the HotKeyCamo</title>
+
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+h1
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:16.0pt;
+	font-family:Arial;}
+h2
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:14.0pt;
+	font-family:Arial;
+	font-style:italic;}
+h3
+	{margin-top:12.0pt;
+	margin-right:0cm;
+	margin-bottom:3.0pt;
+	margin-left:0cm;
+	page-break-after:avoid;
+	font-size:13.0pt;
+	font-family:Arial;}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p.comments, li.comments, div.comments
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	background:#F3F3F3;
+	font-size:10.0pt;
+	font-family:"Courier New";
+	color:#339966;}
+p.Source, li.Source, div.Source
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	background:#F3F3F3;
+	font-size:10.0pt;
+	font-family:"Courier New";}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=DE link=blue vlink=purple>
+
+<div class=Section1>
+
+<h1 align=center style='text-align:center'>Analysing the HotKeyCamo</h1>
+
+<p class=MsoNormal align=center style='text-align:center'>-A GUI shell for
+compiling AutoHotKey scripts -</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal>Related Forum/download:</p>
+
+<p class=MsoNormal><a
+href="http://anonym.to/?http://www.autohotkey.com/forum/topic49952.html">http://www.autohotkey.com/forum/topic49952.html</a></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Okay I launched a Diff on the same script.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Once compiled with the 'normal'
+AHK-Compiler and the other time with HotKeyCamo.</span></p>
+
+<p class=MsoNormal>(Make sure the ahkExe is uncompressed. May be decompress it with
+'Upx –d *.exe')</p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Okay here are the changes…</span></p>
+
+<p class=MsoNormal><span lang=EN-US>…and how to deal with them to be able to
+decompile the script with myAutToExe</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Hmm well for better understand I put that
+part on the top(even when it comes last in the File)</span></p>
+
+<h3><span lang=EN-US>The Script (Camo vs Normal)</span></h3>
+
+<p class=MsoNormal><span style='position:absolute;z-index:12;margin-left:373px;
+margin-top:68px;width:21px;height:15px'><img width=21 height=15
+src="img_HotKeyCamoScripts/image001.gif"></span><span
+style='position:absolute;z-index:11;margin-left:478px;margin-top:52px;
+width:60px;height:20px'><img width=60 height=20
+src="img_HotKeyCamoScripts/image002.gif"></span><span
+style='position:absolute;z-index:10;margin-left:70px;margin-top:52px;
+width:85px;height:20px'><img width=85 height=20
+src="img_HotKeyCamoScripts/image003.gif"></span><span
+style='position:absolute;z-index:9;margin-left:393px;margin-top:52px;
+width:85px;height:20px'><img width=85 height=20
+src="img_HotKeyCamoScripts/image003.gif"></span><span
+style='position:absolute;z-index:8;margin-left:373px;margin-top:52px;
+width:20px;height:20px'><img width=20 height=20
+src="img_HotKeyCamoScripts/image004.gif"></span><span
+style='position:absolute;z-index:7;margin-left:50px;margin-top:52px;width:20px;
+height:20px'><img width=20 height=20
+src="img_HotKeyCamoScripts/image004.gif"></span><span
+style='position:absolute;z-index:6;margin-left:7px;margin-top:26px;width:612px;
+height:26px'><img width=612 height=26
+src="img_HotKeyCamoScripts/image005.gif"></span><span
+lang=EN-US><img border=0 width=637 height=95
+src="img_HotKeyCamoScripts/image006.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>The
+Compiled Script AutoIT File format:</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>--------------------------------------</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#FF6600'>AutoIt_Signature        size 0x10 Bytes  String &quot;£HK...&quot;</span></p>
+
+<p class=MsoNormal style='text-align:justify'><span lang=EN-US
+style='font-size:10.0pt;font-family:"Courier New";color:#FFCC00'>SubType                
+size 0x1 Byte   Should be 0x03 (0x01 AutoIT2; )</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#99CC00'>PassphraseLen           size 0x4 Bytes   [XorKey=0x000FAC1]</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:blue'>Passphrase              size (depends on PassphraseLen)[StrKey=C3D2]</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New";
+color:#33CCCC'>ResType                 size 0x4 Byte   eString:
+&quot;FILE&quot;     [             StrKey=16FA]</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>ScriptType             
+eString &quot;&gt;AUTOIT SCRIPT&lt;&quot;           [LenKey=29BC, StrKey=A25E]</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>CompiledPathName       
+eString &quot;C:\...\Temp\aut26A.tmp&quot;    [LenKey=29AC, StrKey=F25E]</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>IsCompressed           
+size 0x1 Byte</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-size:10.0pt;font-family:"Courier New"'>ScriptSize  
+Compressed size 0x4 Byte                       [XorKey=45AA]</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Now the changes in the AHK-Interpreter stub
+that's at the beginning of each AHKExe</span></p>
+
+<h3 style='margin-left:18.0pt;text-indent:-18.0pt'><span lang=EN-US>1.  LenKeyXorValue
+Change</span></h3>
+
+<p class=MsoNormal><span style='position:absolute;z-index:5;margin-left:94px;
+margin-top:51px;width:84px;height:20px'><img width=84 height=20
+src="img_HotKeyCamoScripts/image007.gif"></span><span
+style='position:absolute;z-index:4;margin-left:420px;margin-top:51px;
+width:84px;height:20px'><img width=84 height=20
+src="img_HotKeyCamoScripts/image007.gif"></span><span
+style='position:absolute;z-index:3;margin-left:232px;margin-top:226px;
+width:54px;height:20px'><img width=54 height=20
+src="img_HotKeyCamoScripts/image008.gif"></span><span
+style='position:absolute;z-index:2;margin-left:94px;margin-top:226px;
+width:54px;height:20px'><img width=54 height=20
+src="img_HotKeyCamoScripts/image008.gif"></span><span
+lang=EN-US><img border=0 width=618 height=275
+src="img_HotKeyCamoScripts/image009.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-US>Critical Mod:</span></p>
+
+<p class=MsoNormal>This Value is used the get the len of the Passphrase. (see
+below for FileFormat details)</p>
+
+<p class=MsoNormal><span lang=EN-US>MyAutToExe need to know that length to
+correct read in the Password and the data that follows.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>So here you'll need to go into the source
+code</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Search for ' FAC1' in the whole Project
+until you get here:</span></p>
+
+<p class=comments><span lang=EN-GB>&nbsp;</span></p>
+
+<p class=comments>    ' ===&gt; Get Script Password</p>
+
+<p class=Source><span lang=EN-GB>      Dim MD5PassphraseHash As New
+StringReader</span></p>
+
+<p class=Source><span lang=EN-GB>      If bIsOldScript Then</span></p>
+
+<p class=comments><span lang=EN-US>       ' Old AutoIT Script if branch...</span></p>
+
+<p class=comments><span lang=EN-US>       ' Move three bytes back since SubType
+is only 1 Byte but befroe we read 4 byte</span></p>
+
+<p class=Source><span lang=EN-GB>         .Move -3</span></p>
+
+<p class=Source><span lang=EN-GB>         MD5PassphraseHash =
+GetEncryptStr(64193, 50130, File) '&amp;HFAC1, &amp;HC3D2</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Change the last line to </span></p>
+
+<p class=Source><span lang=EN-GB>         MD5PassphraseHash =
+GetEncryptStr(&amp;H9484BF97, 50130, File) '&amp;HFAC1, &amp;HC3D2</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Now it should work.</span></p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>&nbsp;</span></p>
+
+<h3>Decompiled script should look like that:</h3>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=Source><span lang=EN-GB>; HotkeyCamo ~0.9.5.0&gt;</span></p>
+
+<p class=Source><span lang=EN-GB>DetectHiddenText, On</span></p>
+
+<p class=Source><span lang=EN-GB>SetTi…</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<h3><span lang=EN-US>Hint on finding the '9484BF97' value.</span></h3>
+
+<p class=MsoNormal>Note that this is the len of the Passphrase. Usually that value
+will be in a range of 0 to 255 </p>
+
+<p class=MsoNormal>(0x000000 00 to 0x000000 FF).</p>
+
+<p class=MsoNormal>So the this last three bytes will be the same nearly all the
+time xx 00 00 00 . </p>
+
+<p class=MsoNormal>Goto to ScriptStart +0x11 there is 'B7  BF 84 94' or '9484BFB7'.
+So a search for the hexstring 'BF 84 94' in the uncompressed *.ahkExe will reveal
+that there a 97 before them and so the Full XorKeyValue is 97 BF 84 94 -&gt; '9484BF97'.</p>
+
+<p class=MsoNormal>&nbsp;</p>
+
+<p class=MsoNormal><span lang=EN-US>And well there's as well an alternative in
+case you somehow can't find this </span>'<span lang=EN-US>9484BF97</span>' value
+(or I explained it to messy)</p>
+
+<p class=MsoNormal><span lang=EN-US>Change the code as the following:</span></p>
+
+<p class=comments>' ===&gt; Get Script Password</p>
+
+<p class=Source><span lang=EN-GB>      Dim MD5PassphraseHash As New
+StringReader</span></p>
+
+<p class=Source><span lang=EN-GB>      If bIsOldScript Then</span></p>
+
+<p class=comments>       ' Old AutoIT Script if branch...</p>
+
+<p class=comments>       ' Move three bytes back since SubType is only 1 Byte
+but before we read 4 byte</p>
+
+<p class=Source><span lang=EN-GB>         .Move -3</span></p>
+
+<p class=comments>         'MD5PassphraseHash = GetEncryptStr(64193, 50130,
+File) '&amp;HFAC1, &amp;HC3D2</p>
+
+<p class=comments>         'MD5PassphraseHash = GetEncryptStr(&amp;H9484BF97,
+50130, File) '&amp;HFAC1, &amp;HC3D2</p>
+
+<p class=Source><span lang=EN-GB>      </span></p>
+
+<p class=Source><span lang=EN-GB>      .Move 4</span></p>
+
+<p class=Source><span lang=EN-GB>      </span></p>
+
+<p class=Source><span lang=EN-GB>      Dim StrLen&amp;</span></p>
+
+<p class=Source><span lang=EN-GB>      StrLen = 32</span></p>
+
+<p class=Source><span lang=EN-GB>            </span></p>
+
+<p class=Source><span lang=EN-GB>      MD5PassphraseHash =
+DeCrypt(.FixedString(StrLen), 50130 + StrLen)</span></p>
+
+<p class=MsoNormal>-&gt; guess/changing the StrLen = 32 that long till it fits.</p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Okay now the rest of the changes:</span></p>
+
+<h2 style='margin-left:18.0pt;text-indent:-18.0pt'><span lang=EN-US>2.   MainScript
+FileName messed up</span></h2>
+
+<p class=MsoNormal><span lang=EN-US><img border=0 width=655 height=139
+src="img_HotKeyCamoScripts/image010.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-US>Uncritical:</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Hmm well it will mess updetection what
+script 'flavor' this script is and so the decompiled file will get the
+extension *.au3 (since AutoIT is the standard). But I think you can handle that
+;) </span></p>
+
+<p class=MsoNormal><span lang=EN-US>Hint: Rename *.au3 -&gt; *.ahk</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<h2 style='margin-left:18.0pt;text-indent:-18.0pt'><span lang=EN-US>3.  AHK-Script
+Start Pattern; FILE Start Pattern and <br>
+Start Pattern for compressed data are messed</span></h2>
+
+<p class=MsoNormal><span style='position:absolute;z-index:1;margin-left:0px;
+margin-top:41px;width:612px;height:27px'><img width=612 height=27
+src="img_HotKeyCamoScripts/image011.gif"></span><span
+lang=EN-US><img border=0 width=638 height=132
+src="img_HotKeyCamoScripts/image012.jpg"></span></p>
+
+<p class=MsoNormal><span lang=EN-US>Uncritical:</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Check if myAutToExe correctly found the
+start of the script. (It's using the heuristic </span>EndOf_PE-ExeFile =&gt; Start
+of Script)</p>
+
+<p class=MsoNormal>So in the log there should be:</p>
+
+<p class=MsoNormal><span lang=EN-US style='font-family:"Courier New"'>---&gt;
+ScriptStartOffset: 00064E00</span></p>
+
+<p class=MsoNormal><span lang=EN-US>… else enter '64E00' in the Textbox (for the
+start offset of the script) manually</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+<p class=MsoNormal><span lang=EN-US>Click on yes if myAutToExe complains about
+invalid File marker.</span></p>
+
+<p class=MsoNormal><span lang=EN-US>(This JB01 thing don't comes into games
+since the script don't gets compressed)</span></p>
+
+<p class=MsoNormal><span lang=EN-US>&nbsp;</span></p>
+
+</div>
+
+</body>
+
+</html>

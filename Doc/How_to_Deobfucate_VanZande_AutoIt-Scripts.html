@@ -1,0 +1,931 @@
+<html xmlns="undefined">
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=windows-1252">
+<title>How to Deobfucate VanZande AutoIt-Scripts</title>
+<style>
+<!--
+pre {
+	font-size:10.0pt;
+	font-family:"Courier New"
+}
+body {
+	font-family: "Courier New", Courier, monospace;
+	font-size: 10pt;
+	color: navy;
+}
+-->
+</style>
+</head>
+<body bgcolor="#FFFFFF" link=blue vlink=blue lang=DE>
+<h2>So how to deobfucate?</h2>
+<p><em>(For example Files and obfucator.exe I used here click <a href="How_to_Deobfuscate_Files.7z">&gt;here&lt;</a> )</em> </p>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#000090'>Well first of all it about to</span><BR>
+  watch what
+  the obfuscator does<BR>
+  So let’s obfuscate simple this little poggie twice:<br>
+  <b><i><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>0</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+  world&quot;</span></b><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:red'>,</span></b><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:#9999CC'>&quot;&quot;</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:red'>And compare the results<br>
+  </span></b><span style='font-size:10.0pt;font-family:Arial;color:navy'><img
+width=1112 height=493
+src="img/image001.jpg"></span><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>So much about randomisation.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>But let’s run tidy on this to make it look nicer:</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>-&gt;tidy test2_Obfuscated2.au3</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>Tidy AutoIt3 v2.0.23.24   Copyright (c) Jos van der Zande 
+  September 30, 2008</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>!&gt; Stopping process..<br>
+  </span><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>       ^-Whoops what is this!  </span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Open tidy.exe and look/seach for &quot;</span><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:navy'>Stopping process”
+  – now read on. does </span><span lang=EN-GB style='font-size:10.0pt;font-family:
+Arial;color:navy'><img width=683 height=181
+src="img/image002.jpg"><br>
+  </span><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>And now think for ya self what Tidy.exe needs strings like</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'> ‘Execute(Binarytostring('0x537472696E6753706C69742846696C655265616428244146313233313233292C27’<br>
+  </span><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>‘Execute(Binarytostring('0x46696C6544656C6574652824414631323331323329'))’</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>‘</span><span lang=EN-GB style='font-size:
+10.0pt;font-family:Arial;color:navy'>func A2C4558BC554’<br>
+  </span><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Yep rioght -  regard you cute little example I some had the feeling
+  I’ve seen it ‘</span><span lang=EN-GB> </span><span lang=EN-GB
+style='font-size:10.0pt;font-family:Arial;color:navy'>func A2C4558BC554’ there before.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>So now you have the choice to ‘improve’ tidy.exe using a hexeditor
+  or do a search’n’replace like this ‘A2C4558BC554’ -&gt; ‘B2C4558BC554’</span>i<span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>n the au3 to tidy.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Now ‘test2_Obfuscated1.au3’ it looks a little nicer to work with:</span><BR>
+  <b><span style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:blue'>global</span></b><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;30&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><span style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:blue'>global</span></b><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;68656C6C6F20776F726C64&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><i><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Number</span></i></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>),</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>Func</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> A2C4558BC5541</span><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:red'>(</span></b><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:#AA0000'>$A2C4558BC5544</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Local</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC55442</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>For</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>1</span></i></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>to</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringLen</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC5544</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>step</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>       </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC55442</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>&amp;=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Chr</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Dec</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringMid</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC5544</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)))</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Next<br>
+  </span></b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Return</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC55442</span></b><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>EndFunc</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#009933'>;==&gt;A2C4558BC5541</span></i><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>Func</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:red'>(</span></b><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#AA0000'>$A3000005F2C</span></b><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Local</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C2</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>For</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>1</span></i></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>to</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringLen</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>step</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>       </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C2</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>&amp;=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Chr</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Dec</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringMid</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)))</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Next</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Return</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C2</span></b><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>EndFunc</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#009933'>;==&gt;A3000005F2C</span></i><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>Func</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> A2C4558BC5542</span><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:red'>(</span></b><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:#AA0000'>$A2C4558BC5544</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Local</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC55442</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>For</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>1</span></i></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>to</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringLen</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC5544</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>step</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>       </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC55442</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>&amp;=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Chr</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Dec</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringMid</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC5544</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)))</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Next</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Return</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A2C4558BC55442</span></b><br>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:blue'>EndFunc</span></b><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'>   </span><i><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#009933'>;==&gt;A2C4558BC5542<br>
+  </span></i><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>(^-please excuse my minor edits to original tided source here to
+  make it better readable.)</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>You recognise our :<br>
+  </span><b><i><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>0</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+  world&quot;</span></b><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:red'>,</span></b><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:#9999CC'>&quot;&quot;</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)     </span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:Arial;color:navy'>from the
+  beginning? Now it has changer to:<br>
+  </span><b><span style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:blue'>global</span></b><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;30&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><span style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:blue'>global</span></b><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;68656C6C6F20776F726C64&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><i><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Number</span></i></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>),</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>What happened to your </span><b><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:#9999CC'>&quot;hello world&quot;</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:Arial;color:navy'> ? </span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Obviously it has changed it ‘</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>68656C6C6F20776F726C64’.</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:Arial;color:navy'> And as you
+  also see to restore the original </span><b><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:#9999CC'>&quot;hello world&quot;</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:Arial;color:navy'> string. The function
+  is </span><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>A3000005F2C</span><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:red'>() </span></b><span lang=EN-GB
+style='font-size:10.0pt;font-family:Arial;color:navy'>is used.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>I bring in the only usefull reference ‘Obfuscator.Log’  gives us:</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>0.00 ############################## Starting
+  #######################################################################<br>
+  </span><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>0.00 ### Processing file:test2.au3</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>0.02 Special Function: Functionname   Parameter:-1</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>…</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>0.02 RandomStringFuncName$: A3000005F2C</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Let’s rename ‚A3000005F2C’ to ‘</span><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:navy'>RandomStringFuncName’</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>Now let’s look on the rest of the 3 functions the Obfucator added.</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Is A3000005F2C -&gt; ‘</span><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:navy'>RandomStringFuncName’</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>As you can see they are doing all the same but are not use. So you</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Can delete A2C4558BC5541 and A2C4558BC5542 </span><br>
+  <b><span style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:blue'>global</span></b><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;30&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><span style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:blue'>global</span></b><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;68656C6C6F20776F726C64&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><i><span style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Number</span></i></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>),</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>Func</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:red'>(</span></b><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#AA0000'>$A3000005F2C</span></b><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Local</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C2</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>For</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>1</span></i></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>to</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringLen</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>step</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>       </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C2</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>&amp;=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Chr</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Dec</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>StringMid</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$x</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>2</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)))</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Next</span></b><br>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>Return</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$A3000005F2C2</span></b><br>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>EndFunc</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>   </span><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#009933'>;==&gt;A3000005F2C</span></i><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>…and try. Yes ‘test2_Obfuscated1.au3’ still runs as before.<br>
+  </span><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Let’s paste </span><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:#9999CC'>&quot;68656C6C6F20776F726C64&quot; </span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>into
+  some hexeditor(I used Winhex here) to see what it is</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Offset      0  1  2  3  4  5  6  7   8  9  A  B  C  D  E  F</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>00000000   68 65 6C 6C 6F 20 77 6F  72 6C 64                 
+  hello world</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Hahar it’s just as it is – no additional decryption or stuff is
+  applied. Just convert the Hexstring to a BinString.</span><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Replace all </span><br>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#AA0000'>$SA5E00203418</span></b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'> -&gt; &quot;</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>hello
+  world”</span></b><br>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#AA0000'>$SA2700100F1E</span></b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'> -&gt; &quot;</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>0”</span></b><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>The result will be</span><br>
+  <b><i><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#000090'>MsgBox</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Number</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>0</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;)</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+  world,””)</span></b><BR>
+  <br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Or if you undo the last replace and use instead</span><br>
+  <b><i><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#000090'>Number</span></i></b><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>($SA2700100F1E)</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> -&gt; </span><b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:#9999CC'>0</span></b><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>We get</span><br>
+  <b><i><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#000090'>MsgBox</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AC00A9'>0</span></i></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+  world”,””)</span></b><br>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>What is our unobfucated source!!!</span><BR>
+</p>
+<h2>Writing
+  a Deobfucator</h2>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Here I'm trying to give you the idea on how you break down the main
+  task into several smaller task that can easy solved by a programming language.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Regard this as pseudo code. As code that is not meant to be direct
+  executable but is there for to show the algorithm.  And after understanding it makes
+  you to 'easy' implement it in the programming language ya coding in.</span></p>
+<h3>1. detect if the script is obfuscated + detect
+  the kind+version of obfucator that was used</h3>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Let’s do it as tidy does it:</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Scan for string  &quot;func A2C4558BC554” -&gt; &quot;AutoIt3
+  Source Obfuscator v1.0.14 dectected&quot; else quit (or handle it differently)</span></p>
+<h3>2. Finding stringTranform functionname (RandomStringFuncName)</h3>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>here this lines is really good for</span><BR>
+  <b><u><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>global</span></u></b><u><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span></u><b><u><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$</span></u></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>SA2700100F1E</span></b><u><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span></u><b><u><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></u></b><u><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span></u><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>A3000005F2C</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;30&quot;</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>I underlined the
+  matchpatterns to mark the start and end of the string that should be cut out.</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>This will do the
+  job</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:navy'>RandomStringFuncName</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'> = CropOutString(</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>&quot;</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>global</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$*</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=”, &quot;(&quot;)</span></b><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:navy'>RandomStringFuncName
+  is now &quot;</span><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>A3000005F2C”</span></p>
+<h3><span lang=EN-GB>3. Getting search &amp; replace data</span></h3>
+<p><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>SplitedScript = StringSplit(
+  WholeScriptText, </span><BR>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:red'>    &quot; = ” &amp; </span></b><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:navy'>RandomStringFuncName</span><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>&amp;&quot;</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>(&quot;</span></b><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>This is more illustrative
+  but not so general:</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>SplitedScript = StringSplit(
+  MywholeScript, </span><BR>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:red'>    &quot; = </span></b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:black'>A3000005F2C</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'> (&quot;</span></b><BR>
+  <span style='font-size:10.0pt;font-family:Arial;color:navy'>The
+  result:</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>SplitedScript[0]=”</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>global</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E”</span></b><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>SplitedScript[1]=</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;30&quot;</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)”</span></b><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>SplitedScript[2]=”</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>global</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418”</span></b><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>SplitedScript[3]=</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;68656C6C6F20776F726C64&quot;</span></b><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>)&quot;</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>… okay after some more cleaning (…I’m not gonna boring you this
+  that / make your mind to lazy – Please code this yaself ...) </span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[0].Search = &quot;</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E”</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[0].Replace = </span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;30&quot;</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[1].Search = &quot;</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418&quot;</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[1].Replace = &quot;</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>68656C6C6F20776F726C64”</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>And after applied HexString to BinString</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[0].Search = &quot;</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E”</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[0].Replace = </span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;0&quot;</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[1].Search = &quot;</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418&quot;</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>SeachReplace[1].Replace = &quot;</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>hello world”</span></b></p>
+<h3>4. Appling the search &amp; replace data</h3>
+<p><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>Dim item as Collection</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'>For each item in </span><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:navy'>SeachReplace</span><BR>
+  <span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>Replace(WholeScriptText</span><BR>
+  <b><i><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:#000090'>&quot;Number</span></i></b><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'>(&quot; &amp; Item</span><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:navy'>.search
+  &amp; &quot;)”</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Item</span><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:navy'>.replace)</span><BR>
+  <span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'>Replace(WholeScriptText</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Item</span><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:navy'>.search</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>&quot;”” &amp; Item</span><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:navy'>.replace &amp; &quot;””)</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:navy'>Next</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Okay why apply replace two times – well that will make the output
+  nicer.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Hope this example will make you to understand for it works:</span><BR>
+</p>
+<table border=0 cellspacing=0 cellpadding=0>
+  <tr>
+    <td colspan=2 valign=top><b><i><span style='font-size:
+  10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#000090'>Number</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>),</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><BR></td>
+  </tr>
+  <tr>
+    <td valign=top><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:#AA0000'>Number($SA2700100F1E)-&gt;</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'> 0</span></b><BR></td>
+    <td valign=top><b><i><span style='font-size:
+  10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#000090'>0</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><BR></td>
+  </tr>
+  <tr>
+    <td valign=top><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:#AA0000'>$SA2700100F1E -&gt;</span></b><b><span style='font-size:10.0pt;
+  font-family:&quot;Courier New&quot;;color:#9999CC'> &quot;0”</span></b><BR></td>
+    <td valign=top><b><i><span style='font-size:
+  10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#000090'>0</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><BR></td>
+  </tr>
+  <tr>
+    <td colspan=2 valign=top>&nbsp;</td>
+  </tr>
+  <tr>
+    <td valign=top><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:#AA0000'>Number($SA5E00203418)-&gt;</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'> </span></b><b><span
+  lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>hello
+      world</span></b><BR></td>
+    <td valign=top><b><i><span style='font-size:
+  10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#000090'>0</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA5E00203418</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;&quot;</span></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><BR></td>
+  </tr>
+  <tr>
+    <td valign=top><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:#AA0000'>$SA5E00203418-&gt;</span></b><b><span lang=EN-GB
+  style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+      world&quot;</span></b><BR></td>
+    <td valign=top><b><i><span style='font-size:
+  10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#000090'>0</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+      world&quot;</span></b><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:red'>,</span></b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:black'> </span><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:#9999CC'>&quot;&quot;</span></b><b><span style='font-size:10.0pt;
+  font-family:&quot;Courier New&quot;;color:red'>)</span></b><BR></td>
+  </tr>
+  <tr>
+    <td colspan=2 valign=top><b><i><span style='font-size:
+  10.0pt;font-family:&quot;Courier New&quot;;color:#000090'>MsgBox</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>(</span></b><b><i><span
+  style='font-size:10.0pt;font-family:"Courier New";color:#000090'>0</span></i></b><b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:red'>,</span></b><span
+  style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+  lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>&quot;hello
+      world&quot;</span></b><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:red'>,</span></b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:black'> </span><b><span style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+  color:#9999CC'>&quot;&quot;</span></b><b><span style='font-size:10.0pt;
+  font-family:&quot;Courier New&quot;;color:red'>)</span></b><BR></td>
+  </tr>
+</table>
+<h3>5. Cleaning up the script</h3>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Remember the compare?</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'><img width=1112 height=171
+src="img/image003.jpg"></span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>The functions added by the obfucator always starts with </span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Func A2C4558BC5541</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>So let's simply cut the script there</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>WholeScriptText= stringSplit(WholeScriptText,&quot; Func A2C4558BC5541&quot;)(0))</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>…only uses the first part </span><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:black'>stringSplit returns and
+  forget/delete the rest.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>And what about those crappy</span><BR>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:blue'>global</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$SA2700100F1E</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:red'>(</span></b><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#9999CC'>&quot;30&quot;</span></b><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'>)</span></b><BR>
+  <b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:red'>…</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>that are still there.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Here maybe a search &amp; replace with regular expression can help
+  out.</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:Arial;color:navy'>Search for</span><BR>
+  <span lang=EN-GB
+style='font-size:10.0pt;font-family:Arial;color:navy'>&quot;.*</span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:blue'>global</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:#AA0000'>$.*</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> </span><b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:red'>=</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:"Courier New";color:black'> A3000005F2C</span><b><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:red'>(</span></b><b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#9999CC'>.*</span></b><b><span lang=EN-GB style='font-size:
+10.0pt;font-family:&quot;Courier New&quot;;color:red'>)\n&quot;</span></b><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>Replace with</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Arial;
+color:navy'>&quot;&quot;</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;color:black'>But there
+  are probably many other ways to – like to care of to remove them in the Step '</span><span
+lang=EN-GB style='font-size:10.0pt;font-family:Arial;color:navy'>3. Getting search
+  &amp; replace data'</span><BR>
+</p>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Okay that it - hope you enjoy this little tut and got some in<em>spirit</em>ion from </span>it.<br>
+  ;)</p>
+<hr>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>A preview:</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>New versions of the van Zande AutoIt3 Obfuscators store strings in
+  a *.tbl file that regarding the example looks like that</span><BR>
+  <b><span lang=EN-GB style='font-size:10.0pt;font-family:
+&quot;Courier New&quot;;color:#9999CC'>30</span></b><span lang=EN-GB style='font-size:
+10.0pt;font-family:Arial;color:navy'>o</span><b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:#9999CC'>68656C6C6F20776F726C64</span></b><span
+lang=EN-GB style='font-size:10.0pt;font-family:Arial;color:navy'>o</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Instead of using</span><b><span lang=EN-GB style='font-size:10.0pt;
+font-family:&quot;Courier New&quot;;color:#9999CC'> global.</span></b><span lang=EN-GB
+style='font-size:10.0pt;font-family:"Courier New";color:black'> You </span><span
+lang=EN-GB style='font-size:10.0pt;font-family:Tahoma'>noticed the 'o' in the
+  hex to seperate the Strings? Good. </span><span lang=EN-GB style='font-size:
+10.0pt;font-family:Wingdings'>J</span><span lang=EN-GB style='font-size:10.0pt;
+font-family:Tahoma'>  And the now current version even uses randomise string separator
+  for variable length.(so that it is not always 'o').  </span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Tahoma'>&lt;Sorry
+  I would be a good end for that tut – but I couldn't resist to continue</span><span
+lang=EN-GB style='font-size:10.0pt;font-family:Tahoma'>&gt;</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:Tahoma'>Like</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>30<u>!06O</u>68656C6C6F20776F726C64<u>!06O</u></span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>30<u>O428T</u>68656C6C6F20776F726C64<u>O428T</u></span></p>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>So you you may show the *.tbl to the user and hope he will enter
+  the correct separator like '<u>O428T'.</u></span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Or you may use a heuristics like this on the tbl file.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Get last 3 chars (since separator length varies from 3 to 6 and may
+  be more) check how many occurrences there are in the file and the add one char
+  more to the possible separator string…</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>'28T' – 2<u> </u>occurrence found (memorise this)</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>'428T' – 2 occurrence found</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>'O428T' – 2 occurrence found</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>'4O428T' – 1 occurrence found -&gt; Stop here</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Seperator string is 'O428T'</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>+ Validate if the separated HexString have an even length like: 2,4,6,8…</span></p>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Or exploit the fact that first and last char of the separator string
+  is NonNummeric</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>'<u>O</u>428<u>T</u>'  or '<u>t</u>67<u>|</u>'</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>Okay heuristic are called like this because they might fail under
+  certain circumstances. (Well regarding the last heuristic it is actually no
+  heuristic anymore because it's safe and applied the fact of the last heuristic
+  on the first makes also that safe. So this makes to a algorithm but will I hope
+  you got the idea of it.)</span></p>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>The another way is to extract it as 'first-hand-information' directly
+  from code in the au3-script.</span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>And I confident enough that you can tell me your way to to it ;)</span></p>
+<p><span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>So finally here is: The EOT </span><BR>
+  <span lang=EN-GB style='font-size:10.0pt;font-family:&quot;Courier New&quot;;
+color:black'>The End Of da Tutorial.</span><BR>
+</p>
+</body>
+</html>

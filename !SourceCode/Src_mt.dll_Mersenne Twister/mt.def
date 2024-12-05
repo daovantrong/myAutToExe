@@ -1,0 +1,4 @@
+LIBRARY	mt
+EXPORTS 
+genrand_int31
+init_genrand
