@@ -1,0 +1,8 @@
+// WinHex license file
+
+Name: Full Version
+Addr: full@mail.ua
+Addr: Ukraine
+Data: 338555A5C40D45514E6E10CD794F06AA
+Data: 7C508F4BC2EDC48A5ACC78132846EC0F
+Cksm: 2880CA18

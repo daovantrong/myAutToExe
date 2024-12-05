@@ -1,0 +1,49 @@
+﻿WinHex 19.8 x64
+02/21/2019  11:13:12  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:13:30  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:13:58  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:17:28  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:19:04  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:20:34  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:23:42  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:24:33  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:35:24  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  11:41:54  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x86
+02/21/2019  12:00:43  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  12:01:46  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x64
+02/21/2019  12:02:03  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x86
+02/21/2019  13:04:29  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x86
+02/21/2019  13:08:33  WinHex According to your user.txt, all updates released before 12/31/2017 are/were free for you.
+WinHex 19.8 x86
+02/21/2019  16:47:50  WinHex According to your user.txt, all updates released before 08/19/2018 are/were free for you.
+WinHex 19.8 x86
+02/21/2019  16:49:36  Error Invalid input.
+WinHex 19.8 x86
+02/21/2019  16:55:36  Error Invalid input.
+WinHex 19.8 x86
+02/22/2019  00:54:19  WinHex Sorry, the license codes found are incompatible with this version.
+WinHex 19.8 x86
+02/22/2019  00:54:50  WinHex Sorry, the license codes found are incompatible with this version.
+WinHex 19.8 x86
+02/22/2019  00:56:30  WinHex Invalid file: user.txt. Do not proceed!
+WinHex 19.8 x64
+02/22/2019  01:22:54  WinHex Sorry, the license codes found are incompatible with this version.
+WinHex 19.8 x64
+02/22/2019  02:19:35  Error Invalid input.
+WinHex 19.8 x64
+12/05/2024  12:08:24  Error The file or directory "C:\Users\Trong.PRO\WinHex\TMP" does not exist.
+12/05/2024  12:09:17  Error The file or directory "C:\Users\Trong.PRO\WinHex\Backup" does not exist.
