@@ -9,10 +9,18 @@ Begin VB.Form FrmMain
    LinkTopic       =   "Form1"
    ScaleHeight     =   9045
    ScaleWidth      =   9390
+   Begin VB.CheckBox chk_verbose 
+      Caption         =   "Verbose LogOutput"
+      Height          =   195
+      Left            =   2535
+      TabIndex        =   11
+      Top             =   8790
+      Width           =   3615
+   End
    Begin VB.CheckBox chk_NoDeTokenise 
       Caption         =   "Disable Detokeniser"
       Height          =   195
-      Left            =   3375
+      Left            =   7320
       TabIndex        =   10
       ToolTipText     =   "Enable that when you decompile AutoItScripts lower than ver 3.1.6"
       Top             =   8805
@@ -151,7 +159,7 @@ Sub FL_verbose(text)
 End Sub
 
 Sub log_verbose(TextLine$)
-   If Chk_TmpFile.Value = vbChecked Then log TextLine
+   If chk_verbose.Value = vbChecked Then log TextLine
 End Sub
 
 
@@ -187,123 +195,7 @@ On Error Resume Next
    List1.Clear
 End Sub
 
-'
-'Private Sub DeleteBackup()
-'     FileRename FileName.Name & ".vEx", FileName.Name & ".del"
-'     FileDelete FileName.Name & ".del"
-'End Sub
 
-'Working but not need anymore
-'Private Sub mt_MT_Init(Key)
-'
-'
-'   Dim Table
-'   ReDim Table(624) '0x270
-'   Dim v1&, v2&
-'   Table(1) = Key
-'
-'   For i = 1 To UBound(Table) - 1
-'     v1 = Table(i)
-'     Debug.Assert i <> 5
-' ' Cutoff + rotate last 30 bits
-' ' v2 = v1 \ &H40000000 '2^30
-'   If (v1 >= 0) Then
-'      If (v1) < &H40000000 Then '2^30
-'         v2 = 0
-'      Else
-'         v2 = 1
-'      End If
-'   Else
-'      If v1 < &HC0000000 Then '2^30
-'         v2 = 2
-'      Else
-'         v2 = 3
-'      End If
-'   End If
-'
-'   v1 = v1 Xor v2
-'
-'
-''    v1 = v1 * 1812433253 '6C078965
-'     v1 = Mul(v1, 0, 1812433253, 0) '6C078965
-'
-''     MsgBox v1
-''     v2 = Int(v1 / &H40000000 / 4)
-''     ' 9B2 252ADAA2            '2482 623565474
-''     ' 9B2 252ADAA2- 9B2 00000000
-''     v1 = v1 - (v2 * &H40000000 * 4)
-'
-'     v1 = v1 + i
-'
-'     Table(i + 1) = v1
-'   Next
-'
-'End Sub
-
-
-Private Function GetEncryptStrNew(LenEncryptionSeed&, StrEncryptionSeed, hFile As FileStream) As String
-      Dim StrLen&
-      StrLen = hFile.longValue
-      StrLen = StrLen Xor LenEncryptionSeed
-      
-     'Double size on new type because of Unicode
-      Dim StrLenToRead
-      StrLenToRead = StrLen + StrLen
-      
-      GetEncryptStrNew = DeCryptNew(hFile.FixedString(StrLenToRead), StrEncryptionSeed + StrLen)
-End Function
-
-Private Function DeCryptNew(ByVal Data$, Key&)
-   
-   MsgBox _
-      "Sorry Decryptions for new au3 Files is not implemented yet." & vbCrLf & _
-      "(...and so you can't extract files whose source you don't have.)" & vbCrLf & _
-      "" & vbCrLf & _
-      "But you can test the TokenDecompiler that is already finished!" & vbCrLf & _
-      "" & vbCrLf & _
-      "1. add this line at the beginning of the your au3-sourcecode:" & vbCrLf & _
-      "  FileInstall('>>>AUTOIT SCRIPT<<<', @ScriptDir & '\ExtractedSource.au3')" & vbCrLf & _
-      "2. Compile it with the AutoIt3Compiler." & vbCrLf & _
-      "3. Run the exe -> 'ExtractedSource.au3' get's extracted." & vbCrLf & _
-      "4. Now open 'ExtractedSource.au3' with this decompiler." & vbCrLf & _
-      "" & vbCrLf, _
-      vbInformation, "Decryptions for new au3 Files is not implemented yet"
-      
-   Err.Raise ERR_NO_AUT_EXE + 100, , "Sorry Decryptions for new Au3 files is not implemented yet :("
-End Function
-
-
-
-Private Function GetEncryptStr(LenEncryptionSeed&, StrEncryptionSeed, hFile As FileStream) As String
-      Dim StrLen&
-      StrLen = hFile.longValue
-      StrLen = StrLen Xor LenEncryptionSeed
-            
-      GetEncryptStr = DeCrypt(hFile.FixedString(StrLen), StrEncryptionSeed + StrLen)
-End Function
-
-Private Function DeCrypt(ByVal Data$, Key&)
-   'Mersenne Twister (MT) to generate 'random' values
-   'http://eprint.iacr.org/2005/165.pdf page 4
-   'http://www.ecrypt.eu.org/stream/svn/viewcvs.cgi/ecrypt/trunk/submissions/cryptmt/cryptmt.c?rev=1&view=markup
-   'http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
-   
- ' Key->StartSeed for MT
-   MT_Init (Key)
-   
-   Dim inBuff As New StringReader
-   Dim OutBuff As New StringReader
-   inBuff.Data = Data
-   OutBuff.Data = Data
-
- ' Decrypt/Encrypt by  Xor Data from MT with inData
-   Do While inBuff.EOS = False
-      OutBuff.int8 = inBuff.int8 Xor (MT_GetI8 And &HFF)
-      'DeCrypt = DeCrypt & Chr(inBuff.int8 Xor (MT_GetI8 And &HFF))
-   Loop
-   
-   DeCrypt = OutBuff.Data
-End Function
 
 
 Private Sub Cmd_About_Click()

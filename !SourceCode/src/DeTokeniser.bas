@@ -8,6 +8,7 @@ Const ExcludePostWhiteSpaceTerminal$ = ")]."
 Const TokenFile_RequiredInputExtensions = ".tok .mem"
 
 Dim Atom$, SourceCodeLine$
+Dim bDontAddWhiteSpace As Boolean
 
 Sub DeToken()
 
@@ -72,6 +73,8 @@ Sub DeToken()
          If (SourceCodeLineCount > Lines) Then
             Exit Do
          End If
+         
+         bDontAddWhiteSpace = False
          
          
          
@@ -223,32 +226,36 @@ Sub DeToken()
             
  '           log String(40, "_")
          
-'         Case &H40 To &H56
+         Case &H40 To &H56
 '            Atom = Choose((Cmd - &H40 + 1), ",", "=", ">", "<", "<>", ">=", "<=", "(", ")", "+", "-", "/", "", "&", "[", "]", "==", "^", "+=", "-=", "/=", "*=", "&=")
          '                     Au3Manual AcciChar
-         Case &H40: Atom = ","  '        2C
-         Case &H41: Atom = "="  ' 1  13  3D
-         Case &H42: Atom = ">"  ' 16     3E
-         Case &H43: Atom = "<"  ' 18     3C
-         Case &H44: Atom = "<>" ' 15     3C
-         Case &H45: Atom = ">=" ' 17     3E
-         Case &H46: Atom = "<=" ' 19     3C
-         Case &H47: Atom = "("  '        28
-         Case &H48: Atom = ")"  '        29
-         Case &H49: Atom = "+"  ' 7      2B
-         Case &H4A: Atom = "-"  ' 8      2D
-         Case &H4B: Atom = "/"  ' 10     2F
-         Case &H4C: Atom = "*"  ' 9      2A
-         Case &H4D: Atom = "&"  ' 11     26
-         Case &H4E: Atom = "["  '        5B
-         Case &H4F: Atom = "]"  '        5D
-         Case &H50: Atom = "==" ' 14     3D
-         Case &H51: Atom = "^"  ' 12     5E
-         Case &H52: Atom = "+=" '2       2B
-         Case &H53: Atom = "-=" '3       2D
-         Case &H54: Atom = "/=" '5       2F
-         Case &H55: Atom = "*=" '4       2A
-         Case &H56: Atom = "&=" '6       26
+            Select Case Cmd
+               Case &H40: Atom = ","  '        2C
+               Case &H41: Atom = "="  ' 1  13  3D
+               Case &H42: Atom = ">"  ' 16     3E
+               Case &H43: Atom = "<"  ' 18     3C
+               Case &H44: Atom = "<>" ' 15     3C
+               Case &H45: Atom = ">=" ' 17     3E
+               Case &H46: Atom = "<=" ' 19     3C
+               Case &H47: Atom = "("  '        28
+               Case &H48: Atom = ")"  '        29
+               Case &H49: Atom = "+"  ' 7      2B
+               Case &H4A: Atom = "-"  ' 8      2D
+               Case &H4B: Atom = "/"  ' 10     2F
+               Case &H4C: Atom = "*"  ' 9      2A
+               Case &H4D: Atom = "&"  ' 11     26
+               Case &H4E: Atom = "["  '        5B
+               Case &H4F: Atom = "]"  '        5D
+               Case &H50: Atom = "==" ' 14     3D
+               Case &H51: Atom = "^"  ' 12     5E
+               Case &H52: Atom = "+=" '2       2B
+               Case &H53: Atom = "-=" '3       2D
+               Case &H54: Atom = "/=" '5       2F
+               Case &H55: Atom = "*=" '4       2A
+               Case &H56: Atom = "&=" '6       26
+            End Select
+            
+            bDontAddWhiteSpace = True
 
 
          Case &H7F
@@ -279,9 +286,13 @@ Sub DeToken()
 
          End Select
          
-         
-        'Add to SourceLine
-         SourceCodeLine = SourceCodeLine & AddWhiteSpace & Atom
+         If bDontAddWhiteSpace Then
+           'Add to SourceLine
+            SourceCodeLine = SourceCodeLine & Atom
+         Else
+              'Add to SourceLine
+            SourceCodeLine = SourceCodeLine & AddWhiteSpace & Atom
+         End If
          
          Atom = ""
          
@@ -339,7 +350,7 @@ Function AddWhiteSpace$()
    '         (^-PreCase)                (^-PostCase)
    If InStr(1, ExcludePreWhiteSpaceTerminal, LastChar) Or _
       InStr(1, ExcludePostWhiteSpaceTerminal, NextChar) Then
-
+'      Stop
    ElseIf whiteSpaceTerminal <> LastChar Then
          AddWhiteSpace = whiteSpaceTerminal
    End If

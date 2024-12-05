@@ -1,8 +1,8 @@
 Attribute VB_Name = "Helper"
 Option Explicit
+Option Compare Text
 
 Public Cancel As Boolean
-
 
 
 'Konstantendeklationen für Registry.cls
@@ -38,6 +38,9 @@ Private Declare Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As I
 
 Private Const SM_DBCSENABLED = 42
 Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Integer) As Integer
+
+
+Private BenchtimeA&, BenchtimeB&
 
 
 'Returns whether the user has DBCS enabled
@@ -143,8 +146,19 @@ Public Function H16(ByVal Value As Long)
    H16 = Right(String(3, "0") & Hex(Value), 4)
 End Function
 
-Public Function H32(ByVal Value As Long)
-   H32 = Right(String(7, "0") & Hex(Value), 8)
+Public Function H32(ByVal Value As Double)
+   If Value <= &H7FFFFFFF Then
+      H32 = Hex(Value)
+   Else
+    ' split Number in High a Low part...
+      Dim High&, Low&
+      High = Value / &H10000
+      Low = Value - (CDbl(High) * &H10000)
+      
+      H32 = H16(High) & H16(Low)
+   End If
+   
+   H32 = Right(String(7, "0") & H32, 8)
 End Function
 
 Public Function Swap(ByRef a, ByRef b)
@@ -261,7 +275,7 @@ End Function
 
 Function strCropAndDelete(text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1)
    strCropAndDelete = strCrop1(text$, LeftString$, RightString$, errorvalue, StartSearchAt)
-   text = Replace(text, LeftString & strCropAndDelete & RightString, "")
+   text = Replace(text, LeftString & strCropAndDelete & RightString, "", , , vbTextCompare)
 End Function
 
 Function strCrop$(text$, LeftString$, RightString$, Optional errorvalue, Optional StartSearchAt = 1)
@@ -296,4 +310,19 @@ Public Function Int16ToUInt32&(Value%)
          Int16ToUInt32 = CLng(Value And N_0x8000) + N_0x8000
       End If
       
+End Function
+
+
+
+
+Public Function BenchStart()
+
+   BenchtimeA = GetTickCount
+
+End Function
+Public Function BenchEnd()
+
+   BenchtimeB = GetTickCount
+   Debug.Print BenchtimeB - BenchtimeA
+
 End Function

@@ -59,9 +59,12 @@ Private Declare Sub MemCopyLngToInt Lib "kernel32" Alias "RtlMoveMemory" (src As
 'Private Declare Sub MemCopyStrToInt Lib "kernel32" Alias "RtlMoveMemory" (src As Any, Src As String, ByVal length&)
 'Private Declare Sub MemCopyStrToByte Lib "kernel32" Alias "RtlMoveMemory" (src As Any, Src As String, ByVal length&)
 
-Private Const FILE_BEGIN = 0
-Private Const FILE_CURRENT = 1
-Private Const FILE_END = 2
+Private Enum SeekType
+   FILE_BEGIN = 0
+   FILE_CURRENT = 1
+   FILE_END = 2
+End Enum
+
 Private Declare Function SetFilePointer Lib "kernel32" (ByVal hFile As Long, ByVal lDistanceToMove As Long, lpDistanceToMoveHigh As Long, ByVal dwMoveMethod As Long) As Long
 Private Declare Function SetEndOfFile Lib "kernel32" (ByVal hFile As Long) As Long
 
@@ -359,8 +362,9 @@ Public Property Get longValue() As Long
 '    bytesRead = ReadFileLong(hFile, value, 4, bytesRead, 0)
 '    longValue = value
 
-  Dim bytesRead&
-  bytesRead = ReadFileLong(hFile, longValue, 4, bytesRead, 0)
+  Dim RetVal&, bytesRead&
+  RetVal = ReadFileLong(hFile, longValue, 4, bytesRead, 0)
+  If bytesRead <> 4 Then MsgBox "[File::longValue] Only '" & bytesRead & "' bytes read instead of 4! RetVal: " & RetVal, vbCritical
 End Property
 
 
@@ -424,22 +428,37 @@ End Property
 '////////////////////////////////////////
 '//  Let position Property
 Public Property Let Position(ByVal vData As Long)
-   Dim RetVal&
-   RetVal = SetFilePointer(hFile, vData, 0, FILE_BEGIN)
-   If RetVal = -1 Then
-      MsgBox "Error on SetFilePointer to :" & vData, vbCritical
-   Else
-      mvarMaxPosition = Max(mvarMaxPosition, vData)
-   End If
+   SeekToPosition vData, FILE_BEGIN
 End Property
 '//  Get position Property
 Public Property Get Position() As Long
+Attribute Position.VB_UserMemId = 0
    Position = SetFilePointer(hFile, 0, 0, FILE_CURRENT)
    If Position = -1 Then MsgBox "Error on GetFilePointer", vbCritical
 '  position = mvarposition
 End Property
 
 
+'////////////////////////////////////////
+'//  Let PositionEOFRelated Property
+Public Property Let PositionEOFRelated(ByVal vData As Long)
+   SeekToPosition vData * -1, FILE_END
+  
+  'For some stupid reason it requires SetFilePointer( with FILE_BEGIN)
+  ' or next fileRead will fail
+   Position = Position
+End Property
+
+
+Private Sub SeekToPosition(Offset&, SeekType As SeekType)
+   Dim RetVal&
+   RetVal = SetFilePointer(hFile, Offset, 0, SeekType)
+   If RetVal = -1 Then
+      MsgBox "Error on SetFilePointer to :" & Offset, vbCritical
+   Else
+      mvarMaxPosition = Max(mvarMaxPosition, RetVal)
+   End If
+End Sub
 
 
 ''////////////////////////////////////////
@@ -530,7 +549,6 @@ Public Property Let ByteValue(vData As Long) 'Offset&, lenght&, ByRef vData As S
 End Property
 '//  Get Data Property
 Public Property Get ByteValue() As Long '(Offset&, lenght&)
-Attribute ByteValue.VB_UserMemId = 0
     Dim bytesRead&
     Dim tmp$
     tmp = " "

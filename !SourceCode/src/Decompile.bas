@@ -1039,11 +1039,11 @@ Public Sub Decompile()
       'log "Uncompressed script size:" & H32(SizeUncompressed)
       
       '
-             ' save compressed script data to *.tmp in current Dir
+             ' save compressed script data to *.pak in current Dir
              '    if 'Create DebugFile' was not checked it will be delete on close
                Dim tmpFile As New FileStream
                With tmpFile
-                  .Create OutFileName.Path & OutFileName.Name & ".tmp", True, FrmMain.Chk_TmpFile.Value = vbUnchecked, False
+                  .Create OutFileName.Path & OutFileName.Name & ".pak", True, FrmMain.Chk_TmpFile.Value = vbUnchecked, False
                   .Data = ScriptData.Data
                    log "Compressed scriptdata written to " & .FileName
          
@@ -1075,8 +1075,10 @@ Public Sub Decompile()
                
                
              ' Applied Post AHK_Sub_Key if necessary
+             ' if it's "; <COMPILER: v1.0.46.15>" text is already uncrypted and so this step
+             ' need to be skipped
                Dim AHK_Sub_Key&
-               If bDoAHK_add Then
+               If bDoAHK_add And Not (.mvardata Like "; <COMPILER*") Then
 
                  'init AHK_Sub_Key
                   AHK_Sub_Key = SizeUncompressed And 255

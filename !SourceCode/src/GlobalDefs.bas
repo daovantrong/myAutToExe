@@ -35,9 +35,18 @@ Sub SaveScriptData(ScriptData$)
       FrmMain.log "Try to breaks very long lines (about 2000 chars) by adding '_'+<NewLine> ..."
       ScriptData = AddLineBreakToLongLines(Split(ScriptData, vbCrLf))
    
+'debug
+'FrmMain.Chk_TmpFile.Value = vbChecked
    
-     FileName.Name = FileName.Name & "_restore"
-     .log "Saving Script to: " & FileName.FileName
+    ' overwrite script
+      If FrmMain.Chk_TmpFile.Value = vbChecked Then
+         FileName.Name = FileName.Name & "_restore"
+         .log "Saving script to: " & FileName.FileName
+      Else
+'         FileDelete FileName.Name
+         .log "Save/overwrite script to: " & FileName.FileName
+      End If
+
      
      File.Create FileName.FileName, True, False, False
      File.Position = 0
@@ -61,6 +70,18 @@ Sub SaveScriptData(ScriptData$)
      TidyExitCode = ShellEx(cmdline, parameters)
      .log "Tidy.exe ExitCode: " & TidyExitCode
    
+      Dim TidyBackupFileName As New ClsFilename
+      TidyBackupFileName.mvarFileName = FileName.mvarFileName
+      TidyBackupFileName.Name = TidyBackupFileName.Name & "_old1"
+      
+    ' Delete Tidy BackupFile
+      If FrmMain.Chk_TmpFile.Value = vbUnchecked Then
+         .log "Deleting Tidy BackupFile..." ' & TidyBackupFileName.NameWithExt
+         FileDelete TidyBackupFileName.FileName
+      End If
+     
+     
+
      
      File.Create FileName.FileName
      ScriptData = File.FixedString(-1)
