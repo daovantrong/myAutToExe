@@ -16,7 +16,7 @@ Sub DeToken()
    
    With File
     
-      log "Trying to DeTokenise: " & FileName.FileName
+      Log "Trying to DeTokenise: " & FileName.FileName
       
       If InStr(TokenFile_RequiredInputExtensions, FileName.Ext) = 0 Then
          Err.Raise NO_AUT_DE_TOKEN_FILE, , "STOPPED!!! Required FileExtension for Tokenfiles: '" & TokenFile_RequiredInputExtensions & "'" & vbCrLf & _
@@ -70,8 +70,7 @@ Sub DeToken()
       Dim DecodeString As StringReader: Set DecodeString = New StringReader
 
       Do
-      
-
+   
          
          If (SourceCodeLineCount > Lines) Then
             Exit Do
@@ -135,7 +134,7 @@ Sub DeToken()
             RawString = .FixedStringW(size)
            
            'XorDecode String
-            Dim pos&, XorKey_l%, XorKey_h%, XorKey%
+            Dim pos&, XorKey_l As Byte, XorKey_h As Byte
             
             XorKey_l = (size And &HFF)
             XorKey_h = ((size \ &H100) And &HFF) ' 2^8 = 256
@@ -281,7 +280,7 @@ Sub DeToken()
          Case Else
             
            'Unknown Token
-           log "ERROR: Unknown Token: " & Cmd & " at " & H32(.Position)
+           Log "ERROR: Unknown Token: " & Cmd & " at " & H32(.Position)
            Exit Do
            'qw
            Stop
@@ -306,7 +305,7 @@ Sub DeToken()
   End With
   
   If FrmMain.Chk_TmpFile = vbUnchecked Then
-     log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
+     Log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
      FileDelete (FileName)
   End If
   
@@ -331,10 +330,10 @@ Sub DeToken()
 '
 '   End If
   
-  FrmMain.log "Converting Unicode to UTF8, since Tidy don't support unicode."
+  FrmMain.Log "Converting Unicode to UTF8, since Tidy don't support unicode."
   SaveScriptData UTF8_BOM & EncodeUTF8(ScriptData)
    
-  log "Token expansion succeed."
+  Log "Token expansion succeed."
    
   FrmMain.List_Source.Visible = False
 
@@ -344,19 +343,20 @@ End Sub
 
 
 Private Sub LogSourceCodeLine(TextLine$)
-   On Error Resume Next
-   With FrmMain.List_Source
-      
-      .AddItem TextLine
-    
-    ' Process windows messages (=Refresh display)
-      If Rnd < 0.01 Then
-          ' Scroll to last item
-         .ListIndex = .ListCount - 1
-      End If
-      
-   End With
-
+   If FrmMain.Chk_verbose.Value = vbChecked Then
+   
+      On Error Resume Next
+      With FrmMain.List_Source
+         .AddItem TextLine
+       
+       ' Process windows messages (=Refresh display)
+         If Rnd < 0.01 Then
+             ' Scroll to last item
+            .ListIndex = .ListCount - 1
+         End If
+         
+      End With
+   End If
 End Sub
 
 ' Add WhiteSpace Seperator to SourceCodeLine
@@ -387,21 +387,21 @@ End Function
 
 
 
-Private Sub FL_verbose(text)
-   FrmMain.FL_verbose text
+Private Sub FL_verbose(Text)
+   FrmMain.FL_verbose Text
 End Sub
 Private Sub log_verbose(TextLine$)
    FrmMain.log_verbose TextLine$
 End Sub
 
-Private Sub FL(text)
-   FrmMain.FL text
+Private Sub FL(Text)
+   FrmMain.FL Text
 End Sub
 
 '/////////////////////////////////////////////////////////
 '// log -Add an entry to the Log
-Private Sub log(TextLine$)
-   FrmMain.log TextLine$
+Private Sub Log(TextLine$)
+   FrmMain.Log TextLine$
 End Sub
 
 '/////////////////////////////////////////////////////////

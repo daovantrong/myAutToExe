@@ -25,13 +25,13 @@ Startup="FrmMain"
 HelpFile=""
 Title="AutToExe"
 ExeName32="myAutToExe.exe"
-Command32=""e:\Programmierung\Projekte\AutToExe\!Test\unicodeTest\test2\1\test2.exe""
+Command32=""e:\Programmierung\Projekte\AutToExe\!Test\Bots\1\123.exe""
 Name="myAutToExe"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
 MinorVer=1
-RevisionVer=70
+RevisionVer=78
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionComments="http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234"

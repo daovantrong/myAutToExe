@@ -9,13 +9,13 @@ Begin VB.Form FrmFuncRename
    ScaleHeight     =   9165
    ScaleWidth      =   12510
    StartUpPosition =   3  'Windows-Standard
-   Begin VB.CommandButton cmd_Load 
-      Caption         =   "Load"
-      Height          =   615
-      Left            =   7920
-      TabIndex        =   8
-      Top             =   1125
-      Width           =   735
+   Begin VB.TextBox Txt_Include 
+      Height          =   285
+      Left            =   10320
+      TabIndex        =   19
+      Text            =   "Txt_Include"
+      Top             =   1800
+      Width           =   2175
    End
    Begin VB.CommandButton Cmd_Remove_assign 
       Caption         =   "v  Remove func assignment  v"
@@ -33,22 +33,6 @@ Begin VB.Form FrmFuncRename
       TabIndex        =   4
       Top             =   360
       Width           =   2175
-   End
-   Begin VB.CommandButton cmdHelp 
-      Caption         =   "Help"
-      Height          =   615
-      Left            =   8640
-      TabIndex        =   9
-      Top             =   1125
-      Width           =   735
-   End
-   Begin VB.CommandButton cmd_Save 
-      Caption         =   "Save"
-      Height          =   615
-      Left            =   7080
-      TabIndex        =   7
-      Top             =   1125
-      Width           =   855
    End
    Begin VB.CommandButton Cmd_DoSearchAndReplace 
       Caption         =   "Apply search and replace"
@@ -169,6 +153,30 @@ Begin VB.Form FrmFuncRename
       Top             =   285
       Width           =   1815
    End
+   Begin VB.CommandButton cmd_Save 
+      Caption         =   "Save"
+      Height          =   615
+      Left            =   7080
+      TabIndex        =   7
+      Top             =   1125
+      Width           =   855
+   End
+   Begin VB.CommandButton cmd_Load 
+      Caption         =   "Load"
+      Height          =   615
+      Left            =   7920
+      TabIndex        =   8
+      Top             =   1125
+      Width           =   735
+   End
+   Begin VB.CommandButton cmdHelp 
+      Caption         =   "Help"
+      Height          =   615
+      Left            =   8640
+      TabIndex        =   9
+      Top             =   1125
+      Width           =   735
+   End
    Begin VB.Line Line 
       BorderWidth     =   3
       Index           =   2
@@ -268,6 +276,7 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
    Dim SearchAndReplaceJob_Line$
    Dim SearchAndReplace_LookFor$
    Dim SearchAndReplace_ReplaceWith$
+   Dim SearchAndReplace_Include$
    
    Dim MousePointer_Backup%
    MousePointer_Backup = MousePointer
@@ -282,18 +291,44 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
          tmp = Split(SearchAndReplaceJob_Line, FN_ASSIGNED_FUNC_REPL_SEP)
          SearchAndReplace_LookFor = tmp(0)
          SearchAndReplace_ReplaceWith = tmp(1)
+         SearchAndReplace_Include = tmp(2)
       
+       ' Delete Function (& insert include)
+         Dim FunctionBody_ReplaceText$
+         FunctionBody_ReplaceText = ";  Func " & SearchAndReplace_ReplaceWith
+         
+         If SearchAndReplace_Include <> "" Then
+            '";" & String(79, "=") &
+            FunctionBody_ReplaceText = vbCrLf & vbCrLf & "#include <" & SearchAndReplace_Include & ">" & vbCrLf & FunctionBody_ReplaceText
+            Log "Deleting Func '" & SearchAndReplace_LookFor & "' & adding include '" & SearchAndReplace_Include & "'"
+         Else
+            Log "Deleting Func " & SearchAndReplace_LookFor
+         End If
+         
+         
+         
+         strCropAndDelete SearchAndReplBuff, _
+                           vbCrLf & vbCrLf & "Func " & SearchAndReplace_LookFor, _
+                           "EndFunc" & vbCrLf, , , _
+                           FunctionBody_ReplaceText
+       
+       
        ' Replace all
          Dim ReplacementsDone&
          ReplacementsDone = &H7FFFFFFF
          ReplaceDo SearchAndReplBuff, SearchAndReplace_LookFor, SearchAndReplace_ReplaceWith, 1, ReplacementsDone
 '         .List(ListItemIdx) = ReplacementsDone & vbTab & .List(ListItemIdx)
          Log ReplacementsDone & " occurence of " & SearchAndReplaceJob_Line & " found & replaced."
+         
+       ' Mark unused functions with ;;
+         If ReplacementsDone = 0 Then
+            ReplaceDo SearchAndReplBuff, FunctionBody_ReplaceText, Replace(FunctionBody_ReplaceText, "; ", ";;"), 1
+         End If
       Next
    End With
    
    MousePointer = MousePointer_Backup
-   Cmd_DoSearchAndReplace.Enabled = False
+'   Cmd_DoSearchAndReplace.Enabled = False
    
  
  
@@ -437,6 +472,12 @@ On Error GoTo LoadSearchReplaceData_Err
             Dim funcNameInc$
             funcNameInc = Textline_items(1)
             
+            Dim Include$
+            Include = Textline_items(2)
+            
+            ListBox_FindAndSelectedItem File_Includes, Include
+
+            
    ' Find Item in Org list
             With List_Fn_Org
                
@@ -470,6 +511,21 @@ On Error GoTo LoadSearchReplaceData_Err
                   SearchAndReplace_AddItem
                Else
                   Log "Load_Error: Item not found in IncludeList. CurLine: '" & item & "'"
+                  
+'                 'Add item to search'n'replace
+'                  With List_Fn_Assigned
+'                     .AddItem funcNameOrg & FN_ASSIGNED_FUNC_REPL_SEP & funcNameInc
+'                     .ListIndex = .ListCount - 1
+'                    ' Store Functionidx finding&display functionText on click
+''                      List_Fn_Assigned_FuncIdxs.Add Array(List_Fn_Org.ListIndex, 1)
+''                     .ItemData(.ListIndex) = List_Fn_Assigned_FuncIdxs.Count
+'
+'                  End With
+'                 ' Delete from list
+'                  With List_Fn_Org
+'                     .RemoveItem .ListIndex
+'                  End With
+                  
                End If ' Found in org
             Else
                Log "Load_Error: Item not found in OrginalList. CurLine: '" & item & "'"
@@ -554,7 +610,12 @@ Private Function GetListBoxData$(Listbox As Listbox)
 End Function
 
 Private Sub File_Includes_Click()
-   Txt_Fn_Inc_FileName = File_Includes.Path & "\" & File_Includes.FileName
+   Dim tmpFileName$
+   tmpFileName = File_Includes.Path & "\" & File_Includes.FileName
+   If Txt_Fn_Inc_FileName <> tmpFileName Then
+     'Triggers _ChangeText
+      Txt_Fn_Inc_FileName = tmpFileName
+   End If
 End Sub
 
 '///////////////////////////////////////////
@@ -581,11 +642,18 @@ Private Sub Form_Resize()
       
       Txt_Fn_Org.Width = (Me.Width \ 2)
       
+      
+      
+      
    'leftside
       Txt_Fn_Inc_FileName.Left = Me.Width \ 2
       Txt_Fn_Inc_FileName.Width = (Me.Width \ 2) - 150
       
+      cmd_inc_reload.Left = Me.Width \ 2
+      
       File_Includes.Left = Me.Width - File_Includes.Width - 150
+      
+      Txt_Include.Left = File_Includes.Left
       
       Txt_Fn_Inc.Left = Me.Width \ 2
       Txt_Fn_Inc.Width = (Me.Width \ 2) - 150
@@ -663,6 +731,22 @@ Private Sub List_Fn_Inc_Click()
       Txt_Fn_Inc = Functions_Inc(.ItemData(.ListIndex))
    End With
 End Sub
+
+Private Sub ListBox_FindAndSelectedItem(Listbox As Object, itemText$)
+   'On Error Resume Next
+   With Listbox
+      Dim item
+      For item = 0 To .ListCount - 1
+         If .List(item) Like itemText Then
+            .ListIndex = item
+            Exit For
+         End If
+      Next
+      
+   End With
+
+End Sub
+
 
 Private Sub ListBox_ScrollToFirstSelected(Listbox As Listbox)
    'On Error Resume Next
@@ -767,8 +851,14 @@ Private Sub SearchAndReplace_AddItem()
    
    
    With List_Fn_Assigned
-      .AddItem FuncOldName & FN_ASSIGNED_FUNC_REPL_SEP & FuncNewName
+   
+      .AddItem FuncOldName & FN_ASSIGNED_FUNC_REPL_SEP & FuncNewName & FN_ASSIGNED_FUNC_REPL_SEP & Txt_Include
       .ListIndex = .ListCount - 1
+      
+            
+      Txt_Include = ""
+      
+
       
     ' Store Functionidx finding&display functionText on click
       List_Fn_Assigned_FuncIdxs.Add Array(FuncOldNameIdx, FuncNewNameIdx)
@@ -822,19 +912,23 @@ End Sub
 
 Private Sub Txt_Fn_Inc_FileName_Change()
    If FileExists(Txt_Fn_Inc_FileName) Then
-        
-      Dim FileName As New ClsFilename
-      With FileName
-         FileName = Txt_Fn_Inc_FileName
-         File_Includes.Path = .Path
-      End With
       
       OpenAndFill Txt_Fn_Inc_FileName, Script_Inc, Functions_Inc, List_Fn_Inc
 
+'   ElseIf DirExists(Txt_Fn_Inc_FileName) Then
+   
    Else
 '      Txt_Fn_Inc_FileName.SetFocus
    End If
-
+   
+   Dim FileName As New ClsFilename
+   With FileName
+      FileName = Txt_Fn_Inc_FileName
+      File_Includes.Path = .Path
+      ListBox_FindAndSelectedItem File_Includes, .NameWithExt
+      
+      Txt_Include = .NameWithExt
+   End With
 End Sub
 
 Private Sub Txt_Fn_Inc_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)

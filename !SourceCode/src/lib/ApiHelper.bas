@@ -82,12 +82,12 @@ Function Listbox_GetHorizontalExtent(lb As Listbox) As Long
 End Function
 
 
-Function ShellEx&(FileName$, Params$)
+Function ShellEx&(FileName$, Params$, Optional WinStyle As VbAppWinStyle = vbHide)
       
 Dim RetVal
 '   On Error Resume Next
 '  RetVal = ShellExecute(Me.hwnd, "open", """" & App.Path & "/" & "lzss.exe""", "-d """ & dbgFile.FileName & """ """ & outFileName & """", "", SW_NORMAL)
-   RetVal = Shell("""" & FileName & """ " & Params, vbHide)
+   RetVal = Shell("""" & FileName & """ " & Params, WinStyle)
    
    If RetVal Then
     Dim hProcess&, ExitCode&
@@ -194,15 +194,15 @@ Private Sub createBackup()
 End Sub
 
 
-Sub log_verbose(text$)
-   FrmMain.log text
+Sub log_verbose(Text$)
+   FrmMain.Log Text
 End Sub
 
-Function isUTF16(text$) As Boolean
-   isUTF16 = (Mid(text, 1, Len(UTF16_BOM)) = UTF16_BOM)
+Function isUTF16(Text$) As Boolean
+   isUTF16 = (Mid(Text, 1, Len(UTF16_BOM)) = UTF16_BOM)
 End Function
-Function isUTF8(text$) As Boolean
-   isUTF8 = (Mid(text, 1, Len(UTF8_BOM)) = UTF8_BOM)
+Function isUTF8(Text$) As Boolean
+   isUTF8 = (Mid(Text, 1, Len(UTF8_BOM)) = UTF8_BOM)
 End Function
 
 

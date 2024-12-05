@@ -244,25 +244,25 @@ End Function
 
 
 'Searches for some string and then starts there to crop
-Function strCropWithSeek$(text$, LeftString$, RightString$, Optional errorvalue, Optional SeektoStrBeforeSearch$)
-   strCropWithSeek = strCrop1(text$, LeftString$, RightString$, errorvalue, _
-            InStr(1, text, SeektoStrBeforeSearch))
+Function strCropWithSeek$(Text$, LeftString$, RightString$, Optional errorvalue, Optional SeektoStrBeforeSearch$)
+   strCropWithSeek = strCrop1(Text$, LeftString$, RightString$, errorvalue, _
+            InStr(1, Text, SeektoStrBeforeSearch))
 End Function
 
 
-Function strCrop1$(ByVal text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1)
+Function strCrop1$(ByVal Text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1)
    
    Dim cutend&, cutstart&
-      cutstart = InStr(StartSearchAt, text, LeftString)
+      cutstart = InStr(StartSearchAt, Text, LeftString)
    If cutstart Then
       cutstart = cutstart + Len(LeftString)
-      cutend = InStr(cutstart, text, RightString)
+      cutend = InStr(cutstart, Text, RightString)
       If cutend > cutstart Then
-         strCrop1 = Mid$(text, cutstart, cutend - cutstart)
+         strCrop1 = Mid$(Text, cutstart, cutend - cutstart)
       Else
         'is Rightstring empty?
          If RightString = "" Then
-            strCrop1 = Mid$(text, cutstart)
+            strCrop1 = Mid$(Text, cutstart)
          Else
             strCrop1 = errorvalue
          End If
@@ -273,18 +273,20 @@ Function strCrop1$(ByVal text$, LeftString$, RightString$, Optional errorvalue =
 
 End Function
 
-Function strCropAndDelete(text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1)
-   strCropAndDelete = strCrop1(text$, LeftString$, RightString$, errorvalue, StartSearchAt)
-   text = Replace(text, LeftString & strCropAndDelete & RightString, "", , , vbTextCompare)
+Function strCropAndDelete(Text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1, Optional ReplaceString$ = "")
+   strCropAndDelete = strCrop1(Text$, LeftString$, RightString$, errorvalue, StartSearchAt)
+   Text = Replace(Text, LeftString & strCropAndDelete & RightString, ReplaceString, , , vbTextCompare)
 End Function
 
-Function strCrop$(text$, LeftString$, RightString$, Optional errorvalue, Optional StartSearchAt = 1)
+
+
+Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue, Optional StartSearchAt = 1)
    
    Dim cutend&, cutstart&
-      cutend = InStr(StartSearchAt, text, RightString)
+      cutend = InStr(StartSearchAt, Text, RightString)
    If cutend Then
-      cutstart = InStrRev(text, LeftString, cutend, vbBinaryCompare) + Len(LeftString)
-      strCrop = Mid$(text, cutstart, cutend - cutstart)
+      cutstart = InStrRev(Text, LeftString, cutend, vbBinaryCompare) + Len(LeftString)
+      strCrop = Mid$(Text, cutstart, cutend - cutstart)
    Else
       strCrop = errorvalue
    End If

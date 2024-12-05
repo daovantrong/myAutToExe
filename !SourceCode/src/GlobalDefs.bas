@@ -49,7 +49,7 @@ Sub SaveScriptData(ScriptData$)
    With FrmMain
    ' Adding a underscope '_' for lines longer than 2047
    ' so Tidy will not complain
-      FrmMain.log "Try to breaks very long lines (about 2000 chars) by adding '_'+<NewLine> ..."
+      FrmMain.Log "Try to breaks very long lines (about 2000 chars) by adding '_'+<NewLine> ..."
       ScriptData = AddLineBreakToLongLines(Split(ScriptData, vbCrLf))
    
 'debug
@@ -58,10 +58,10 @@ Sub SaveScriptData(ScriptData$)
     ' overwrite script
       If FrmMain.Chk_TmpFile.Value = vbChecked Then
          FileName.Name = FileName.Name & "_restore"
-         .log "Saving script to: " & FileName.FileName
+         .Log "Saving script to: " & FileName.FileName
       Else
 '         FileDelete FileName.Name
-         .log "Save/overwrite script to: " & FileName.FileName
+         .Log "Save/overwrite script to: " & FileName.FileName
       End If
 
      
@@ -73,37 +73,40 @@ Sub SaveScriptData(ScriptData$)
      
      ShowScript ScriptData
      
-     .log ""
-     .log "Running 'Tidy.exe " & FileName.NameWithExt & "' to improve sourcecode readablity."
+     .Log ""
+     .Log "Running 'Tidy.exe " & FileName.NameWithExt & "' to improve sourcecode readability."
      
      Dim cmdline$, parameters$, Logfile$
      cmdline = App.Path & "\Tidy\Tidy.exe"
      parameters = """" & FileName & """" ' /KeepNVersions=1
-     .log cmdline & " " & parameters
+     .Log cmdline & " " & parameters
      
      Dim TidyExitCode&
-     TidyExitCode = ShellEx(cmdline, parameters)
-     .log "Tidy.exe ExitCode: " & TidyExitCode
-   
-      Dim TidyBackupFileName As New ClsFilename
-      TidyBackupFileName.mvarFileName = FileName.mvarFileName
-      TidyBackupFileName.Name = TidyBackupFileName.Name & "_old1"
+     TidyExitCode = ShellEx(cmdline, parameters, vbNormalFocus)
+     If TidyExitCode = 0 Then
+         .Log "=> Okay (ExitCode: " & TidyExitCode & ")."
+         Dim TidyBackupFileName As New ClsFilename
+         TidyBackupFileName.mvarFileName = FileName.mvarFileName
+         TidyBackupFileName.Name = TidyBackupFileName.Name & "_old1"
+         
+       ' Delete Tidy BackupFile
+         If FrmMain.Chk_TmpFile.Value = vbUnchecked Then
+            .Log "Deleting Tidy BackupFile..." ' & TidyBackupFileName.NameWithExt
+            FileDelete TidyBackupFileName.FileName
+         End If
+        
+        
+        
+        File.Create FileName.FileName
+        ScriptData = File.FixedString(-1)
+        File.CloseFile
       
-    ' Delete Tidy BackupFile
-      If FrmMain.Chk_TmpFile.Value = vbUnchecked Then
-         .log "Deleting Tidy BackupFile..." ' & TidyBackupFileName.NameWithExt
-         FileDelete TidyBackupFileName.FileName
-      End If
-     
-     
-
-     
-     File.Create FileName.FileName
-     ScriptData = File.FixedString(-1)
-     File.CloseFile
-   
-     ShowScript ScriptData
-     
+        ShowScript ScriptData
+        
+     Else
+        .Log "Tidy.exe ExitCode: " & TidyExitCode & " =>some failure!"
+        .Log "Attention: Tidy.exe failed. Deobfucator will probably also fail because scriptfile is not in proper format."
+     End If
   End With
 End Sub
 

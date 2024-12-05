@@ -24,7 +24,7 @@ Sub Log(Text$)
 End Sub
 
 Sub log2(Text$)
-   FrmMain.log2 (Text)
+   FrmMain.log2 Text
 End Sub
 
 Private Sub DeObfuscate_Encodeit()
@@ -685,12 +685,15 @@ End Sub
 
 Private Sub DeObfu_ReplaceLocals(ByRef CodeSnipped$)
 'log "Renaming Locals..."
-   z_DeObfu_ReplaceX CodeSnipped, "Local", ""
+   z_DeObfu_ReplaceX CodeSnipped, "Local ", ""
 End Sub
 
 Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr$, ByRef NewStr$)
 'log "Renaming Locals..."
+ ' avoid Replacing ShellExecute
+   ReplaceDo Data, "ShellExecute", "Shell_xecute"
       ReplaceDo Data, "Execute(" & ReplaceStr & ")", NewStr
+   ReplaceDo Data, "Shell_xecute", "ShellExecute"
       ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr)
       ReplaceDo Data, ReplaceStr, """" & Replace(NewStr, """", """""") & """"
 End Sub
