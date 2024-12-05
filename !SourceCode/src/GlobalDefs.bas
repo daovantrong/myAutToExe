@@ -15,6 +15,14 @@ Public Const NO_AUT_DE_TOKEN_FILE& = &H100
 
 Public ExtractedFiles As Collection
 
+Public IsCommandlineMode As Boolean
+Public IsOpt_QuitWhenFinish As Boolean
+Public IsOpt_RunSilent As Boolean
+
+
+
+
+
 Sub DoEventsSeldom()
    If Rnd < 0.01 Then DoEvents
 End Sub

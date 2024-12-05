@@ -332,7 +332,7 @@ Private Function TestForV3_0() As Boolean
          bIsProbablyOldScript = True
        
        ' Check CRC32 to be sure that it's in the right format
-         CRCInit (79764919) '&H4C11DB7)
+         CRCInit 79764919 '&H4C11DB7)
       
          Dim Script_CRC_Calculated&
          .Position = 0
@@ -359,8 +359,8 @@ End Function
 Private Sub FindStartOfScriptAlternative()
    With File
       
-      bIsProbablyOldScript = FrmMain.Chk_force_old_script_type.Value = vbChecked
-      If FrmMain.Chk_force_old_script_type.Value = CheckBoxConstants.vbGrayed Then
+      bIsProbablyOldScript = FrmMain.Chk_ForceOldScriptType.Value = vbChecked
+      If FrmMain.Chk_ForceOldScriptType.Value = CheckBoxConstants.vbGrayed Then
       
          bIsNewScriptType = False
          

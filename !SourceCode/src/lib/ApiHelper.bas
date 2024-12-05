@@ -23,8 +23,6 @@ Public Declare Function GetTickCount Lib "kernel32.dll" () As Long
 
 Public Declare Function MoveFile Lib "kernel32" Alias "MoveFileA" (ByVal lpExistingFileName As String, ByVal lpNewFileName As String) As Long
 
-
-
 Public Const SW_HIDE As Long = 0
 Public Const SW_MAXIMIZE As Long = 3
 Public Const SW_MINIMIZE As Long = 6
@@ -196,6 +194,6 @@ End Sub
 
 
 
-Sub log_verbose(Text$)
-   FrmMain.log Text
+Sub log_verbose(text$)
+   FrmMain.log text
 End Sub

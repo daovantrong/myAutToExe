@@ -332,55 +332,54 @@ log "Restoring StringNames in ..."
    Dim Stat_NumLocal&, Stat_NumAtAll&
    Stat_NumAtAll = 0
 
+
+BenchStart
   
    Dim EndToken$, NewScript2
    EndToken = "EndFunc" & vbCrLf
   
    NewScript2 = Split(NewScript, "Func ")
    Dim i&
-   Dim ScriptFunction: i = 0
-   For Each ScriptFunction In NewScript2
+   Dim iter: i = 0
+   For iter = LBound(NewScript2) To UBound(NewScript2)
+   Dim ScriptFunction$
+   ScriptFunction = NewScript2(iter)
+      
+ ' Show ScriptFunction Before
+   FrmMain.Txt_Script = ScriptFunction
       
    
     ' Get Current FunctionName
       Dim FunctionName$
       If i = 0 Then
          FunctionName = "Main"
+         log "FunctionName: " & FunctionName
+         
       Else
+        
+       ' Extract FunctionName, Store it for later
+         FunctionName = strCrop1(ScriptFunction, "", "(")
+         DeObfu_FunctionNames.Add FunctionName
+         log "FunctionName: " & FunctionName
+       
+       ' === Replace Locals ====
+         DeObfu_ReplaceLocals ScriptFunction
+        
+       ' === Replace FunctionArguments  ====
+         DeObfu_ReplaceFnArgs ScriptFunction, FunctionName
+         
+         
         'Check for Mainfunction chunks between FUNC and ENDFUNC
          Dim afterEndFunc$
          afterEndFunc = Split(CStr(ScriptFunction), EndToken)(1)
          If Replace(CStr(afterEndFunc), vbCrLf, "") <> "" Then
-           '... apply search& replace here
-           
-           Dim index
-           For Each index In MainIndexes
-'           For index = 1 To StringTBL.Count
-            ' Restore String
-              Dim tmpstr$
-              tmpstr = ScriptFunction
-              DeObfu_ReplaceStrings tmpstr, CStr(LocalStringNames(index)), StringTBL(index)
-              ScriptFunction = tmpstr
-
-           Next
-           
-           
-           
+           '... apply String Restore
+            Dim index
+            For Each index In MainIndexes
+              DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), StringTBL(index)
+            Next
          End If
-         FunctionName = strCrop1(ScriptFunction, "", "(")
-         
-          ' Store for later
-         DeObfu_FunctionNames.Add FunctionName
-   
-        tmpstr = ScriptFunction
-       
-       ' === Replace Locals ====
-         DeObfu_ReplaceLocals tmpstr
-        
-       ' === Replace FunctionArguments  ====
-         DeObfu_ReplaceFnArgs tmpstr, FunctionName
-         
-         ScriptFunction = tmpstr
+
          
          
       End If
@@ -390,7 +389,7 @@ log "Restoring StringNames in ..."
       
       
 
-   log "FunctionName: " & FunctionName
+
 '   Debug.Assert "A2600102853" <> FunctionName
 
      
@@ -406,11 +405,10 @@ log "Restoring StringNames in ..."
       If i = 0 Then
          obfuSection = ScriptFunction
       Else
-         tmpstr = ScriptFunction
+
 '         obfuSection = strCropAndDelete(tmpstr, "If Not Isdeclared(", "EndIF" & vbCrLf)
-         obfuSection = strCropAndDelete(tmpstr, "If Not IsDeclared(", "EndIf" & vbCrLf)
-         Debug.Assert InStr(1, tmpstr, "IsDeclared", vbTextCompare) = 0
-         ScriptFunction = tmpstr
+         obfuSection = strCropAndDelete(ScriptFunction, "If Not IsDeclared(", "EndIf" & vbCrLf)
+         Debug.Assert InStr(1, ScriptFunction, "IsDeclared", vbTextCompare) = 0
       End If
          
     ' Statistic Counter for String in Current function
@@ -429,10 +427,8 @@ log "Restoring StringNames in ..."
     ' EXIT DO: if CommandSeperateLines dont contains sth like $Os[0x7] it's no obfu definition
       If InStr(1, CommandSeperateLines, "$Os[", vbTextCompare) = 0 Then Exit Do
           
-          If i = 0 Then
-            tmpstr = ScriptFunction
-            strCropAndDelete tmpstr, IIf(i = 0, "global ", "Global "), vbCrLf
-            ScriptFunction = tmpstr
+         If i = 0 Then
+            strCropAndDelete ScriptFunction, IIf(i = 0, "global ", "Global "), vbCrLf
          End If
           
           GlobalStringDef = Split(CommandSeperateLines, ",")
@@ -467,13 +463,12 @@ log "Restoring StringNames in ..."
              End If
 
           
-            tmpstr = ScriptFunction
               
            'Replace Strings
           ' In ScriptFunction code Replace all "$SA3160B01D3E" with for exsample "Wrong Name Entered!"
 '            Debug.Print "Number(" & LocalStringNames(index) & ")", StringTBL(index)
-            DeObfu_ReplaceStrings tmpstr, CStr(LocalStringNames(index)), StringTBL(index)
-            ScriptFunction = tmpstr
+            DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), StringTBL(index)
+
               
          Next
 
@@ -483,7 +478,7 @@ log "Restoring StringNames in ..."
       log "  Local strings: " & Stat_NumLocal
       Stat_NumAtAll = Stat_NumAtAll + Stat_NumLocal
     
-    
+   ' Show ScriptFunction after
      FrmMain.Txt_Script = ScriptFunction
 
     
@@ -510,6 +505,14 @@ log "strings in Tbl: " & StringTBL.Count
   '=== Replace Functionname
    DeObfu_ReplaceFunctionNames NewScript
 
+
+'  '=== Replace Global Strings
+'
+'  log "Restoring global strings..."
+'  For Each index In MainIndexes
+'      DeObfu_ReplaceStrings NewScript, CStr(LocalStringNames(index)), StringTBL(index)
+'  Next
+'BenchEnd
 
   
   'Used String
@@ -885,7 +888,7 @@ log "Restoring StringNames in ..."
              Dim index
              index = UBound(LocalStringNames)
              'CLng("&h" & strCrop1(LocalStringName_Splitted(1), "$Os[0x", "])"))
-             LocalStringNames(index) = LocalStringName_Splitted(0)
+             LocalStringNames(index) = Trim(LocalStringName_Splitted(0))
             'LocalStringNames(&h7) = "$SA3160B01D3E"
             
              StringTBL.Add HexStringToString(Trim(strCrop1(LocalStringName_Splitted(1), """", """")))
@@ -952,9 +955,6 @@ log "strings in Tbl: " & StringTBL.Count
 '           For index = 1 To StringTBL.Count
 'Debug.Assert LocalStringNames(index) <> "$SA5C9AB03457"
       DeObfu_ReplaceStrings NewScript, CStr(LocalStringNames(index)), StringTBL(index)
-'     NewScript = Replace(NewScript, "Execute(" & LocalStringNames(index) & ")", StringTBL(index))
-'     NewScript = Replace(NewScript, "Number(" & LocalStringNames(index) & ")", FormatNumber(StringTBL(index)))
-'     NewScript = Replace(NewScript, CStr(LocalStringNames(index)), """" & Replace(StringTBL(index), """", """""") & """")
 
   Next
                                  

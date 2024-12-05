@@ -1,81 +1,89 @@
 VERSION 5.00
 Begin VB.Form FrmMain 
-   Caption         =   "myExe2Aut >The Open Source Autoit/AutoHotKey Script Decompiler<"
-   ClientHeight    =   9045
+   Caption         =   "myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler<"
+   ClientHeight    =   9510
    ClientLeft      =   2595
    ClientTop       =   4935
-   ClientWidth     =   9390
+   ClientWidth     =   9345
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   9045
-   ScaleWidth      =   9390
-   Begin VB.CheckBox chk_verbose 
-      Caption         =   "Verbose LogOutput"
-      Height          =   195
-      Left            =   2535
-      TabIndex        =   11
-      Top             =   8790
-      Width           =   3615
-   End
-   Begin VB.CheckBox chk_NoDeTokenise 
-      Caption         =   "Disable Detokeniser"
-      Height          =   195
-      Left            =   7320
-      TabIndex        =   10
-      ToolTipText     =   "Enable that when you decompile AutoItScripts lower than ver 3.1.6"
-      Top             =   8805
-      Visible         =   0   'False
-      Width           =   5295
-   End
-   Begin VB.CheckBox Chk_force_old_script_type 
-      Caption         =   "Force Old Script Type"
-      Height          =   255
+   ScaleHeight     =   9510
+   ScaleWidth      =   9345
+   Begin VB.Frame Fr_Options 
+      Height          =   855
       Left            =   120
-      TabIndex        =   8
-      Top             =   8760
-      Value           =   2  'Zwischenzustand
-      Width           =   3255
+      TabIndex        =   6
+      Top             =   8520
+      Width           =   9135
+      Begin VB.CheckBox Chk_TmpFile 
+         Caption         =   "Don't delete temp files (for ex. compressed scriptdata)"
+         Height          =   435
+         Left            =   120
+         TabIndex        =   12
+         Top             =   240
+         Width           =   2655
+      End
+      Begin VB.CheckBox Chk_NormalSigScan 
+         Caption         =   "Use 'normal' Au3_Signature to find start of script"
+         Height          =   195
+         Left            =   4920
+         TabIndex        =   11
+         Top             =   240
+         Width           =   3975
+      End
+      Begin VB.CheckBox Chk_NoDeTokenise 
+         Caption         =   "Disable Detokeniser"
+         Height          =   195
+         Left            =   8760
+         TabIndex        =   10
+         ToolTipText     =   "Enable that when you decompile AutoItScripts lower than ver 3.1.6"
+         Top             =   480
+         Visible         =   0   'False
+         Width           =   5295
+      End
+      Begin VB.CheckBox Chk_verbose 
+         Caption         =   "Verbose LogOutput"
+         Height          =   195
+         Left            =   4920
+         MaskColor       =   &H8000000F&
+         TabIndex        =   9
+         Top             =   510
+         Width           =   1800
+      End
+      Begin VB.CheckBox Chk_ForceOldScriptType 
+         Caption         =   "Force Old Script Type"
+         Height          =   255
+         Left            =   2880
+         TabIndex        =   8
+         Top             =   480
+         Value           =   2  'Zwischenzustand
+         Width           =   3255
+      End
+      Begin VB.CheckBox Chk_RestoreIncludes 
+         Caption         =   "Restore Includes"
+         Height          =   195
+         Left            =   2880
+         TabIndex        =   7
+         Top             =   240
+         Value           =   1  'Aktiviert
+         Width           =   1560
+      End
    End
    Begin VB.CommandButton cmd_MD5_pwd_Lookup 
       Caption         =   "Lookup Passwordhash"
       Height          =   375
       Left            =   7440
-      TabIndex        =   7
+      TabIndex        =   4
       ToolTipText     =   "Copies hash to clipboard and does an online query."
       Top             =   120
       Visible         =   0   'False
       Width           =   1815
-   End
-   Begin VB.CheckBox Chk_NormalSigScan 
-      Caption         =   "Use 'normal' Au3_Signature to find start of script"
-      Height          =   195
-      Left            =   4920
-      TabIndex        =   5
-      Top             =   8580
-      Width           =   3975
-   End
-   Begin VB.CheckBox Chk_RestoreIncludes 
-      Caption         =   "Restore Includes"
-      Height          =   195
-      Left            =   3360
-      TabIndex        =   6
-      Top             =   8595
-      Value           =   1  'Aktiviert
-      Width           =   1560
    End
    Begin VB.Timer Timer_OleDrag 
       Enabled         =   0   'False
       Interval        =   100
       Left            =   240
       Top             =   480
-   End
-   Begin VB.CheckBox Chk_TmpFile 
-      Caption         =   "Don't delete temp file (compressed script)"
-      Height          =   195
-      Left            =   120
-      TabIndex        =   4
-      Top             =   8565
-      Width           =   3855
    End
    Begin VB.CommandButton Cmd_About 
       Caption         =   "About"
@@ -110,7 +118,7 @@ Begin VB.Form FrmMain
       ItemData        =   "frmMain.frx":628A
       Left            =   120
       List            =   "frmMain.frx":628C
-      TabIndex        =   9
+      TabIndex        =   5
       Top             =   600
       Visible         =   0   'False
       Width           =   9135
@@ -159,7 +167,7 @@ Sub FL_verbose(text)
 End Sub
 
 Sub log_verbose(TextLine$)
-   If chk_verbose.Value = vbChecked Then log TextLine
+   If Chk_verbose.Value = vbChecked Then log TextLine
 End Sub
 
 
@@ -167,6 +175,11 @@ End Sub
 Sub FL(text)
    log H32(File.Position - 1) & " -> " & text
 End Sub
+
+Public Sub LogSub(TextLine$)
+   log "  " & TextLine
+End Sub
+
 
 Public Sub log2(TextLine$)
 '   log TextLine$
@@ -211,37 +224,135 @@ Private Sub cmd_MD5_pwd_Lookup_Click()
 
 End Sub
 
+
+'///////////////////////////////////////////
+'// General Load/Save Configuration Setting
+Private Function ConfigValue_Load(Key$, Optional DefaultValue)
+   ConfigValue_Load = GetSetting(App.Title, Me.Name, Key, DefaultValue)
+End Function
+Property Let ConfigValue_Save(Key$, Value As Variant)
+      SaveSetting App.Title, Me.Name, Key, Value
+End Property
+
+
+
+'///////////////////////////////////////////
+'// Load/Save a CheckBox State
+Sub CheckBox_Load(ByVal ChkBox As CheckBox)
+   ChkBox.Value = ConfigValue_Load(ChkBox.Name, ChkBox.Value)
+End Sub
+Sub CheckBox_Save(ByVal ChkBox As CheckBox)
+   ConfigValue_Save(ChkBox.Name) = ChkBox.Value
+End Sub
+
+
+'///////////////////////////////////////////
+'// Load/Save a Form Setting
+  'Iterate through all Item on the OptionsFrame
+  'incase it's no Checkbox a 'type mismatch error' will occur
+  'and due to "On Error Resume Next" it skip the call
+Sub FormSettings_Load()
+   On Error Resume Next
+   
+   Dim controlItem
+   For Each controlItem In Fr_Options.Container
+      CheckBox_Load controlItem
+   Next
+ 
+End Sub
+Sub FormSettings_Save()
+   On Error Resume Next
+   
+   Dim controlItem
+   For Each controlItem In Fr_Options.Container
+      CheckBox_Save controlItem
+   Next
+End Sub
+
+
 Private Sub Form_Load()
 
-   Listbox_SetHorizontalExtent List1, 6000
+  
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
-
-   Me.Show
+   FormSettings_Load
    
+   'Extent Listbox width
+   Listbox_SetHorizontalExtent List1, 6000
    
-   
-'   Dim BenchtimeA&, BenchtimeB&
-'   BenchtimeA = GetTickCount
-'
-'   Dim dofusc As New ClsDeobfuscator
-'   dofusc.DeObfuscate
-'
-'   BenchtimeB = GetTickCount
-'   Debug.Print BenchtimeB - BenchtimeA
-'
-'Exit Sub
-'Stop
-
+ 
  ' Commandlinesupport   :)
-   If FileExists(Command$) Then
-      Txt_Filename = Replace(Command$, """", "")
+   ProcessCommandline
+
+  'Show Form if SilentMode is not Enable
+   If IsOpt_RunSilent = False Then Me.Show
+
+  
+  'Open the File that was set by the commandline
+   If IsCommandlineMode Then
+      Txt_Filename = FileName
    Else
       Txt_Filename_Change
    End If
 End Sub
    
+   
+Private Sub ProcessCommandline()
 
+   Dim CommadLine As New CommandLine
+   With CommadLine
+   
+      If .NumberOfCommandLineArgs Then
+      
+         log "Cmdline Args: " & .CommandLine
+         
+         Dim arg
+         For Each arg In .getArgs
+            
+           'Check for options
+            If arg Like "[/-]*" Then
+
+               If arg Like "?[qQ]" Then
+                  IsOpt_QuitWhenFinish = True
+                  LogSub "Option 'QuitWhenFinish' enabled."
+                  
+               ElseIf arg Like "?[sS]" Then
+                  IsOpt_RunSilent = True
+                  LogSub "Option 'RunSilent' enabled."
+                  
+               Else
+                  LogSub "ERR_Unknow option: '" & arg & "'"
+                  
+               End If
+               
+          ' Check if CommandArg is a FileName
+            Else
+           
+               If IsCommandlineMode Then
+                  LogSub "ERR_Invalid Argument ('" & arg & "') filename already set."
+                  
+               Else
+                  If FileExists(arg) Then
+                     IsCommandlineMode = True
+                     FileName = arg
+                     LogSub "FileName : " & arg
+                  Else
+                     LogSub "ERR_Invalid Argument. Can't open file '" & arg & "'"
+                  End If
+               End If
+               
+            End If
+         Next
+      End If
+   End With
+
+   'Verify
+   If IsOpt_RunSilent And Not (IsOpt_QuitWhenFinish) Then
+      LogSub "ERR 'RunSilent' only makes sence together with 'QuitWhenFinish'. As long as you don't also enable 'QuitWhenFinish' 'RunSilent' is ignored "
+      IsOpt_RunSilent = False
+   End If
+
+End Sub
 
 Private Function FileExists(FileName) As Boolean
    On Error GoTo FileExists_err
@@ -263,6 +374,10 @@ Public Function GetLogdata$()
 End Function
 
 Private Sub Form_Unload(Cancel As Integer)
+   FormSettings_Save
+  
+ 'Close might be clicked 'inside' some DoEvents so
+ 'in case it was do a hard END
    End
 End Sub
 
@@ -280,17 +395,19 @@ End Sub
 
 Private Sub Txt_Filename_Change()
    
-   
    On Error GoTo Txt_Filename_err
    If FileExists(Txt_Filename) Then
       
-      List1.Clear
+     'Clear Log (expect when run via commandline)
+      If IsCommandlineMode = False Then List1.Clear
       Txt_Script = ""
       
       FileName = Txt_Filename
       
+      
       log String(80, "=")
-      log "           -=  " & Me.Caption & "  =-"
+'      log "           -=  " & Me.Caption & "  =-"
+      log Me.Caption
       log String(80, "=")
 '      log ""
          
@@ -313,7 +430,7 @@ Private Sub Txt_Filename_Change()
           Select Case Err
           Case 0, ERR_NO_OBFUSCATE_AUT
             
-            If Chk_RestoreIncludes = vbChecked Then SeperateIncludes
+            If Chk_RestoreIncludes.Value = vbChecked Then SeperateIncludes
           
           Case Else
             log Err.Description
@@ -375,6 +492,11 @@ Txt_Filename_err:
     File.Create FileName.FileName, True
     File.FixedString(-1) = GetLogdata
     File.CloseFile
+    
+    
+    IsCommandlineMode = False
+    
+    If IsOpt_QuitWhenFinish Then Unload Me
    
    End If
    

@@ -241,9 +241,9 @@ End Property
 
 
 Public Property Let int8(vData As Long)
-'    FixedString(1) = LngtoStr(vData)
+    FixedString(1) = LngtoStr(vData)
 '    FixedString(1) = ChrB(vData) & ChrB(0)
-    FixedString(1) = ChrW(vData) ' & ChrB(0)
+'    FixedString(1) = ChrW(vData) ' & ChrB(0)
 End Property
 
 

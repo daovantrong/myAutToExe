@@ -135,20 +135,39 @@ Sub DeToken()
            
            
            'XorDecode String
-            Dim StrCharPos&, tmpBuff$, XorKey%
-            XorKey = (size And &HFF)
-
+            Dim StrCharPos&, tmpBuff$, XorKey_l%, XorKey_h%, XorKey%
+            
+'            XorKey = (size And &HFFFF)
+            
+            XorKey_l = (size And &HFF)
+            XorKey_h = (size / &HFF And &HFF) ' 2^8 = 255
+            
+            Dim bNeedsUnicode As Boolean
+            bNeedsUnicode = False
+            Dim Char As Byte
+            
 '            tmpBuff$ = StrConv(RawString, vbFromUnicode)
             tmpBuff$ = RawString
-            
             For StrCharPos = 1 To Len(RawString) Step 2
-               MidB$(tmpBuff, StrCharPos, 1) = ChrB$(AscB(MidB$(tmpBuff, StrCharPos * 2 - 1, 1)) _
+               'MidB$(tmpBuff, StrCharPos, 2) = ChrB$(AscB(MidB$(tmpBuff, StrCharPos * 2 - 1, 2)) _
                      Xor XorKey)
+               MidB$(tmpBuff, StrCharPos * 2 - 1, 2) = ChrB$(AscB(MidB$(tmpBuff, StrCharPos * 2 - 1, 2)) Xor XorKey_l)
+               
+               Char = AscB(MidB$(tmpBuff, StrCharPos * 2 + 1, 2)) Xor XorKey_h
+               MidB$(tmpBuff, StrCharPos * 2 + 1, 2) = ChrB$(Char)
+               bNeedsUnicode = (Char <> 0) Or (bNeedsUnicode = True)
+               
+'                Mid$(tmpBuff, StrCharPos, 1) = ChrW$(AscW(Mid$(tmpBuff, StrCharPos, 1)) Xor XorKey)
+               
                If 0 = (StrCharPos Mod &H8000) Then DoEvents
             Next
             
-            DecodeString = Left(tmpBuff, size)
-'            DecodeString = StrConv(tmpBuff, vbUnicode)
+'            DecodeString = Left(tmpBuff, size)
+            If bNeedsUnicode Then
+               DecodeString = tmpBuff
+            Else
+               DecodeString = StrConv(tmpBuff, vbFromUnicode)
+            End If
             
 'Comment out due to bad performance
 '            RawString.Position = 0
