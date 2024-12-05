@@ -131,15 +131,18 @@ End Sub
 'End Property
 
 Public Property Get FixedStringW(ByVal Length As Long) As String
-   If Length = -1 Then
+   If Length = -1 Then _
       Length = (Me.Length - Me.Position)
-   End If
+
+   Length = Length + Length '*2
+   
  
  ' create Buffer
    FixedStringW = Space(Length)
    
  ' Read Fixed String
-   retval = ReadFilePtr(hFile, StrPtr(FixedStringW), Length * 2, bytesRead, 0)
+   retval = ReadFilePtr(hFile, StrPtr(FixedStringW), Length, bytesRead, 0)
+   
    If retval < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
 End Property
 
@@ -290,14 +293,14 @@ Public Function FindStrings(StringToFind$, Optional StopIfMoreThan& = &H7FFFFFFF
    Position = 0
    tmp = FixedString(-1)
    
-   Dim Offset&, item
-   Offset = 0
+   Dim offset&, item
+   offset = 0
    For Each item In Split(tmp, StringToFind, StopIfMoreThan)
       
-      Inc Offset, Len(item)
-      FindStrings.Add Offset
+      Inc offset, Len(item)
+      FindStrings.Add offset
       
-      Inc Offset, Len(StringToFind)
+      Inc offset, Len(StringToFind)
    Next
    FindStrings.Remove FindStrings.Count
    
@@ -560,10 +563,10 @@ Public Property Let PositionEOFRelated(ByVal vData As Long)
 End Property
 
 
-Private Sub SeekToPosition(Offset&, SeekType As SeekType)
+Private Sub SeekToPosition(offset&, SeekType As SeekType)
    
    Dim retval&
-   retval = SetFilePointer(hFile, Offset, 0, SeekType)
+   retval = SetFilePointer(hFile, offset, 0, SeekType)
    If retval < 0 Then
 '      MsgBox "Error on SetFilePointer, FilePointer is before beginning: " & Offset, vbCritical
 '      Me.Position = 0
@@ -672,7 +675,7 @@ End Property
 
 '////////////////////////////////////////
 '//  Create
-Public Sub Create(FileName As String, Optional bDeleteExistingFile As Boolean, Optional bTemporaryFile As Boolean, Optional Readonly As Boolean)
+Public Sub create(FileName As String, Optional bDeleteExistingFile As Boolean, Optional bTemporaryFile As Boolean, Optional Readonly As Boolean)
    CloseFile
    Me.FileName = FileName
    Me.Readonly = Readonly

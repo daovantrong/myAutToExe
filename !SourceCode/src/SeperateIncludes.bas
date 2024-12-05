@@ -8,6 +8,7 @@ Private Const INCLUDE_Close$ = ">" & vbCrLf & INCLUDE_Seperator
 Private Const INCLUDE_FirstLine = "#include-once" & vbCrLf
 Private Const INCLUDE_FirstLine_Len = 13
    
+
 Private Const INCLUDE_REPLACE_START = "#include <"
 Private Const INCLUDE_REPLACE_END = ">" & vbCrLf
 Private IncludeList As New Collection
@@ -17,21 +18,26 @@ Private IncludeFileName As New ClsFilename
 
 Const AllButRE_NewLine As String = "[^\r\n]"
 
+Dim INCLUDE_START_Len&
+Dim EndSym_Len&
+
 
 Dim str As StringReader
 Dim Level&
 
 Public Sub SeperateIncludes()
    
-   FrmMain.Log ""
-   FrmMain.Log "==============================================================="
+'   FrmMain.Log ""
+'   FrmMain.Log "==============================================================="
+   
+   FrmMain.Log_Stage "AHK / AutoIT(Old) seperate includes", 4
    FrmMain.Log "Seperating Includes of : " & FileName.FileName
    
    
   'Read *.au3 into ScriptData
    Dim ScriptData$
    With File
-      .Create FileName.FileName
+      .create FileName.FileName
       
       
       'Test for Unicode-Bom
@@ -68,7 +74,7 @@ Public Sub SeperateIncludes()
       .NameWithExt = ""
    End With
    
-   FrmMain.Log "  " & Len(ScriptData) & IIf(bUTF16detected, "(Unicode)", "") & " bytes loaded."
+   FrmMain.log_verbose "  " & Len(ScriptData) & IIf(bUTF16detected, "(Unicode)", "") & " bytes loaded."
    
  ' Convert unicode to accii
    If bUTF16detected Then
@@ -87,22 +93,38 @@ Public Sub SeperateIncludes2(ScriptData$)
    str = ScriptData
    str.DisableAutoMove = True
    
-   Level = 0
-   IncludeListCount = 0
-   SeperateIncludes_Recursiv INCLUDE_END$
-   
-   If Level <> 0 Then Err.Raise vbObjectError, , "INCLUDE-START/END unembalanced: (" & Level & " too much) in ScriptData: " & str & vbCrLf & "ignored: " & str.FixedString(-1)
-   
+ ' Check if there are any includes
+   If str.FindString(INCLUDE_START) Then
+      
+      Level = 0
+      IncludeListCount = 0
+      
+      
+      INCLUDE_START_Len = Len(INCLUDE_START)
+
+      
+      GUIEvent_ProcessBegin str.Length
+      
+         SeperateIncludes_Recursiv INCLUDE_END
+      
+      GUIEvent_ProcessEnd
+      
+      If Level <> 0 Then Err.Raise vbObjectError, , "INCLUDE-START/END unembalanced: (" & Level & " too much) in ScriptData: " & str & vbCrLf & "ignored: " & str.FixedString(-1)
+      
+   End If
 End Sub
 
 
 Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
    
+   
+   EndSym_Len = Len(EndSym)
+   
  ' Scan for StartSym until end of String
    Do While str.EOS = False
       
     ' Test for "; <AUT2EXE INCLUDE-START: "
-      If INCLUDE_START$ = str.FixedString(Len(INCLUDE_START$)) Then
+      If INCLUDE_START = str.FixedString(INCLUDE_START_Len) Then
 
        ' Set Script Cut Position
          Dim ScriptCutPos_Start&
@@ -244,7 +266,7 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
 
       
     ' Test for "; <AUT2EXE INCLUDE-END: "
-      ElseIf EndSym = str.FixedString(Len(EndSym)) Then ' "; <AUT2EXE INCLUDE-END: "...
+      ElseIf EndSym = str.FixedString(EndSym_Len) Then ' "; <AUT2EXE INCLUDE-END: "...
            
             Dec Level
             Exit Do
@@ -253,6 +275,8 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
       
     ' Move to next Position in String to test for '; <AUT2EXE INCLUDE XXX'
       str.Move 1
+      
+      GUIEvent_ProcessUpdate str.Position
       
    Loop
    

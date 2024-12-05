@@ -1,0 +1,62 @@
+
+myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler< 2.13 build(200)
+================================================================================
+Unpacking: F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1.au3
+AlternativeSigScan for 'FILE'-signature in au3-body...
+Scanning for FILE-(old)signature: FF 6D B0 CE    ÿm°Î
+...not found.
+Scanning for FILE-(new)signature: 6B 43 CA 52    kCÊR
+...not found.
+ERR: 'FILE'-signature not found. Please enter start of script manually.
+DeTokenising: F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1.au3
+ERR: STOPPED!!! Required FileExtension for Tokenfiles: '.tok .mem'
+Rename this file manually to show that this should be detokenied.
+===============================================================================
+Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'
+===============================================================================
+Testing for TextFile...
+Done. (Textfile=True)
+DeObfuscating : F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1.au3
+Deobfuscating van Zande 1.0.14...
+Okay. Obfucated script loaded and displayed.
+Restoring StringNames in ...
+  Local strings: 812
+  Local strings: 5
+Strings at all: 817
+strings in Tbl: 835
+9 of 9 functions names are obfuscated.
+_______________________________________________________________________________
+Renaming obfuscated functions...
+(Enable verbose mode for details)
+Restoring 829 global strings...
+UnAssigned/Unused strings [Index, Value]: 
+Renaming Consts...
+Renaming Locals...
+Renaming Dims...
+Renaming Const...
+Deobfucation succeed.
+Save/overwrite script to: F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1.au3
+Skipping to run 'data\Tidy\Tidy.exe' onnewprep1.au3' to improve sourcecode readability. (Plz run it manually if you need it.)
+Running 'Tidy.exe newprep1.au3' to improve sourcecode readability.
+F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\data\Tidy\Tidy.exe "F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1.au3"
+Tidy: June 12,2016
+Tidy: Params$	 f:\laufwerk daten\david\programmierung\projekte\auttoexe\ver 2.0\samples\vanzande3 obfuscated\newprep1.au3 f:\laufwerk daten\david\programmierung\projekte\auttoexe\ver 2.0\samples\vanzande3 obfuscated\newprep1.au3
+Tidy: 0.00 Initializing...
+Tidy: .01 Creating Tables
+Tidy: st: 0
+Tidy: 0.01 Tidy_File$	F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\data\Tidy\au3.api Exist: 0
+Tidy: 0.01 functions_File$	F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\data\Tidy\functions.tbl Exist: 1
+Tidy: 0.01 F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\data\Tidy\..\api\au3.api Notfound!
+Tidy: 0.01 Start Pre-processing File...
+Tidy: 11 Start Processing File...
+Tidy: o restore Folds and Boomarks due to Sessionfile not found:c:\TEMP\tidyscite.session
+Tidy: er 2.0\samples\VanZande3 Obfuscated\newprep1_old1.au3"
+Tidy: 0.50 Done...
+=> Okay (ExitCode: 0).
+Deleting Tidy BackupFile...
+===============================================================
+Seperating Includes of : F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1.au3
+  32295 bytes loaded.
+#1 L:\????\newprep_Obfuscated.au3	 -> \newprep_Obfuscated.au3
+Testing for TextFile...
+Saving Logdata to : F:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\VanZande3 Obfuscated\newprep1_myExeToAut.log

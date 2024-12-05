@@ -2,12 +2,12 @@ VERSION 5.00
 Begin VB.Form FrmRegExp_Renamer 
    Caption         =   "RegEx Renamer (alpha!)"
    ClientHeight    =   8400
-   ClientLeft      =   60
-   ClientTop       =   450
-   ClientWidth     =   12810
+   ClientLeft      =   156
+   ClientTop       =   456
+   ClientWidth     =   12456
    LinkTopic       =   "Form1"
    ScaleHeight     =   8400
-   ScaleWidth      =   12810
+   ScaleWidth      =   12456
    StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmd_RegExpSave 
       Appearance      =   0  'Flat
@@ -73,7 +73,7 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   4335
       Begin VB.ListBox List_Matches 
          Appearance      =   0  'Flat
-         Height          =   5880
+         Height          =   5784
          ItemData        =   "FrmRegExp_Renamer.frx":0000
          Left            =   120
          List            =   "FrmRegExp_Renamer.frx":0002
@@ -94,7 +94,7 @@ Begin VB.Form FrmRegExp_Renamer
    End
    Begin VB.ListBox List_log 
       Appearance      =   0  'Flat
-      Height          =   1005
+      Height          =   984
       ItemData        =   "FrmRegExp_Renamer.frx":002C
       Left            =   120
       List            =   "FrmRegExp_Renamer.frx":002E
@@ -117,7 +117,7 @@ Begin VB.Form FrmRegExp_Renamer
       BorderStyle     =   0  'None
       BeginProperty Font 
          Name            =   "Courier New"
-         Size            =   9.75
+         Size            =   9.6
          Charset         =   0
          Weight          =   400
          Underline       =   0   'False
@@ -287,8 +287,12 @@ Private Sub Cmd_Save_Click()
    OutputFileName.FileName = FileName.FileName
    OutputFileName.Name = OutputFileName.Name & "_Renamed"
    
-   FileSave OutputFileName.FileName, _
+ 'TODO Correct UTF BOM-Handling
+'   FileSave OutputFileName.FileName, _
             DecodeUTF8(Mid(ScriptData.Data, 4))
+   FileSave OutputFileName.FileName, _
+            DecodeUTF8(ScriptData.Data)
+            
             
    txt_Original = ScriptData.Data
 

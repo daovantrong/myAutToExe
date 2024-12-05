@@ -145,11 +145,20 @@ Begin VB.Form FrmMain
    End
    Begin VB.ListBox ListLog 
       Appearance      =   0  'Flat
-      Height          =   1752
+      BeginProperty Font 
+         Name            =   "Consolas"
+         Size            =   7.8
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   1644
       Left            =   120
       OLEDropMode     =   1  'Manual
       TabIndex        =   0
-      ToolTipText     =   "Double click to see more !"
+      ToolTipText     =   "Double click to see more ! Single Click an entry that starts with an offset jump to it in Winhex."
       Top             =   6615
       Width           =   9135
    End
@@ -230,6 +239,15 @@ Begin VB.Form FrmMain
       End
       Begin VB.Menu mi_SeperateIncludes 
          Caption         =   "&Seperate includes of *.au3"
+      End
+   End
+   Begin VB.Menu mu_std_Tools 
+      Caption         =   "&Standard Tools"
+      Begin VB.Menu mi_Tidy 
+         Caption         =   "&Tidy"
+      End
+      Begin VB.Menu mi_AU3_Stripper 
+         Caption         =   "AU3_&Stripper"
       End
    End
    Begin VB.Menu mu_BugFix 
@@ -330,6 +348,12 @@ Public StartLocations As New Collection
 Private ListLogClickEventDisable As Boolean
 
 
+Private Sub mi_AU3_Stripper_Click()
+   MsgBox "not implemented yet"
+   FileName = FrmMain.Combo_Filename
+   RunStipper FileLoad(FileName.FileName)
+End Sub
+
 Private Sub mi_cancel_Click()
    CancelAll = True
 End Sub
@@ -340,6 +364,11 @@ End Sub
 
 Private Sub mi_Reload_Click()
    StartProcessing
+End Sub
+
+Private Sub mi_Tidy_Click()
+   FileName = FrmMain.Combo_Filename
+   RunTidy FileLoad(FileName.FileName)
 End Sub
 
 Private Sub mi_Update_Click()
@@ -431,11 +460,13 @@ On Error GoTo ERR_GUIEvent_ProcessEnd
 ERR_GUIEvent_ProcessEnd:
 End Sub
 Sub FL_verbose(Text)
-   log_verbose H32(File.Position) & " -> " & Text
+   If Chk_verbose.value = vbChecked Then _
+      Log H32(File.Position) & " -> " & Text
 End Sub
 
 Sub log_verbose(TextLine$)
-   If Chk_verbose.value = vbChecked Then Log TextLine
+   If Chk_verbose.value = vbChecked Then _
+      Log TextLine
 End Sub
 
 
@@ -481,7 +512,7 @@ On Error Resume Next
       
       ListLogClickEventDisable = False
       
-      myDoEvents
+'      myDoEvents
       
    ElseIf (Rnd < 0.01) Then
       myDoEvents
@@ -734,7 +765,7 @@ Function WH_Open() As Long
    Dim msg$
    Select Case retval
       Case 2
-         msg = "Success (limited)"
+         msg = "Success (limited)" 'All the commands the WinHex API offers can be used then except WHX_Save, WHX_SaveAs, WHX_SaveAll, and WHX_Write, which will always fail.
       Case 1
          msg = "Success"
       Case 0
@@ -743,6 +774,10 @@ Function WH_Open() As Long
          msg = "WinHex installation not ready"
       Case -2
          msg = "APIVersion incorrect(should be 1)"
+      Case -3
+         msg = "Invalid or insufficient license" 'no longer in use since WinHex 10.8.
+      Case -7
+         msg = "Creating WHXLibMap failed. (maybe cause MapViewOfFile failed.)"
       Case Else
          msg = "Unknown"
    End Select
@@ -768,21 +803,36 @@ Function WH_Open() As Long
          WH_Path = App.Path & "\data\WinHex\"
          
        ' get path from registry
-         Console2.ShellExConsole "reg", "query ""HKEY_CLASSES_ROOT\WHSFile\DefaultIcon"""
-         WH_Path = Split(Console2Output, """")(1)
+         WH_Path = RegGet("HKEY_CLASSES_ROOT\WHSFile\DefaultIcon")
+
          WH_Path = InputBox("Please enter path to Winhex", "Winhex not found", WH_Path.Path)
          WH_Path.NameWithExt = "."
          
-         Dim Param$
-         Param = "ADD ""HKCU\Software\X-Ways AG\WinHex"" /d " & Quote(WH_Path) & " /f /v Path /t REG_SZ"
-         Log "Running: Reg " & Param
-         Console2.ShellExConsole "Reg", Param
-         'HKEY_CLASSES_ROOT\WHSFile\DefaultIcon
+         RegSet "HKCU\Software\X-Ways AG\WinHex", WH_Path.FileName
+   retval = WHX_Init(1)
+         
       End If
    End If
    
 
 End Function
+
+Function RegGet(Regpath$) As String
+      Console2.ShellExConsole "reg", "query " & Quote(Regpath)
+      RegGet = Split(Console2Output, """")(1)
+End Function
+
+Sub RegSet(Regpath$, Data$)
+      Dim Param$
+      Param = Join(Array("ADD", Quote(Regpath), "/f", "/d", Quote(Data), "/v Path", "/t REG_SZ"), " ")
+      Log "Running: Reg " & Param
+      
+      Dim ret&
+      ret = Console2.ShellExConsole("Reg", Param)
+      'HKEY_CLASSES_ROOT\WHSFile\DefaultIcon
+End Sub
+
+
 
 Function WH_Goto(ByVal Position As Currency) As Long
    WHX_Goto VB2API(Position)
@@ -815,10 +865,10 @@ Private Sub ListLog_Click()
    With ListLog
       If .Text Like "???????? -> *" Then
          Debug.Print .Text
-         Dim Offset$
-         Offset = Left(.Text, 8)
+         Dim offset$
+         offset = Left(.Text, 8)
          WH_Open
-         WH_Goto HexToInt(Offset)
+         WH_Goto HexToInt(offset)
       End If
    End With
 End Sub
@@ -850,19 +900,18 @@ End Sub
 
 Private Sub mi_GetAutoItVersion_Click()
    On Error GoTo ERR_mi_GetAutoItVersion_Click
-   
-      Dim ShellExitCode&
       
       Dim FileName As New ClsFilename
       FileName.FileName = Combo_Filename
    
-      ShellExitCode = GetAutoItVersion(FileName)
-      If ShellExitCode <> 1000 Then
+   
+      Dim ShellExitCode&
+      If GetAutoItVersion(FileName, ShellExitCode) = False Then
       
          Log "Trying >>>AUTOIT NO CMDEXECUTE<<< fix..."
          PatchAway_NO_CMDEXECUTE FileName
         
-         ShellExitCode = GetAutoItVersion(FileName)
+         GetAutoItVersion FileName, ShellExitCode
          
       End If
       
@@ -884,15 +933,36 @@ Private Function PatchAway_NO_CMDEXECUTE(Script As ClsFilename)
       Dim PATCH_SEARCH_W$
       PATCH_SEARCH_W = StrConv(PATCH_SEARCH, vbUnicode, LocaleID)
       
-      .FindString PATCH_SEARCH_W
-      .Move -Len(PATCH_SEARCH_W)
+      If .FindString(PATCH_SEARCH_W) Then
+         .Move -Len(PATCH_SEARCH_W)
+         
+         .FixedString(-1) = StrConv(PATCH_REPLACE, vbUnicode, LocaleID)
+         
+         
+         Script.Name = Script.Name & "_AllowExec"
+         
+         FileSave Script.FileName, Reader.mvardata
+      Else
+         
+         
+         PATCH_SEARCH_W = DeCryptNew(StrConv(PATCH_SEARCH, vbUnicode, LocaleID), Xorkey_SrcFile_FileInstNEW_Data + Len(PATCH_SEARCH))
       
-      .FixedString(-1) = StrConv(PATCH_REPLACE, vbUnicode, LocaleID)
+         If .FindString(PATCH_SEARCH_W) Then
+            .Move -Len(PATCH_SEARCH_W)
+            
+            ' Cripple first char of signature
+            .DisableAutoMove = True
+            .int8 = .int8 + 1
+            
+            
+            Script.Name = Script.Name & "_AllowExec"
+            
+            FileSave Script.FileName, Reader.mvardata
+            
+         End If
       
+      End If
       
-      Script.Name = Script.Name & "_AllowExec"
-      
-      FileSave Script.FileName, Reader.mvardata
    End With
    
 
@@ -900,7 +970,7 @@ Private Function PatchAway_NO_CMDEXECUTE(Script As ClsFilename)
 
 End Function
 
-Private Function GetAutoItVersion(Script As ClsFilename)
+Private Function GetAutoItVersion(Script As ClsFilename, Optional ShellExitCode = -1) As Boolean
    
 '3.3.10.0 (23rd December, 2013) (Release)
 '* Changed: #NoAutoIt3Execute option replaced with #pragma compile(AutoItExecuteAllowed, false). Default is false
@@ -921,22 +991,33 @@ Private Function GetAutoItVersion(Script As ClsFilename)
    WindowState_old = WindowState
    WindowState = vbMinimized
       
+   Const UniqueExitcode& = 999
+   
  ' Log & execute
    Dim ShellCommandParams$
-   ShellCommandParams = " /AutoIt3ExecuteLine ""Exit(999+MsgBox(0x40,'AutoIt version of ' & @ScriptName & ' is', @AutoItVersion,10))"""
+   ShellCommandParams = " /AutoIt3ExecuteLine ""Exit(" & UniqueExitcode & "+ 0 * MsgBox(0x40,'AutoIt version of ' & @ScriptName & ' is', @AutoItVersion,10))"""
    
    Log "GetAutoItVersion executes: " & Quote(Script.FileName) & " " & ShellCommandParams
    
-   Dim ShellExitCode&
    ShellExitCode = ShellEx(Script.FileName, ShellCommandParams, vbNormalFocus)
-   If ShellExitCode = 1000 Then
+   If ShellExitCode = UniqueExitcode Then
+   
       Log "Execution finished; ExitCode: " & ShellExitCode
-      openURL "http://www.autoitscript.com/autoit3/files/archive/autoit"
+      
+      GetAutoItVersion = True
+      
+      If vbYes = myMsgBox("Open website with downloads of various AutoIT versions?", _
+         vbYesNo Or vbDefaultButton2, _
+         "Open AutoIT3 Files Archive [/autoit3/files/archive/autoit]") _
+      Then _
+         openURL "http://www.autoitscript.com/autoit3/files/archive/autoit"
+         
    Else
+   
       Log "Execution failed; ExitCode: " & ShellExitCode
+      
    End If
    
-   GetAutoItVersion = ShellExitCode
    
    
 '                   ' Run "LZSS.exe -d *.debug *.au3" to extract the script (...and wait for its execution to finish)
@@ -998,91 +1079,71 @@ Private Sub mi_MD5_pwd_Lookup_Click()
 
 End Sub
 
+
+
+
+
+
+
 Private Sub HexToBinTool()
 
    Dim FileName As New ClsFilename
-   FileName.FileName = InputBox("FileName:", "", Combo_Filename)
+   FileName.FileName = InputBox("FileName:", "HexToBinTool", Combo_Filename)
+   'FileName.FileName = Combo_Filename
    
    If FileName.FileName = "" Then Exit Sub
    
 
    Dim Data$
    Data = FileLoad(FileName.FileName)
-
    
+   Dim matches As MatchCollection
+      
    
+  'Find some some Function that looks like "myFunc(0x2133AF)"
    Dim myRegExp As New RegExp
    With myRegExp
+   
+   
+   ' http://regex101.com
+    .Pattern = RE_WSpace( _
+       RE_Group("A0000171\w*"), _
+       "\(", RE_Quote & "(?:0x)" & _
+          RE_HEXDIGET & "*?" & RE_Quote, "\)")
 
-      
-      .Pattern = RE_WSpace(RE_Group("\w*?") & "\(", "[""']0x", _
-                            "[0-9A-Fa-f]" & "*?", "[""']", ".*?", "\)")
-      Dim matches As MatchCollection
+   
       Set matches = .Execute(Data)
       Dim FunctionName$
       If matches.Count < 1 Then
-         
          FunctionName = "FnNameOfBinaryToString"
       Else
-      
          FunctionName = matches(0).SubMatches(0)
+         
+
       End If
    
-
       FunctionName = InputBox("FunctionName:", "", FunctionName)
-      
 
-      
-      .Global = True
-      .Pattern = RE_WSpace(RE_Literal(FunctionName), _
-                            "\(", "[""']0x", _
-                               RE_Group("[0-9A-Fa-f]" & "*?"), _
-                            "[""']", _
-                              RE_Group_NonCaptured( _
-                                 RE_WSpace( _
-                                   ",", _
-                                   RE_Group("[1-4]")) _
-                                 ) & "?", _
-                            "\)")
-                            
-      Set matches = .Execute(Data)
-      Dim Match As Match
-      For Each Match In matches
-         With Match
-         
-            Dim IsPrintable As Boolean
-            Dim BinData$
-            BinData = MakeAutoItString( _
-               HexStringToString(.SubMatches(0), IsPrintable, .SubMatches(1)))
-            
-            If IsPrintable Then
-               Log "Replacing: " & BinData & " <= " & .value
-               ReplaceDo Data, .value, EncodeUTF8(BinData), .FirstIndex, 1
-            Else
-               Log "Skipped replace(not printable): " & MakePrintable(BinData) & " <= " & .value
-            End If
-            
-         End With
-      Next
-      
-      
-      
    End With
    
-   If matches.Count Then
+   Dim obfu As New ClsDeobfuscator
+   Dim OccurenceFound&
+   OccurenceFound = BinaryToString(obfu, Data, FunctionName)
+
+   If OccurenceFound Then
       FileName.Name = FileName.Name & "_HexToBin"
        
     ' Save
       FileSave FileName.FileName, Data
 
        
-       Log matches.Count & " replacements done."
+       Log OccurenceFound & " replacements done."
        Log "File save to: " & FileName.FileName
    Else
       Log "Nothing found."
    End If
-   
-   
+      
+      
 
 End Sub
 
@@ -1094,7 +1155,7 @@ Private Sub CustomDecrypt()
                      "It helps if you encounter stuff like this: 'MsgBox(0, Fn04B6(""dHBKQL LWW~W"", ""FI""),...'" & vbCrLf & _
                      "" & vbCrLf & _
                      "FileName:", "Programmers only!", Combo_Filename)
-   
+  '    FileName.FileName = Combo_Filename
    If FileName.FileName = "" Then Exit Sub
    
 
@@ -1107,8 +1168,8 @@ Private Sub CustomDecrypt()
    With myRegExp
 
       
-      .Pattern = RE_WSpace(RE_Group("\w*?") & "\(", "[""']0x", _
-                            "[0-9A-Fa-f]" & "*?", "[""']", ".*?", "\)")
+      .Pattern = RE_WSpace(RE_Group("\w*?") & "\(", RE_Quote & "0x", _
+                            RE_HEXDIGET & "*?", RE_Quote, ".*?", "\)")
       Dim matches As MatchCollection
       Set matches = .Execute(Data)
       Dim FunctionName$
@@ -1468,30 +1529,54 @@ Private Sub Combo_Filename_Change()
    If bFileExists Then
       
       Combo_Filename_Additem Trim(Combo_Filename)
+      
+      
+'For Debugging:
+'      HexToBinTool
+'      Stop
+      
       StartProcessing
    
    End If
+   
+Exit Sub
+ 
 Combo_Filename_err:
+   myMsgBox Err.Description, vbCritical, "Combo_Filename_Change"
+End Sub
+
+Sub GUI_StartProcessing_Enable(State As Boolean)
+' Block any new files during DoEvents
+  Combo_Filename.enabled = Not State
+  mi_Reload.enabled = Not State
+  mi_cancel.enabled = State
+
+
+  
+' Reset ProgressBars
+  GUIEvent_ProcessEnd 0
+  GUIEvent_ProcessEnd 1
+
+         
+  CancelAll = False
+
+End Sub
+
+Sub Log_Stage(Text, Optional Number = "")
+   Log String(79, "/")
+'   Log "//"
+   Log "//    S T A G E  " & Number & "  -  " & _
+       Text
+   Log "//"
 End Sub
 
 
 Sub StartProcessing()
   On Error GoTo StartProcessing_err
-         
-  CancelAll = False
   
-' Block any new files during DoEvents
-  Combo_Filename.enabled = False
-  mi_Reload.enabled = False
-  mi_cancel.enabled = True
+  GUI_StartProcessing_Enable True
   
-  
-  
-' Reset ProgressBars
-  GUIEvent_ProcessEnd 0
-  GUIEvent_ProcessEnd 1
-  
-  
+
 ' Clear Log (expect when run via commandline)
   If IsCommandlineMode = False Then
      ListLogClear
@@ -1501,15 +1586,13 @@ Sub StartProcessing()
   
   FileName = Combo_Filename
   
-  
-' Try UPX unpack and maybe change FileName
-  UnUPX
-  
-
 ' Log String(80, "=")
 ' log "           -=  " & Me.Caption & "  =-"
      
   On Error Resume Next
+  
+' Try UPX unpack and maybe change FileName
+   UnUPX
   
   
   Decompile
@@ -1518,15 +1601,18 @@ Sub StartProcessing()
   If Err = ERR_CANCEL_ALL Then GoTo StartProcessing_err:
   If Err Then
      Log "ERR: " & Err.Description
+    'Just for the case it isn't closed
+     File.CloseFile
   End If
   
   FileName = ExtractedFiles("MainScript")
      
   DeToken
+  
      If Err = ERR_CANCEL_ALL Then GoTo StartProcessing_err:
      If Err Then Log "ERR: " & Err.Description
 
-     Log String(79, "=")
+'     Log String(79, "=")
      On Error Resume Next
      
   DeObfuscate.DeObfuscate
@@ -1551,18 +1637,20 @@ GoTo StartProcessing_err
       
 ' ErrorHandle for resume from Errors
 DeToken:
-   Log String(79, "=")
+'   Log String(79, "=")
    DeToken
 
 DeObfuscate:
-   Log String(79, "=")
+'   Log String(79, "=")
    DeObfuscate.DeObfuscate
       
 StartProcessing_err:
 
 ' Add some fileName if it weren't done during decompile()
-  If IsAlreadyInCollection(ExtractedFiles, "MainScript") = False Then
-     ExtractedFiles.Add File.FileName, "MainScript"
+  If Collection_IsAlreadyIn(ExtractedFiles, "MainScript") = False Then
+      If Not (ExtractedFiles Is Nothing) Then
+         ExtractedFiles.Add File.FileName, "MainScript"
+      End If
   End If
 
 
@@ -1589,7 +1677,7 @@ StartProcessing_err:
      
   Case Else
      Log Err.Description
-     Resume StartProcessing_err
+     Resume Finally
   End Select
 '-----------------------------------------------
    
@@ -1610,11 +1698,7 @@ Finally:
   If APP_REQUEST_UNLOAD Then End
   
 ' Allow Reload / Block Cancel
-  Combo_Filename.enabled = True
-  mi_Reload.enabled = True
-  mi_cancel.enabled = False
-  
-  
+  GUI_StartProcessing_Enable False
   
   IsCommandlineMode = False
   If IsOpt_QuitWhenFinish Then Unload Me
@@ -1629,7 +1713,7 @@ Private Function OpenFile(Target_FileName As ClsFilename) As Boolean
 
    Log Space(4) & Target_FileName.NameWithExt
 
-   File.Create Target_FileName.mvarFileName, Readonly:=True
+   File.create Target_FileName.mvarFileName, Readonly:=True
    
    Me.Show
 

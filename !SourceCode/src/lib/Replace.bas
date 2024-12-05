@@ -44,6 +44,26 @@ Public Sub ReplaceDoMulti(ByRef Text As String, _
 End Sub
 
 
+' Attention: QuickReplace
+' Tries to keeps the size by filling up the New String with spaces
+' if Replace New String is bigger -> Data will grow => what is slow
+' => Check is that kind of replace is appropriate before use!
+Public Sub QuickReplace(data$, ReplaceStr, ByVal NewStr$, Optional startPos& = 1, Optional Count& = 2147483647)
+   StringFillUp NewStr, Len(ReplaceStr)
+   
+   ReplaceDo data, ReplaceStr, NewStr, startPos, Count
+'   '-
+'   'Do Replacing
+'    If Len(NewStr) > NewLen Then
+'       'Extend String
+'       Stop
+'       ReplaceDo Data, oldValue, NewStr, NewPos
+'    Else
+'       Mid(Data, NewPos, NewLen) = BlockAlign_l(NewStr, NewLen)
+'    End If
+
+End Sub
+
 Public Sub ReplaceDo(ByRef Text, _
     ByRef sOld, ByRef sNew, _
     Optional ByVal Start As Long = 1, _

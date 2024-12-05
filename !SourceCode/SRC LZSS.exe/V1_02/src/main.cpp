@@ -168,7 +168,8 @@ int main(int argc, char* argv[])
       {
         // How big is the source file?
         nCompressedSize = oCompress.GetFileSize(argv[2]);
-        printf("Input file size      : %d\n", nCompressedSize);
+        printf("Input file size      : %8d\n", nCompressedSize);
+        printf("Size decompressed    : %8d\n", oDecompress.GetDecompressedSize() );
 
         // Do the uncompression
         oDecompress.SetDefaults();
@@ -185,12 +186,25 @@ int main(int argc, char* argv[])
 
         DWORD dwTime2 = timeGetTime();
 
-        printf("\rDecompressed         : %d%%  ", oDecompress.GetPercentComplete());
-        printf("\nCompression time     : %.2fs (including fileIO)\n", ((dwTime2 - dwTime1)) / 1000.0);
+        printf("\rDecompressed         : %8d%%  ", oDecompress.GetPercentComplete());
+        printf("\nCompression time     : %8.2fs (including fileIO)\n", ((dwTime2 - dwTime1)) / 1000.0);
 
         if (nRes != JB01_E_OK)
         {
           printf("Error uncompressing.\n");
+
+          switch (nRes) {
+            case JB01_E_MEMALLOC:            printf("Memory alloc failed.\n"); break;
+            case JB01_E_READINGSRC:          printf("Read error on inputfile.\n"); break;
+            case JB01_E_READINGSRCTRUNCATED: printf(
+              "     Inputfile got truncated.\n"
+              "     Only %8d of %8d bytes were decompressed."
+              , oDecompress.GetDecompressedDataWritten(),
+              oDecompress.GetDecompressedSize()
+              ); break;
+          }
+
+
           return nRes;
         }
 

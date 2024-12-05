@@ -228,7 +228,7 @@ Private Function GetEncryptStrNew(LenEncryptionSeed&, StrEncryptionSeed, _
       
 End Function
 
-Private Function DeCryptNew(ByVal Data$, Seed&)
+Public Function DeCryptNew(ByVal Data$, Seed&)
    
    
    RanRot_Init Seed
@@ -337,12 +337,11 @@ Private Function TestForV3_3() As Boolean
             searchRange:=PEFile_ResourceData_Size)
             
 
-      TestForV3_3 = -1 <> Start
-      If TestForV3_26 Then
-         FL_verbose "...FAILED!"
-      Else
-         
+      TestForV3_3 = (-1 <> Start)
+      If (-1 <> Start) Then
          .Position = Start
+      Else
+          FL_verbose "...FAILED!"
          
       End If
    End With
@@ -498,7 +497,7 @@ Private Function TestForV3_0() As Boolean
 End Function
 
 
-Private Function TestForV2_0() As Boolean
+Public Function TestForV2_0() As Boolean
    
    FL_verbose "Testing for AutoIT2 Script..."
    
@@ -596,13 +595,16 @@ Log "AlternativeSigScan for 'FILE'-signature in au3-body..."
                'TODO: Take care for new AU3 3.3 that stores the script inside .rsrc
                ' Not Found - Search for signature of new Aut3Script
                  If IsValidPEFile Then
+                    
                     Log "Alternative search fail - assuming end of exe-stub as start of script. This is very vague but may work..."
+                    
                     If (File.Length - PEFile_EOF_Offset) < &H40 Then
                        Err.Raise ERR_NO_AUT_EXE, , _
                            "At the end must be at least 0x40 bytes at the end... " & _
                            "Please enter start of script manually. "
                     Else
                        File.Position = PEFile_EOF_Offset + AU3SigSize
+                       
                     End If
                     
                     
@@ -888,6 +890,9 @@ End Sub
 '//  Notes:
 '//   Not indented lines are for log purpose only (and not so important)
 Public Sub Decompile()
+
+   FrmMain.Log_Stage "AutoIT Unpack", 1
+   
    Dim FilePointerFallBackOnError&
    Dim isScriptAsResource As Boolean
    
@@ -904,7 +909,7 @@ Public Sub Decompile()
    With File
     
       Log "Unpacking: " & FileName.FileName
-      .Create FileName.FileName, False, False, True
+      .create FileName.FileName, False, False, True
       .Position = 0
       
     ' Chk_NormalSigScan is disabled when Txt_Scriptstart is set
@@ -930,19 +935,29 @@ Public Sub Decompile()
 
          On Error GoTo 0
          
+         
       End If
       
       
-      ScriptStartPos = .Position - AU3SigSize
-      Log ""
-      Log " ---> ScriptStartOffset: " & H32(ScriptStartPos)
+      'seek to start if some error occured
+      If FindStartOfScript_err_Number <> 0 Then
+         ScriptStartPos = 0
+         
+      Else
+         ScriptStartPos = .Position - AU3SigSize
+         Log ""
+         Log " ---> ScriptStartOffset: " & H32(ScriptStartPos)
+         
+      End If
+      
       FilePointerFallBackOnError = ScriptStartPos
       
-      RangeCheck .Position, .Length, 0, "ERROR: ScriptStartPosition is outside the file! -", "Decompile"
+      RangeCheck ScriptStartPos, .Length, 0, "ERROR: ScriptStartPosition is outside the file! -", "Decompile"
       
       
     ' --- Save Stub  - if not PEFile ---
       If Not IsValidPEFile Then
+      
          If ScriptStartPos > 0 Then
             Log "This is no PE-Exe File & Script don't start at Offset 0 -> Saving StubData"
         
@@ -1321,6 +1336,41 @@ Processing_Finished:
             
             Set ScriptData = New StringReader
             ScriptData = .FixedString(ScriptSize)
+            
+        
+          ' Test ScriptSize / Test if script is complete
+            Dim MissingBytes&
+            MissingBytes = ScriptSize - Len(ScriptData)
+            
+            
+            If MissingBytes Then
+               Const Err_FileTruncated_Title$ = _
+                         "ERROR File got Truncated:"
+               
+                  
+               Dim MissingBytesAsPerCent As Integer
+               MissingBytesAsPerCent = (MissingBytes / ScriptSize) * 100
+               
+               Dim Err_FileTruncated$
+               Err_FileTruncated$ = _
+                         MissingBytesAsPerCent & "% of the scriptdata are missing."
+                         
+               Log Err_FileTruncated_Title & " " & Err_FileTruncated
+               log_verbose "        in detail that are " & MissingBytes & " of " & ScriptSize & " bytes, what is the expected script size."
+               
+               myMsgBox _
+                  Err_FileTruncated & vbCrLf & _
+                  vbCrLf & _
+                  "I'll continue however CRC will fail as well as " & vbCrLf & _
+                  "the detokeniser may break.", _
+ _
+                  vbCritical, _
+                  Err_FileTruncated_Title
+
+            End If
+            
+            
+            
       
             ' ==> Create output fileName
             Dim OutFileName As ClsFilename
@@ -1340,7 +1390,7 @@ Processing_Finished:
                                         bIsNewScriptType, ".tok", _
                                         isAutoIT2Script, ".aut", _
                                         True, ".au3")
-               If IsAlreadyInCollection(ExtractedFiles, "MainScript") Then
+               If Collection_IsAlreadyIn(ExtractedFiles, "MainScript") Then
                   OutFileName.Name = OutFileName.Name & "_" & ExtractedFiles.Count
                   ' Add extracted FileName to global ExtractedFiles List
                   ExtractedFiles.Add OutFileName
@@ -1393,7 +1443,7 @@ Processing_Finished:
             
             Dim RawScriptFile As New FileStream
             With RawScriptFile
-               .Create RawScriptFileName.FileName, True, FrmMain.Chk_TmpFile.value = vbUnchecked, False
+               .create RawScriptFileName.FileName, True, FrmMain.Chk_TmpFile.value = vbUnchecked, False
                .Data = ScriptData.Data
                .CloseFile
             End With
@@ -1415,7 +1465,7 @@ Processing_Finished:
             With ScriptData
               
                     
-              ' ==> Decrypt scriptdata
+             ' ==> Decrypt scriptdata
    
    'BenchStart
                Dim StrCharPos&, tmpBuff() As Byte
@@ -1443,7 +1493,7 @@ Processing_Finished:
    
                   
                Next
-             ' Prevent some stupid Memory error in StrConv() if tmpBuff is empty
+             ' Prevent some stupid memory error in StrConv() if tmpBuff is empty
              ' Note empty means an array from 0 to -1; StrConv maybe handles that -1 as 0xFFFFFFFF what explains the 'Memory Error'
                If UBound(tmpBuff) > 0 Then
                   .mvardata = StrConv(tmpBuff, vbUnicode, LocaleID)
@@ -1495,9 +1545,9 @@ Processing_Finished:
                
          
                If IsCompressed Then
+               
                   Uncompress OutFileName, bIsOldScript
                
-                  
          
                 ' Read data from new script file
                   .Data = FileLoad(OutFileName.FileName)
@@ -1684,7 +1734,7 @@ With ScriptData
     '    if 'Create DebugFile' was not checked it will be delete on close
       Dim tmpFile As New FileStream
       With tmpFile
-         .Create OutFileName.Path & OutFileName.Name & ".pak", True, FrmMain.Chk_TmpFile.value = vbUnchecked, False
+         .create OutFileName.Path & OutFileName.Name & ".pak", True, FrmMain.Chk_TmpFile.value = vbUnchecked, False
          .Data = ScriptData.Data
           Log "Compressed scriptdata written to " & .FileName
 
@@ -1722,7 +1772,7 @@ Private Sub SetCreationNLastWriteTime(OutFileName As ClsFilename, pCreationTime 
    Dim outFile As New FileStream
    With outFile
       
-      .Create OutFileName.FileName, False, False, False
+      .create OutFileName.FileName, False, False, False
       Dim retval&
       retval = SetFileTime(outFile.hFile, pCreationTime, 0, pLastWrite)
       If retval = 0 Then
@@ -1939,7 +1989,7 @@ End Function
 Private Function IsAutoIT3File() As Boolean
    Dim WholeFile As New FileStream
    With WholeFile
-      .Create File.FileName, False, False, True
+      .create File.FileName, False, False, True
       IsAutoIT3File = .FindString("AutoIt3") >= 0
       .CloseFile
    End With
@@ -1947,7 +1997,7 @@ End Function
 Private Function IsAutoIT2File() As Boolean
    Dim WholeFile As New FileStream
    With WholeFile
-      .Create File.FileName, False, False, True
+      .create File.FileName, False, False, True
       IsAutoIT2File = .FindString("AutoIt Main Icon") >= 0
       .CloseFile
    End With
@@ -1959,7 +2009,7 @@ Private Function GetPassLenXorKey(FirstDigits As String) As Long
    
    Dim WholeFile As New FileStream
    With WholeFile
-      .Create File.FileName, False, False, True
+      .create File.FileName, False, False, True
     ' Search whole file for first three digits
       Dim items As Collection
       Set items = .FindStrings(FirstDigits)
@@ -2098,7 +2148,7 @@ Private Sub Decompile_HandleAHK_ExtraDecryption(SizeUncompressed&)
       
        If AHK_Sub_Key <> AHK_Sub_Key_Heuristic Then
           'Ask user
-          FrmAHK_KeyFinder.Create ScriptData, AHK_Sub_Key_Heuristic
+          FrmAHK_KeyFinder.create ScriptData, AHK_Sub_Key_Heuristic
           FrmAHK_KeyFinder.Show vbModal
           AHK_Sub_Key = FrmAHK_KeyFinder.AHK_Key
          
@@ -2131,7 +2181,7 @@ Private Function IsValidPEFile() As Boolean
        ' Store current FilePos
          Dim FilePos_old
          FilePos_old = File.Position
-         myPEFile.Create
+         myPEFile.create
 
       If IsPE64 Then
          With PE_Header64
@@ -2205,7 +2255,7 @@ Function IsTextFile() As Boolean
    Log "Testing for TextFile..."
    DoEvents
    With File
-      .Create FileName.FileName, False, False, True
+      .create FileName.FileName, False, False, True
       
       IsTextFile = IsUTF16File
       If IsTextFile = False Then
@@ -2231,7 +2281,7 @@ End Function
 
 Sub CheckScriptFor_COMPILED_Macro()
    With File
-      .Create FileName.FileName, False, False, True
+      .create FileName.FileName, False, False, True
       .Position = 0
       Dim FoundPos
       FoundPos = .FindString("@COMPILED", , vbTextCompare)
@@ -2391,7 +2441,7 @@ On Error GoTo LongValScanInit_err
   Set ScriptData = New StringReader
   
 ' Copy filedata into String
-  File.Create FrmMain.Combo_Filename, False, False, True
+  File.create FrmMain.Combo_Filename, False, False, True
   File.Position = 0
   ScriptData.Data = File.FixedString(-1)
   File.CloseFile
@@ -2612,7 +2662,7 @@ Public Function FileReadPart$(FileName$, Optional Position& = 0, Optional Dst_Le
 
     Dim File As New FileStream
     With File
-        .Create FileName, False, False, True
+        .create FileName, False, False, True
         .Position = Position
         FileReadPart = .FixedString(Dst_Length)
         .CloseFile
@@ -2650,9 +2700,11 @@ Attribute IsValidFileName.VB_Description = "Checks for correct FileName"
    Dim FileAlreadyThere As Boolean
    FileAlreadyThere = FileExists(FileName)
    
-   Open FileName For Append As #1
+   Dim hFile
+   hFile = FreeFile
+   Open FileName For Append As hFile
    IsValidFileName = (Err = 0)
-   Close #1
+   Close hFile
    
    If FileAlreadyThere = False Then
       Kill FileName
@@ -2663,6 +2715,8 @@ Function myMsgBox(Prompt, _
    Optional Buttons As VbMsgBoxStyle = vbOKOnly, _
    Optional Title, Optional HelpFile, Optional Context _
    ) As VbMsgBoxResult
+   
+   
    On Error Resume Next
    
    Dim enabled As Boolean
@@ -2676,7 +2730,7 @@ Function myMsgBox(Prompt, _
       msgAnswer = SuppressMsgBox(msgHash)
    End If
    
-   If Err <> 0 Then
+   If (enabled = False) Or (Err = 5) Then
       msgAnswer = MsgBox(Prompt, Buttons, Title, HelpFile, Context)
       
       If enabled Then _

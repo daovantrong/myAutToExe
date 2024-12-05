@@ -1,16 +1,16 @@
 VERSION 5.00
 Begin VB.Form Frm_SrcEdit 
-   BorderStyle     =   5  'Änderbares Werkzeugfenster
+   BorderStyle     =   5  'Sizable ToolWindow
    Caption         =   "Token Viewer"
-   ClientHeight    =   4935
+   ClientHeight    =   4932
    ClientLeft      =   60
-   ClientTop       =   405
-   ClientWidth     =   8145
+   ClientTop       =   408
+   ClientWidth     =   8148
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   4935
-   ScaleWidth      =   8145
+   ScaleHeight     =   4932
+   ScaleWidth      =   8148
    ShowInTaskbar   =   0   'False
    Begin VB.HScrollBar HScroll 
       Height          =   255
@@ -28,22 +28,22 @@ Begin VB.Form Frm_SrcEdit
    End
    Begin VB.Frame Fr_Text 
       BackColor       =   &H80000009&
-      BorderStyle     =   0  'Kein
+      BorderStyle     =   0  'None
       Caption         =   "Frame1"
-      Height          =   2835
+      Height          =   4512
       Left            =   0
       TabIndex        =   0
       Top             =   0
-      Width           =   5775
+      Width           =   7692
       Begin VB.Label Lbl_item 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          AutoSize        =   -1  'True
          BackColor       =   &H80000005&
          BackStyle       =   0  'Transparent
          Caption         =   "Label1"
          BeginProperty Font 
             Name            =   "Fixedsys"
-            Size            =   9
+            Size            =   7.2
             Charset         =   0
             Weight          =   400
             Underline       =   0   'False
@@ -67,6 +67,12 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Option Explicit
+
+' Well well the idea of this form is to show and edit the tokens
+' However it seem that does makes much sense so far
+' ... as well as it's not really working.
+' VB Form_redraw doesn't work - thats very disapointing...
+
 
 Dim Txt_LastItem As Label
 Dim Txt_ItemCount&
@@ -94,7 +100,7 @@ Me.Show
    FrameBaseHeight = Fr_Text.Height
 
    LineHeight = Lbl_item(&H7FFF).Height
-   
+   LineHeight = 180
    
    
 '    With Controls.Add("VB.TextBox", "Text1")
@@ -111,6 +117,7 @@ Me.Show
 End Sub
 
 Sub LineBreak()
+On Error Resume Next
    With Txt_LastItem
       
       Fr_Text.Width = Max(Fr_Text.Width, ItemNext_Left)

@@ -50,6 +50,7 @@
 #define	JB01_E_OK			0					// OK
 #define JB01_E_NOTJB01		1					// Not a valid LZSS data stream
 #define JB01_E_READINGSRC	2					// Error reading source file
+#define JB01_E_READINGSRCTRUNCATED	22	// Error reading source file / early EOF / File got truncated
 #define JB01_E_WRITINGDST	3					// Error writing dest file
 #define JB01_E_ABORT		4					// Operation was aborted
 #define JB01_E_MEMALLOC		5					// Couldn't allocate all the mem we needed
@@ -123,12 +124,20 @@ public:
         (m_nUserDataPos / m_nDataSize) * 100 
       );
   }
+
+  UINT	GetDecompressedDataWritten( ) {
+    return m_nUserDataWritten;
+  }
+
 private:
 	// User supplied buffers and counters
-	UCHAR	*m_bUserData;						// When compressing from memory this is the user input buffer
+	UCHAR	*m_bUserData;				  		// When compressing from memory this is the user input buffer
 	UCHAR	*m_bUserCompData;					// When compressing to memory this is the user output buffer
 	ULONG	m_nUserDataPos;						// Position in user uncompressed stream (also used for info)
-	ULONG	m_nUserCompPos;						// Position in user compressed stream (also used for info)
+  ULONG	m_nUserDataWritten;				// Bytes written to uncompressed stream
+
+  
+  ULONG	m_nUserCompPos;						// Position in user compressed stream (also used for info)
 
 	// Master variables
 	ULONG	m_nDataSize;						// TOTAL file uncompressed size
@@ -141,7 +150,7 @@ private:
 	UCHAR	*m_bData;
 	ULONG	m_nDataPos;							// Position in output stream
 	ULONG	m_nDataUsed;						// How much current info is in the data buff
-	ULONG	m_nDataWritePos;					// Where new data should be written from
+	ULONG	m_nDataWritePos;				// Where new data should be written from
 
 
 	// Misc

@@ -18,10 +18,20 @@ Patches (WHX_Init):
 #3 WHX_Init succeed if Winhex is running
    jump to code after WinExec instead of the end (with retval -1)
 
+#4 Bugfix: WHX_Init Create tmp file 
+
+	open TempFileName instead of TempPath
+
+	68 6C46FB04   PUSH    04FB466C                            ;  ASCII "c:\TEMP\WLB37A3.tmp"
+	E8 17FEFFFF   CALL    <JMP.&kernel32.CreateFileA>         ; \CreateFileA
 
 
 
+#4 added: WHX_Init ErrorCode -7 
 
+	Egg..
+
+	
 
 LRESULT __stdcall WHX_Init(WPARAM APIVer)
 {

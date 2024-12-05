@@ -20,8 +20,8 @@ Begin VB.Form frmLogView
    StartUpPosition =   3  'Windows Default
    Begin VB.TextBox txtlog 
       BeginProperty Font 
-         Name            =   "Courier New"
-         Size            =   9.6
+         Name            =   "Consolas"
+         Size            =   10.2
          Charset         =   0
          Weight          =   400
          Underline       =   0   'False

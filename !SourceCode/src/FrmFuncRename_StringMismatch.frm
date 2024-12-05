@@ -2,15 +2,15 @@ VERSION 5.00
 Begin VB.Form FrmFuncRename_StringMismatch 
    BorderStyle     =   5  'Sizable ToolWindow
    Caption         =   "Function Renamer String Mismatch"
-   ClientHeight    =   4035
-   ClientLeft      =   2445
-   ClientTop       =   2430
-   ClientWidth     =   12090
+   ClientHeight    =   4032
+   ClientLeft      =   2448
+   ClientTop       =   2436
+   ClientWidth     =   12084
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   4035
-   ScaleWidth      =   12090
+   ScaleHeight     =   4032
+   ScaleWidth      =   12084
    ShowInTaskbar   =   0   'False
    StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmd_cancel 
@@ -35,7 +35,7 @@ Begin VB.Form FrmFuncRename_StringMismatch
    End
    Begin VB.ListBox List_Inc 
       Appearance      =   0  'Flat
-      Height          =   8610
+      Height          =   8472
       ItemData        =   "FrmFuncRename_StringMismatch.frx":0000
       Left            =   6120
       List            =   "FrmFuncRename_StringMismatch.frx":0002
@@ -45,7 +45,7 @@ Begin VB.Form FrmFuncRename_StringMismatch
    End
    Begin VB.ListBox List_Org 
       Appearance      =   0  'Flat
-      Height          =   8610
+      Height          =   8472
       Left            =   0
       TabIndex        =   0
       Top             =   360
@@ -71,7 +71,7 @@ End Property
 
 
 
-Public Sub Create(fn_org As MatchCollection, fn_inc As MatchCollection)
+Public Sub create(fn_org As MatchCollection, fn_inc As MatchCollection)
    FillList List_Org, fn_org
    FillList List_Inc, fn_inc
    
@@ -83,7 +83,7 @@ Private Sub FillList(List As Listbox, Match As MatchCollection)
    
    Dim i As Match
    For Each i In Match
-      List.AddItem i '.SubMatches(1)
+      List.AddItem i.SubMatches(0)
    Next
 End Sub
 

@@ -20,6 +20,8 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 
 Option Explicit
 Private Declare Sub MemCopy Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, src As Any, ByVal Length&)
+Private Declare Sub MemCopyStrToDbl Lib "kernel32" Alias "RtlMoveMemory" (Dest As Double, ByVal src As String, ByVal Length&)
+Private Declare Sub MemCopyStrToLng64 Lib "kernel32" Alias "RtlMoveMemory" (Dest As Currency, ByVal src As String, ByVal Length&)
 Private Declare Sub MemCopyStrToLng Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As String, ByVal Length&)
 Private Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As String, src As Long, ByVal Length&)
 Private Declare Sub MemCopyLngToInt Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As Integer, ByVal Length&)
@@ -105,6 +107,15 @@ End Property
 Private Function StrtoLng(ByVal value$) As Long
    MemCopyStrToLng StrtoLng, value, 4
 End Function
+
+Private Function StrtoLng64(ByVal value$) As Currency
+   MemCopyStrToLng64 StrtoLng64, value, 8
+End Function
+
+Private Function StrtoDouble(ByVal value$) As Double
+'Stop 'untested
+   MemCopyStrToDbl StrtoDouble, value, 8
+End Function
 '
 Private Function LngtoStr(ByVal value&) As String
    Dim tmp$
@@ -123,8 +134,10 @@ End Property
 Public Property Get EOS() As Boolean
  '  EOS = Position >= Len(mvardata)
  'optimised
- '  EOS = (mvarPosition - 1) >= Len(mvardata)
-    EOS = mvarPosition > mvardata_len
+   EOS = (mvarPosition - 1) >= Len(mvardata)
+ 
+ 'Fails if mvardata contains null chars
+ '   EOS = mvarPosition > mvardata_len
 End Property
 
 
@@ -206,11 +219,15 @@ Public Property Get FixedString(Optional ByVal Length& = -1) As String
 End Property
 
 Public Property Get FixedStringW(Optional ByVal Length& = -1) As String
-   Length = Length * 2
-   If Length <= -1 Then _
+   If Length = -1 Then _
       Length = mvardata_len
+      
+   Length = Length + Length '*2
    
-      FixedStringW = Mid(mvardata, mvarPosition, Length)
+   
+   FixedStringW = Mid(mvardata, mvarPosition, Length)
+   
+   FixedStringW = StrConv(FixedStringW, vbFromUnicode)
    
    ToMove = Length
 End Property
@@ -225,8 +242,14 @@ End Property
 Public Property Get int32() As Long
     int32 = StrtoLng(FixedString(4))
 End Property
-
-
+Public Property Get int64Value() As Currency
+'Stop 'untested
+   int64Value = StrtoLng64(FixedString(8))
+End Property
+Public Property Get DoubleValue() As Double
+   DoubleValue = StrtoDouble(FixedString(8))
+   'DoubleValue = 3.14
+End Property
 
 Public Property Let int16(vData As Long)
     FixedString(2) = LngtoStr(vData)
@@ -301,13 +324,13 @@ Attribute Data.VB_UserMemId = 0
     Data = mvardata
 End Property
 
-Public Sub CopyData(src&, Dest&, Optional SIZE = -1)
+Public Sub CopyData(src&, Dest&, Optional Size = -1)
    Dim tmpstr$
    Position = src
-   tmpstr = FixedString(SIZE)
+   tmpstr = FixedString(Size)
    
    Position = Dest
-   FixedString(SIZE) = tmpstr
+   FixedString(Size) = tmpstr
    
    
 End Sub

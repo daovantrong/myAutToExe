@@ -3,6 +3,8 @@ Option Explicit
 
 
 Public Function UnUPX() As Long
+
+   On Error GoTo UnUPX_err
    Dim cmdline$, parameters$, Logfile$
    
    Dim FileNameIn As ClsFilename
@@ -16,6 +18,7 @@ Public Function UnUPX() As Long
    
    With FrmMain
          
+         .Log_Stage "UPX Decompress", 0
          
        ' Check for already unpacked File
          Set FileName = FileNameIn 'in case we exit early...
@@ -33,7 +36,6 @@ Public Function UnUPX() As Long
             Set FileName = FileNameOut
             Exit Function
          End If
-         
          
          
         ' PreCheck is packed with UPX
@@ -57,6 +59,26 @@ Public Function UnUPX() As Long
          End If
        ' ------------------------------
          
+       
+       
+       ' Test for AutoIt2 Script
+         File.create FileNameIn.FileName
+         
+         Dim isOldScript As Boolean
+         isOldScript = TestForV2_0
+         
+         File.CloseFile
+         
+       ' unUPX AutoIt2 Scripts (without fixing the Pointer to script at the end) will break them
+       ' so stop when AutoIt2 Script
+         If isOldScript Then
+            .log_verbose "unUPX stop because an AutoIt2 script was found!"
+            Exit Function
+         End If
+
+         
+       
+       
        
        ' Invoke upx.exe
          .Log "Trying to decompress UPX binary..."
@@ -98,7 +120,12 @@ Public Function UnUPX() As Long
          
    End With
 
-   
+Exit Function
+
+UnUPX_err:
+
+myMsgBox Err.Description, vbCritical, "Error in UnUPX"
+
 End Function
 
 

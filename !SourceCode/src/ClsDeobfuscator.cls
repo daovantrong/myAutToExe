@@ -54,7 +54,7 @@ Public Function IsObfuscatedFunctionName(FunctionName) As Boolean
    
    'IsObfuscatedFunctionName = FunctionName Like "A??????????" '"A[0-9A-F]{10}"
 '   With New RegExp
-      myRegExp.Pattern = "^[0-9A-Fa-f]{10}"
+      myRegExp.Pattern = "^" & RE_HEXDIGET & "{10}"
       IsObfuscatedFunctionName = myRegExp.Test(FunctionName)
 '      Debug.Assert IsObfuscatedFunctionName = True
 '   End With
@@ -634,10 +634,10 @@ Private Sub DeObfuscate_Encodeit()
    '        Matchstring
    'Blah = "EnCodeIt"
    
-   Const SingleOrDoubleQuotes$ = "[""']"
+
    Const BackRef2$ = "\2"
    
-   myRegExp.Pattern = RE_Group(RE_AnyChar) & RE_WSpace(RE_Group(SingleOrDoubleQuotes), "&", BackRef2)
+   myRegExp.Pattern = RE_Group(RE_AnyChar) & RE_WSpace(RE_Group(RE_Quote), "&", BackRef2)
    
    myRegExp.IgnoreCase = False
    myRegExp.Global = True
@@ -697,7 +697,7 @@ Private Sub DeObfuscate_Encodeit()
 End Sub
 
 
-Public Sub Init()
+Public Sub init()
    Log "DeObfuscating : " & FileName
    
  ' Clear ModulVars
@@ -706,7 +706,7 @@ Public Sub Init()
  
  '=== Open & Test Obfu-Type ===
    
-   File.Create FileName.FileName, False, False, True
+   File.create FileName.FileName, False, False, True
    
   'Convert to Accii if it's unicode
 
@@ -731,7 +731,7 @@ End Sub
 
 Public Function DetectScriptObfuscated() As Long
  
-GUIEvent_ProcessBegin 6
+GUIEvent_ProcessBegin 7
  
  ' Test for if obfuscated ( find 'func A2C4558BC554')
 ' Option Compare Text
@@ -804,7 +804,7 @@ GUIEvent_ProcessBegin 6
                   "99", "/", "3", "\+", "15", "\*", "100", "/", "4", "-", "13", "\^", "2", "\+", _
                   "81", "/", "3", "-", "17", "\)")
        
-       Const HexNum = "(?:" & "0x" & ")?" & "[0-9A-Fa-f]" & "{1,8}"
+       Const HexNum = "(?:" & "0x" & ")?" & RE_HEXDIGET & "{1,8}"
        .Pattern = RE_WSpace("Int", "\(", HexNum, "/", "3", "\+", HexNum, "\*", HexNum, "/", "4", _
                   "-", HexNum, "\^", "2", "\+", HexNum, "/", "3", "-", HexNum, "-", HexNum, "\+", _
                   HexNum, "/", "3", "\+", HexNum, "\*", HexNum, "/", "4", "-", HexNum, "\^", "2", "\+", _
@@ -828,8 +828,22 @@ GUIEvent_ProcessBegin 6
        
        
        GUIEvent_ProcessUpdate 6
+     ' Func A000347492GSJO46LL($A000602494AL8EKLJ)
+     ' $A000602494AL8EKLJ = Call(BinaryToString("0x537472696E6752657665727365"), Call(BinaryToString("0x42696E617279546F537472696E67"), $A000602494AL8EKLJ))
+     ' Return $A000602494AL8EKLJ
+     
+      'or
+      'FUNC _HEXTOSTRING($SHEX)
+      'IF NOT (STRINGLEFT($SHEX,2)=="0x")THEN $SHEX="0x"&$SHEX
+      'RETURN BINARYTOSTRING($SHEX)
+       .Pattern = RE_WSpace("A000602494")
+       If .Test(NewScript) Then
+
+          DetectScriptObfuscated = DE_OBFUSC_TYPE_WARTOOL
+          
+       Else
        
-       GUIEvent_ProcessUpdate 5
+       GUIEvent_ProcessUpdate 7
        
        ' Example: &CHR(101)&""
        
@@ -844,7 +858,7 @@ GUIEvent_ProcessBegin 6
        End If
        
        
-       
+       End If '6
        End If '5
        End If '4 DE_OBFUSC_TYPE_ENCODEIT
        End If '3
@@ -869,6 +883,10 @@ GUIEvent_ProcessBegin 6
 
        
        
+       
+       
+       
+       
        GUIEvent_ProcessEnd
        
        
@@ -886,21 +904,20 @@ Private Sub WarnIfUntestedObfuType()
 
 End Sub
 
+'Execute(\(\$[^)]*\))   \1
+'Execute('\(.*\)')
 
 
 Public Sub DeObfuscate()
+   FrmMain.Log_Stage "AutoIT DeOfuscate", 3
    
-   
-   Log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
-   Log String(79, "=")
- 
    If IsTextFile = False Then
       Err.Raise ERR_NO_TEXTFILE, , "DeObfuscate skipped! " & FileName.NameWithExt & " seems to be no text file. (because it contains 00 Bytes)"
       Exit Sub
    End If
  
  ' Load File into 'newScript'
-   Init
+   init
    
 '   Dim DeobfuRounds%
 '   DeobfuRounds = 0
@@ -917,7 +934,7 @@ Public Sub DeObfuscate()
             DeObfuscate_VanZande1_0_24
 
          Case DE_OBFUSC_VANZANDE_VER15
-               Log "Deobfuscating van Zande 1.0.15..."
+               Log "Deobfuscating van Zande 1.0.15 [July 1, 2007]..."
                DeObfuscate_VanZande1_0_24 'DeObfuscate_VanZande1_0_15
 
          Case DE_OBFUSC_VANZANDE_VER15_2
@@ -946,6 +963,11 @@ Public Sub DeObfuscate()
             Log "Deobfuscating Chr_Encode(old style)..."
             DeObfuscate_Chr_Encode_old
 
+         Case DE_OBFUSC_TYPE_WARTOOL
+            Log "Wartool string encryption..."
+            obfu_WarTool Me, NewScript
+            
+         
          Case DE_OBFUSC_TYPE_NOT_OBFUSC
 
           ' Remove DeTokenise marker and run Tidy
@@ -961,7 +983,6 @@ Public Sub DeObfuscate()
       End Select
          
       Log "Deobfucation succeed."
-      
       SaveScriptData NewScript, True 'IsTidyed
       
 '      Inc DeobfuRounds
@@ -1084,8 +1105,8 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
    
   ' Get
     FnNameHexToString = RE_FindPattern(NewScript, _
-                 RE_Literal("global $") & "[0-9A-Za-z_]*?" & RE_Literal("=") & _
-                 RE_Group("[0-9A-Za-z_]*?") & RE_Literal("($"))
+                 RE_Literal("global $") & RE_AU3NAME & RE_Literal("=") & _
+                 RE_Group(RE_AU3NAME) & RE_Literal("($"))
    
    
   
@@ -1750,7 +1771,7 @@ Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional I
 ' Example: "Global $J767027413071708815817
 
   Dim ObfuName$
-  ObfuName = "[A-Z][0123456789ABCDEF]{10,21}"
+  ObfuName = "[A-Z]RE_HEXDIGET{10,21}"
   
   
   
@@ -1954,8 +1975,11 @@ Private Function c(Text$)
    End If
 End Function
 
+' Also removes Call and Execute
+' Call(A0000171918199HNZSQLDG5K8X5RVG9VV("4D7367426F78")
+' Execute(A000017181918WPR4YUMD280N0RFE("307831")))
 
-Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
+Public Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
 
 ' ' avoid Replacing ShellExecute
    With myRegExp
@@ -2021,13 +2045,22 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
 '         Data = .Replace(Data, "$1" & RE_Replace_Literal(NewStr)) & " "
 
 '-----Version 1
-     .Pattern = RE_WSpace(c("Execute\("), RE_Literal(ReplaceStr), "\)")
+     .Pattern = RE_WSpace( _
+            c("Execute") & "\(", _
+            RE_Literal(ReplaceStr), _
+            "\)")
+      'c("Execute")&
+      '            , <- 3% performance
+      
+'      Debug.Assert (ReplaceStr Like "*181963LSV4GIQ4G96MO*") = False
+      
       
       Dim bExecuteFound As Boolean
       bExecuteFound = .Test(Data)
       
       If bExecuteFound Then
-
+      
+       ' Do Replace including 'Execute(...'
          Dim bShellExecuteFound As Boolean
          bShellExecuteFound = False
 
@@ -2035,7 +2068,8 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
          For Each Match In .Execute(Data)
             With Match
               'Skip ShellExecute
-               If Mid(Data, .FirstIndex + 1 - 5, 5) <> c("Shell") Then
+               Const LenShellExecute& = 5
+               If Mid(Data, .FirstIndex + 1 - LenShellExecute, LenShellExecute) <> c("Shell") Then
                   QuickReplace Data, .value, NewStr, .FirstIndex + 1, 1
                Else
                 ' Notify that there's a ShellExecute that might contain strings that need to replaced
@@ -2067,17 +2101,55 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
     ' Continune if there was no Execute() match
     ' ...and when a ShellExecute() was found( <-what is no real match)
       If bShellExecuteFound Or (bExecuteFound = False) Then
+      
+' Function...
+     
+         'Same as Execute
+        .Pattern = RE_WSpace( _
+         c("Call") & "\(", _
+         RE_Literal(ReplaceStr), _
+         ",?")
+   
+         Dim bCallFound As Boolean
+         bCallFound = .Test(Data)
+         
+         If bCallFound Then
+          ' Do Replace including 'Call(...'
+               
+            Dim bDllCallFound  As Boolean
+            bDllCallFound = False
+            
+            For Each Match In .Execute(Data)
+               With Match
+                ' Skip DllCall
+                  Const LenDLL& = 3
+                  If Mid(Data, .FirstIndex + 1 - LenDLL, LenDLL) <> c("Dll") Then
+                     QuickReplace Data, .value, NewStr & "(", .FirstIndex + 1, 1
+                  Else
+                     bDllCallFound = True
+                  End If
+               End With
+            Next
+            
+         End If
+         If bDllCallFound Or (bCallFound = False) Then
+     
+      
 ' Numbers...
-        .Pattern = RE_WSpace(RE_Literal(c("Number(")), RE_Literal(ReplaceStr), RE_Literal(")"))
-         If .Test(Data) Then
-            
-            Data = .Replace(Data, FormatNumber(NewStr) & " ")
-            
-         Else
+            .Pattern = RE_WSpace( _
+               RE_Literal(c("Number(")), _
+               RE_Literal(ReplaceStr), _
+               RE_Literal(")"))
+               
+            If .Test(Data) Then
+               
+               Data = .Replace(Data, FormatNumber(NewStr) & " ")
+               
+            Else
 
 ' Strings...
 '
-            QuickReplace Data, ReplaceStr, MakeAutoItString(CStr(NewStr))
+               QuickReplace Data, ReplaceStr, MakeAutoItString(CStr(NewStr))
 
 ' RegExp Version (Speed is nearly the same - slighly slower)
 '            .Pattern = RE_Literal(ReplaceStr)
@@ -2085,9 +2157,15 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
 '               Data = .Replace(Data, RE_Replace_Literal(MakeAutoItString(CStr(NewStr))))
 '            End If
          
-         End If
+            End If 'Test Number
 
-      End If
+         End If 'Find Call
+         
+      End If 'bExecuteFound
+      
+      
+      
+  
    End With
    
    
@@ -2096,28 +2174,6 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
 
 '      ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr), , , vbTextCompare
 '      ReplaceDo Data, ReplaceStr, Quote (Replace(NewStr, """", """""") )
-
-End Sub
-
-Private Sub StringFillUp(ByRef Data, TargetSize&)
-   If Len(Data) < TargetSize Then
-      Data = BlockAlign_l(Data, TargetSize)
-   End If
-End Sub
-
-Private Sub QuickReplace(Data$, ReplaceStr, ByVal NewStr$, Optional startPos& = 1, Optional Count& = 2147483647)
-   StringFillUp NewStr, Len(ReplaceStr)
-   
-   ReplaceDo Data, ReplaceStr, NewStr, startPos, Count
-'   '-
-'   'Do Replacing
-'    If Len(NewStr) > NewLen Then
-'       'Extend String
-'       Stop
-'       ReplaceDo Data, oldValue, NewStr, NewPos
-'    Else
-'       Mid(Data, NewPos, NewLen) = BlockAlign_l(NewStr, NewLen)
-'    End If
 
 End Sub
 
@@ -2373,7 +2429,8 @@ Log "Restoring StringNames in ..."
                  
               'Replace Local Strings
              ' In ScriptFunction code Replace all "$SA3160B01D3E" with for example "Wrong Name Entered!"
-             DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), StringTBL(index)
+             DeObfu_ReplaceStrings ScriptFunction, _
+               CStr(LocalStringNames(index)), StringTBL(index)
    '            tmpstr = Replace(tmpstr, "Execute(" & LocalStringNames(index) & ")", StringTBL(index))
    '            tmpstr = Replace(tmpstr, "Number(" & LocalStringNames(index) & ")", FormatNumber(StringTBL(index)))
    '            tmpstr = Replace(tmpstr, CStr(LocalStringNames(index)), """" & Replace(StringTBL(index), """", """""") & """")

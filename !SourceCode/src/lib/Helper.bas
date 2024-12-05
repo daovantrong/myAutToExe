@@ -2,8 +2,6 @@ Attribute VB_Name = "Helper"
 Option Explicit
 Option Compare Text
 
-Dim myRegExp As New RegExp
-
 Public Const ERR_CANCEL_ALL& = vbObjectError Or &H1000
 
 Public Const ERR_SKIP& = vbObjectError Or &H2000
@@ -71,19 +69,8 @@ Private Declare Function iMul Lib "MSVBVM60.DLL" Alias "_allmul" (ByVal dw1 As L
 
 
 'Ensure that 'myObjRegExp.MultiLine = True' else it will use the beginning of the string!
-Public Const RE_Anchor_LineBegin$ = "^"
-Public Const RE_Anchor_LineEnd$ = "$"
 
-Public Const RE_Anchor_WordBoarder$ = "\b"
-Public Const RE_Anchor_NoWordBoarder$ = "\B"
-
-Public Const RE_AnyChar$ = "."
-Public Const RE_AnyChars$ = ".*"
-
-Public Const RE_AnyCharNL$ = "[\S\s]"
-Public Const RE_AnyCharsNL$ = "[\S\s]*?"
-
-Public Const RE_NewLine$ = "\r?\n"
+Public Const RE_Quote$ = "[""']"
 
 
 Dim ExcludedNames As Collection
@@ -193,7 +180,7 @@ End Function
 ' "41 42 43" -> "ABC"
 Public Function HexvaluesToString$(Hexvalues$)
    Dim tmpChar
-   For Each tmpChar In Split(Hexvalues)
+   For Each tmpChar In split(Hexvalues)
       'HexvaluesToString = HexvaluesToString & ChrB("&h" & tmpchar) & ChrB(0)
       'Note ChrB("&h98") & ChrB(0) is not correct translated
       HexvaluesToString = HexvaluesToString & Chr(HexToInt(tmpChar))
@@ -346,23 +333,7 @@ End Function
 
 
 
-Public Function CollectionToArray(Collection As Collection) As Variant
-   
-   Dim tmp
-   ReDim tmp(Collection.Count - 1)
-   
-   Dim i
-   i = LBound(tmp)
-   
-   Dim item
-   For Each item In Collection
-      tmp(i) = item
-      Inc i
-   Next
-   
-   CollectionToArray = tmp
-   
-End Function
+
 Public Function isString(StringToCheck) As Boolean
    'isString = False
    Dim i&
@@ -497,97 +468,7 @@ End Function
 
 
 
-Public Function RE_LookHead_positive(ExpressionThatShouldBeFound$) As String
-   RE_LookHead_positive = "(?=" & ExpressionThatShouldBeFound & ")"
-End Function
-
-Public Function RE_LookHead_negative(ExpressionThatShouldNOTBeFound$) As String
-   RE_LookHead_negative = "(?!" & ExpressionThatShouldNOTBeFound & ")"
-End Function
-
-Public Function RE_Repeat(Optional MinRepeat& = 0, Optional MaxRepeat = "") As String
-   If (MinRepeat = MaxRepeat) Then
-      RE_Repeat = "{" & MinRepeat & "}"
-   Else
-      RE_Repeat = "{" & MinRepeat & "," & MaxRepeat & "}"
-   End If
-   
-End Function
-
-
-Public Function RE_AnyCharRepeat(Optional MinRepeat& = 0, Optional MaxRepeat = "") As String
-   RE_AnyCharRepeat = "." & RE_Repeat(MinRepeat, MaxRepeat)
-End Function
-
-Public Function RE_Group(RegExpForTheGroup$) As String
-   RE_Group = "(" & RegExpForTheGroup & ")"
-End Function
-
-Public Function RE_Group_NonCaptured(RegExpForTheNonCapturedGroup$) As String
-   RE_Group_NonCaptured = "(?:" & RegExpForTheNonCapturedGroup & ")"
-End Function
-
-Public Function RE_Literal(TextWithLiterals) As String
-   'Mask metachars
-   RE_Literal = RE_Mask(TextWithLiterals, "][{}()*+?.\\^$|")
-                                           
-End Function
-
-
-Public Function RE_Replace_Literal(TextWithLiterals) As String
-  'Mask Replace metachars
-   ' $0-9   Back reference
-   ' $+     Last reference
-   
-   ' $&     MatchText
-   
-   ' $`     Text left from subject
-   ' $'     Text right from subject
-   ' $_     Whole subject
-   
-   RE_Replace_Literal = RE_Mask(TextWithLiterals, "0-9+`'_", "\$", "$$")
-
-
-End Function
-Private Sub RE_Mask_Whitespace(Text)
-   ReplaceDo Text, vbCr, "\r"
-   ReplaceDo Text, vbLf, "\n"
-   ReplaceDo Text, vbTab, "\t"
-End Sub
-
-Private Function RE_Mask(Text, CharsToMask$, _
-   Optional CharMaskSearch$ = "", _
-   Optional CharMaskReplace$ = "\") As String
-   With myRegExp
-      .Global = True
-      
-     ' Mask MetaChars like with a preciding '\'
-      .Pattern = CharMaskSearch & "[" & CharsToMask & "]"
-      
-     'Attention Text is passed byref - so don use Text =...!
-      RE_Mask = .Replace(Text, CharMaskReplace & "$&")
-   
-   
-   End With
-
-'   RE_Mask_Whitespace Text
-   
-'   RE_Mask = Text
-
-End Function
-
-Public Function RE_CharCls(Chars$) As String
-   ' mask ']' and '-'
-   RE_CharCls = "[" & RE_Mask(Chars, "]\\-") & "]"
-End Function
-
-Public Function RE_CharCls_Excluded(Chars$) As String
-   ' mask ']' and '-'
-   RE_CharCls_Excluded = "[^" & RE_Mask(Chars, "]\\-") & "]"
-
-End Function
-
-Public Function IsAlreadyInCollection(CollectionToTest As Collection, Key$) As Boolean
+Public Function Collection_IsAlreadyIn(CollectionToTest As Collection, Key$) As Boolean
    Dim Description$, Number&, Source$
    Description = Err.Description
    Number = Err.Number
@@ -595,7 +476,7 @@ Public Function IsAlreadyInCollection(CollectionToTest As Collection, Key$) As B
    
       On Error Resume Next
       CollectionToTest.item Key
-      IsAlreadyInCollection = (Err = 0)
+      Collection_IsAlreadyIn = (Err = 0)
       
    Err.Description = Description
    Err.Number = Number
@@ -604,119 +485,15 @@ Public Function IsAlreadyInCollection(CollectionToTest As Collection, Key$) As B
 
 End Function
 
-'Public Sub ArrayEnsureBounds(Arr)
-'
-''   Dim tmp_ptr&
-''   MemCopy tmp_ptr, VarPtr(Arr) + 8, 4 ' resolve Variant
-''   MemCopy tmp_ptr, tmp_ptr, 4               ' get arraypointer
-''
-''   Dim bIsNullArray As Boolean
-''   bIsNullArray = (tmp_ptr = 0)
-'' On Error Resume Next
-'
-'   Dim bIsNullArray As Boolean
-'   bIsNullArray = (Not Not Arr) = 0 'use vbBug to get pointer to Arr
-'
-''   Rnd 1 ' catch Expression too complex error that is cause by the bug
-''On Error GoTo 0
-'
-''   Exit Function
-'
-'   If bIsNullArray Then
-'
-'   ElseIf (UBound(Arr) - LBound(Arr)) < 0 Then
-'   Else
-'      Exit Function
-'   End If
-'
-'   ReDim Arr(0)
-'   ArrayEnsureBounds = True
-'   Exit Function
-
-Public Sub ArrayEnsureBounds(Arr)
-
-On Error GoTo Array_err
-  ' IsArray(Arr)=False        ->  13 - Type Mismatch
-  ' [Arr has no Elements]     ->  9 - Subscript out of range
-  ' ZombieArray[arr=Array()]  -> GoTo Array_new
-   If UBound(Arr) - LBound(Arr) < 0 Then GoTo Array_new
-Exit Sub
-Array_err:
-Select Case Err
-    Case 9, 13
-Array_new:
-      ArrayDelete Arr
-
-'   Case Else
-'      Err.Raise Err.Number, "", "Error in ArrayEnsureBounds: " & Err.Description
-
-End Select
-
-End Sub
-
-
-
-Public Sub ArrayAdd(Arr, Optional Element = "")
-   ArrayEnsureBounds Arr
-   ReDim Preserve Arr(LBound(Arr) To UBound(Arr) + 1)
-   Arr(UBound(Arr)) = Element
-
-End Sub
-
-
-'Public Sub ArrayAdd(Arr As Variant, Optional element = "")
-'' Is that already a Array?
-'   If IsArray(Arr) Then
-'      ReDim Preserve Arr(LBound(Arr) To UBound(Arr) + 1)
-'
-' ' VarType(Arr) = vbVariant must be
-'   Else 'If VarType(Arr) = vbVariant Then
-'      ReDim Arr(0)
-'   End If
-'
-'   Arr(UBound(Arr)) = element
-'
-'End Sub
-
-Public Sub ArrayRemoveLast(Arr)
-   ReDim Preserve Arr(LBound(Arr) To UBound(Arr) - 1)
-End Sub
-
-Public Sub ArrayDelete(Arr)
-   ReDim Arr(0)
-   'Arr = Array()
-   'Set Arr = Nothing
-End Sub
-
-
-Public Function ArrayGetLast(Arr)
-ArrayEnsureBounds Arr
-   ArrayGetLast = Arr(UBound(Arr))
+Public Function Collection_LoadInto( _
+   FileName$, Collection As Collection, _
+   Optional seperator = vbCrLf)
+   Dim Line
+   For Each Line In split(FileLoad(FileName), seperator)
+      Line = Trim(Line)
+      Collection.Add Line, Line
+   Next
 End Function
-Public Sub ArraySetLast(Arr, Element)
-ArrayEnsureBounds Arr
-    Arr(UBound(Arr)) = Element
-End Sub
-Public Sub ArrayAppendLast(Arr(), Element)
-ArrayEnsureBounds Arr
-    Arr(UBound(Arr)) = Arr(UBound(Arr)) & Element
-End Sub
-
-
-Public Function ArrayGetFirst(Arr)
-ArrayEnsureBounds Arr
-   ArrayGetFirst = Arr(LBound(Arr))
-End Function
-Public Sub ArraySetFirst(Arr, Element)
-ArrayEnsureBounds Arr
-    Arr(LBound(Arr)) = Element
-End Sub
-Public Sub ArrayAppendFirst(Arr, Element)
-ArrayEnsureBounds Arr
-    Arr(LBound(Arr)) = Arr(LBound(Arr)) & Element
-End Sub
-
-
 
 
 Function DelayedReturn(Now As Boolean) As Boolean
@@ -822,7 +599,7 @@ End Sub
 Public Function FileLoad$(FileName$, Optional MaxLength& = -1)
    Dim File As New FileStream
    With File
-      .Create FileName, False, False, True
+      .create FileName, False, False, True
       FileLoad = .FixedString(MaxLength)
       .CloseFile
    End With
@@ -832,7 +609,7 @@ Public Sub FileSave(FileName$, Data$)
    On Error GoTo err_FileSave
    Dim File As New FileStream
    With File
-      .Create FileName, True, False, False
+      .create FileName, True, False, False
       .FixedString(-1) = Data
       .CloseFile
    End With
@@ -943,7 +720,7 @@ End Sub
 Sub ExcludedNamesSet(ExcludedNamesStr$)
    Set ExcludedNames = New Collection
    Dim item
-   For Each item In Split(ExcludedNamesStr)
+   For Each item In split(ExcludedNamesStr)
       ExcludedNames.Add item, item
    Next
 End Sub
@@ -996,9 +773,9 @@ Sub TextBox_Load(Section$, ByVal Txt As TextBox)
    With Txt
       'signal [txt]_change that were and load the settings
       'so it might react on this i.e. like not the execute the event handler code
-      .Enabled = False
+      .enabled = False
          .Text = ConfigValue_Load(Section, Txt.Name, Txt.Text)
-      .Enabled = True
+      .enabled = True
    End With
  End Sub
 Sub TextBox_Save(Section$, ByVal Txt As TextBox)
@@ -1055,39 +832,9 @@ End Function
 
 
 
-Public Function RE_FindPattern$(Data$, Pattern$, Optional Match As Match)
-       
-   With New RegExp
-      .IgnoreCase = True
-      .Global = False
-      .MultiLine = False
-      .Pattern = Pattern
-      
-      Dim matches As MatchCollection
-      
-      Set matches = .Execute(Data)
-      If matches.Count = 1 Then
-         'Dim match As match
-         Set Match = matches(0)
-         If Match.SubMatches.Count = 1 Then
-            RE_FindPattern = matches.item(0).SubMatches(0)
-         End If
-      End If
-   End With
-End Function
 
-
-
-
-Public Function RE_FindPatterns(Data, Pattern$)
-       
-   With New RegExp
-      .IgnoreCase = True
-      .Global = True
-      .MultiLine = False
-      .Pattern = Pattern
-      
-      Set RE_FindPatterns = .Execute(Data)
-   End With
-End Function
-
+Public Sub StringFillUp(ByRef Data, TargetSize&)
+   If Len(Data) < TargetSize Then
+      Data = BlockAlign_l(Data, TargetSize)
+   End If
+End Sub
