@@ -45,18 +45,19 @@ Module=mod_Array; !SourceCode\SRC\lib\mod_Array.bas
 Module=mod_Obfu_WarTool; !SourceCode\SRC\mod_Obfu_WarTool.bas
 Module=mod_AU3_parser; !SourceCode\SRC\mod_AU3_parser.bas
 Class=tc_Func; !SourceCode\SRC\tc_Func.cls
+Class=ClsReplaceMulti; !SourceCode\SRC\lib\ClsReplaceMulti.cls
 IconForm="FrmMain"
 Startup="FrmMain"
 HelpFile=""
 Title="AutToExe"
 ExeName32="myAutToExe.exe"
-Command32=""f:\Laufwerk Daten\David\Programmierung\Projekte\AutToExe\Ver 2.0\samples\!Obfuscated Samples\Chr (new Style)\CSB-257.tok""
+Command32=""
 Name="myAutToExe"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
-MinorVer=14
-RevisionVer=202
+MinorVer=15
+RevisionVer=213
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionComments="http://board.deioncube.in/showthread.php?tid=29"
@@ -80,6 +81,3 @@ Retained=0
 ThreadPerObject=-1
 MaxNumberOfThreads=1
 DebugStartupOption=0
-
-[MS Transaction Server]
-AutoRefresh=1

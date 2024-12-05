@@ -21,7 +21,7 @@ Private PEStart&
 'Private Const CHECKSUM_UNICODE_FAILURE As Long = 4
 Private Declare Function MapFileAndCheckSum Lib "Imagehlp.dll" Alias "MapFileAndCheckSumA" (ByVal FileName As String, ByRef HeaderSum As Long, ByRef CheckSum As Long) As Long
 
-Public Sub Create()
+Public Sub create()
 
 '     '--- find PE-signature ---
 '     'Get First 0x400 Bytes
@@ -74,7 +74,7 @@ Public Sub Create()
             
             
          Else
-           Err.Raise vbObjectError Or 3, , "Unsupported PE-Header.Signature 0x" & H16(PE_Header.Machine) & " <>I386(0x14C)."
+           Err.Raise vbObjectError Or 3, , "Unsupported PE-Header.Signature " & H16x(PE_Header.Machine) & " <>I386(0x14C)."
          End If
       
       Else
@@ -131,8 +131,8 @@ End Function
 
 Public Function GetChecksum&() '(Optional ByRef Output_ChecksumCurrent&, Optional ByRef Output_ChecksumNew&)
    If PEStart = 0 Then Err.Raise vbObjectError, , "You must call PE_info::Create first!"
-   Dim tmp&, Retval&
-   Retval = MapFileAndCheckSum(File.FileName, 0, tmp)
+   Dim tmp&, retval&
+   retval = MapFileAndCheckSum(File.FileName, 0, tmp)
    GetChecksum = tmp
 End Function
 
@@ -154,7 +154,7 @@ Public Sub PE_GetSectionData()
             
             File.Position = .PointertoRawData
             filedata = File.FixedString(.RawDataSize)
-            PE_SectionData.Add filedata
+            PE_SectionData.add filedata
          End With
       Next
 

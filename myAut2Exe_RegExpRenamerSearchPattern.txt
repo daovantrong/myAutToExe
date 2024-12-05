@@ -1,0 +1,14 @@
+"HotKeySet[^,].*\s*\"(\w{200,})"  -> "FnHotKey"     ;fn
+"Func\s*(\w{200,})"  -> "Fn"     ;funcs
+
+"\$(\w{200,})\s*=\s*\"(\w{4,8})"  -> "str"     ;assign str
+"\$(\w{200,})\s*=\s*\""  -> "str"     ;str
+"FileOpen\(\s*\$(\w{200,})"  -> "FileName"     ;fn
+"\$(\w{200,})\s*=\s*FileOpen\("  -> "hFile"     ;file
+"\$(\w{200,})\s*=\s*GUICtrlCreate(\w{200,})\s*\(\s*\"([^\"]{0,6})"  -> "GUI"     ;gui 
+"\$(\w{200,})\s*=\s*(\w{4,8})\w{200,}\s*\(\s*\"([^\"]{0,10})"  -> ""     ;assignment Func+Param
+"\$(\w{200,})\s*=\s*(?:Number\()?(\w{4,8})"  -> ""     ;assignment Func
+
+"Local\s*\$(\w{200,})\["  -> "Arr"     ;arr
+"Local\s*\$(\w{200,})"  -> "l"     ;Local
+"\$(\w{200,})"  -> "v"     ;vars

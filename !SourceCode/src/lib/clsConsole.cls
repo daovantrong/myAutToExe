@@ -41,6 +41,10 @@ Private Declare Function PeekNamedPipe Lib "kernel32" (ByVal _
 Private Declare Function WaitForSingleObject Lib "kernel32" ( _
         ByVal hHandle As Long, ByVal dwMilliseconds As Long) As Long
 
+Private Declare Sub Sleep Lib "kernel32" ( _
+        ByVal dwMilliseconds As Long)
+
+
 Private Declare Function GetExitCodeProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByRef lpExitCode As Long) As Long
         
 Private Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
@@ -127,7 +131,7 @@ On Error GoTo ShellExConsole_err
     Dim hReadPipe As Long, hWritePipe As Long
     retval = CreatePipe(hReadPipe, hWritePipe, sa, 0)
     If retval = 0 Then
-        Err.Raise 5, , "CreatePipe failed! RetVal: 0x" & H32(retval)
+        Err.Raise 5, , "CreatePipe failed! RetVal: " & H32x(retval)
     End If
    
   ' Prepare STARTUPINFO for CreateProcess
@@ -177,7 +181,7 @@ On Error GoTo ShellExConsole_err
                     
                     
                 Else
-                    Err.Raise 5, , "ReadFile failed! RetVal: 0x" & H32(retval)
+                    Err.Raise 5, , "ReadFile failed! RetVal: " & H32x(retval)
                 End If
                 
             Else
@@ -188,10 +192,13 @@ On Error GoTo ShellExConsole_err
             End If
             
             myDoEvents
+            
+            Sleep 800
+            
         Loop While GetExitCode_RetVal And (ExitCode = STILL_ACTIVE)
     
     Else
-        Err.Raise 5, , "CreateProcessA failed! RetVal: 0x" & H32(retval)
+        Err.Raise 5, , "CreateProcessA failed! RetVal: " & H32x(retval)
     End If
     
     CloseHandle hReadPipe

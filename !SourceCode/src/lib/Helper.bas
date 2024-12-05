@@ -30,9 +30,13 @@ Public Const HKEY_USERS = &H80000003
 
 Public Const ERROR_NONE = 0
 
+Public Const LocaleID_THAI = &H41E  '0x041e Thai
+
 Public Const LocaleID_ENG = 1033 '0x409 US(Eng)
 Public Const LocaleID_GER = 1031 '0x407 German
 Public LocaleID&
+
+Const HexPrefix = "0x"
 
 
 Public Const ERR_FILESTREAM = &H1000000
@@ -180,7 +184,7 @@ End Function
 ' "41 42 43" -> "ABC"
 Public Function HexvaluesToString$(Hexvalues$)
    Dim tmpChar
-   For Each tmpChar In split(Hexvalues)
+   For Each tmpChar In Split(Hexvalues)
       'HexvaluesToString = HexvaluesToString & ChrB("&h" & tmpchar) & ChrB(0)
       'Note ChrB("&h98") & ChrB(0) is not correct translated
       HexvaluesToString = HexvaluesToString & Chr(HexToInt(tmpChar))
@@ -240,13 +244,26 @@ Function RangeCheck(ByVal value&, Max&, Optional Min& = 0, Optional ErrText, Opt
            ErrText & " Value must between '" & Min & "'  and '" & Max & "' !"
 End Function
 
+
+Public Function H8x(ByVal value As Long)
+   H8x = HexPrefix & H8(value)
+End Function
 Public Function H8(ByVal value As Long)
    H8 = Right(String(1, "0") & Hex(value), 2)
 End Function
 
+
+Public Function H16x(ByVal value As Long)
+   H16x = HexPrefix & H16(value)
+End Function
 Public Function H16(ByVal value As Long)
    H16 = Right(String(3, "0") & Hex(value), 4)
 End Function
+
+Public Function H32x(ByVal value As Double)
+   H32x = HexPrefix & H32(value)
+End Function
+
 
 Public Function H32(ByVal value As Double)
    If value <= &H7FFFFFFF Then
@@ -383,7 +400,7 @@ End Function
 
 Function strCropAndDelete(Text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1, Optional ReplaceString$ = "")
    strCropAndDelete = strCrop1(Text$, LeftString$, RightString$, errorvalue, StartSearchAt)
-   Text = Replace(Text, LeftString & strCropAndDelete & RightString, ReplaceString, , , vbTextCompare)
+   Text = replace(Text, LeftString & strCropAndDelete & RightString, ReplaceString, , , vbTextCompare)
 End Function
 
 
@@ -402,7 +419,7 @@ Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue = "", Op
 End Function
 
 Function MidMbcs(ByVal str As String, Start, Length)
-    MidMbcs = StrConv(MidB$(StrConv(str, vbFromUnicode), Start, Length), vbUnicode)
+    MidMbcs = EncodeUnicode(MidB$(DecodeUnicode(str, 0), Start, Length), 0)
 End Function
 
 
@@ -446,7 +463,7 @@ End Function
 
 Public Function FileExists(FileName) As Boolean
    On Error GoTo FileExists_err
-   FileExists = FileLen(FileName)
+   FileExists = 1 + FileLen(FileName)
 
 FileExists_err:
 End Function
@@ -464,6 +481,12 @@ Public Function RE_WSpace(ParamArray Elements()) As String
    WS = "\s*"
    
    RE_WSpace = Join(Elements, WS)
+End Function
+Public Function RE_WSpace_OneOrMore(ParamArray Elements()) As String
+   Dim WS$ ' WhiteSpace
+   WS = "\s+"
+   
+   RE_WSpace_OneOrMore = Join(Elements, WS)
 End Function
 
 
@@ -489,9 +512,9 @@ Public Function Collection_LoadInto( _
    FileName$, Collection As Collection, _
    Optional seperator = vbCrLf)
    Dim Line
-   For Each Line In split(FileLoad(FileName), seperator)
+   For Each Line In Split(FileLoad(FileName), seperator)
       Line = Trim(Line)
-      Collection.Add Line, Line
+      Collection.add Line, Line
    Next
 End Function
 
@@ -616,6 +639,7 @@ Public Sub FileSave(FileName$, Data$)
 
 Exit Sub
 err_FileSave:
+'TODO: Retry Save dialog
    Log "ERROR during FileSave: " & Err.Description
 End Sub
 
@@ -720,8 +744,8 @@ End Sub
 Sub ExcludedNamesSet(ExcludedNamesStr$)
    Set ExcludedNames = New Collection
    Dim item
-   For Each item In split(ExcludedNamesStr)
-      ExcludedNames.Add item, item
+   For Each item In Split(ExcludedNamesStr)
+      ExcludedNames.add item, item
    Next
 End Sub
 

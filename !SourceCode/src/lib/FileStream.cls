@@ -622,6 +622,8 @@ Public Property Get hFile() As Long
                               0, CreationDisposition, _
                               FileFlagsAndAttributes, 0)
       If mvarhFile = -1 Then
+         RaiseDllError "FileStream::hFile", "CreateFile", FileName
+      
          On Error Resume Next
          Dim tmptxt$
          tmptxt = IIf(GetAttr(FileName) And vbReadOnly, "File is write protected.", "File is in use.")

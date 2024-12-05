@@ -171,7 +171,7 @@ Dim Pattern As New clsStrCat
    
    myRegExp.Pattern = Pattern
    Dim Match  As Match
-   Set Match = myRegExp.Execute(filedata.Data)(0)
+   Set Match = myRegExp.execute(filedata.Data)(0)
    
    If Err = 0 Then
       
@@ -247,7 +247,7 @@ Dim Pattern As New clsStrCat
   ' Pattern.Concat szToUnicodeGREPHex("ABS")
 
    myRegExp.Pattern = Pattern
-   Set Match = myRegExp.Execute(filedata.Data)(0)
+   Set Match = myRegExp.execute(filedata.Data)(0)
       
         
       AU3_Type = mymatch.item(0)
@@ -262,7 +262,7 @@ Dim Pattern As New clsStrCat
  '     Pattern.Concat "\x0F"
       myRegExp.Pattern = Pattern
       
-      Set Match = myRegExp.Execute(filedata.Data)(0)
+      Set Match = myRegExp.execute(filedata.Data)(0)
 
       Set mymatch = Match.SubMatches
 
@@ -336,7 +336,7 @@ Dim Pattern As New clsStrCat
  
    myRegExp.Pattern = Pattern
    Set Match = Nothing
-   Set Match = myRegExp.Execute(filedata.Data)(0)
+   Set Match = myRegExp.execute(filedata.Data)(0)
    If (Match Is Nothing) = False Then
       filedata.Position = Match.FirstIndex
       log_verbose H32(filedata.Position) & " ->  Found  AU3_Signature: " ' & .txt_AU3Sig
@@ -432,7 +432,7 @@ Dim Pattern As New clsStrCat
 
    myRegExp.Pattern = Pattern
    Set mymatch = Nothing
-   Set mymatch = myRegExp.Execute(filedata.Data).item(0).SubMatches
+   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
    
    Dim tmpstr As New StringReader
    tmpstr.Data = mymatch.item(0)
@@ -456,7 +456,7 @@ Dim Pattern As New clsStrCat
 
    myRegExp.Pattern = Pattern
    Set mymatch = Nothing
-   Set mymatch = myRegExp.Execute(filedata.Data).item(0).SubMatches
+   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
    
    tmpstr = mymatch.item(0)
 
@@ -492,7 +492,7 @@ Dim Pattern As New clsStrCat
    myRegExp.Pattern = Pattern
    
    Set mymatch = Nothing
-   Set mymatch = myRegExp.Execute(filedata.Data).item(0).SubMatches
+   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
    
    
    With Frm_Options
@@ -529,7 +529,7 @@ Dim Pattern As New clsStrCat
    
    myRegExp.Pattern = Pattern
    Set mymatch = Nothing
-   Set mymatch = myRegExp.Execute(filedata.Data).item(0).SubMatches
+   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
    
 
    
@@ -589,7 +589,7 @@ Dim Pattern As New clsStrCat
    
    myRegExp.Pattern = Pattern
    Set mymatch = Nothing
-   Set mymatch = myRegExp.Execute(filedata.Data).item(0).SubMatches
+   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
    
    With Frm_Options
       tmpstr = mymatch.item(0)
@@ -617,12 +617,12 @@ Dim Pattern As New clsStrCat
        
    myRegExp.Pattern = Pattern
    Set mymatch = Nothing
-   Set mymatch = myRegExp.Execute(filedata.Data).item(0).SubMatches
+   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
    
    Dim XORCryptkey&
    XORCryptkey = Asc(mymatch.item(0))
    If XORCryptkey Then
-      Log "XORCryptkey: 0x" & H8(XORCryptkey) _
+      Log "XORCryptkey: " & H8x(XORCryptkey) _
           & "    as char '" & mymatch.item(0) & "'"
       Log "Custom ReadFileHook with XORCryptkey found !!!"
       
@@ -660,7 +660,7 @@ Public Function SimpleXor(ScriptData$, ByVal Xor_Key&) As String
    
       
       Dim tmpBuff() As Byte
-      tmpBuff = StrConv(ScriptData, vbFromUnicode, LocaleID)
+      tmpBuff = DecodeUnicode(ScriptData)
       Dim tmpByte As Byte
       
       Dim StrCharPos&
@@ -673,7 +673,7 @@ Public Function SimpleXor(ScriptData$, ByVal Xor_Key&) As String
          
       Next
       
-      SimpleXor = StrConv(tmpBuff, vbUnicode, LocaleID)
+      SimpleXor = EncodeUnicode(tmpBuff)
       
       
 End Function

@@ -21,6 +21,11 @@ Private Declare Function MultiByteToWideChar Lib "kernel32" (ByVal CodePage As L
 'Run before Saving
 Private Declare Function WideCharToMultiByte Lib "kernel32" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpWideCharStr As String, ByVal cchWideChar As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpDefaultChar As Long, lpUsedDefaultChar As Long) As Long
 
+'strconv may need to use this LocalID - that's set in system control / country setting / Language for non-unicode support
+Public Declare Function GetSystemDefaultLCID Lib "kernel32" () As Long
+
+'strconv uses this as default
+Public Declare Function GetUserDefaultLCID Lib "kernel32" () As Long
 
 
 '-------------------------------------------------------------------------
@@ -30,7 +35,7 @@ Public Function DecodeUTF8(ByVal sValue As String) As String
 
   If Len(sValue) = 0 Then Exit Function
 '  DecodeUTF8 = WToA(StrConv(sValue, vbUnicode), CP_ACP)
-  DecodeUTF8 = AToW(StrConv(sValue, vbFromUnicode), CP_UTF8)
+  DecodeUTF8 = AToW(DecodeUnicode(sValue), CP_UTF8)
 
 End Function
 
@@ -42,7 +47,7 @@ Public Function EncodeUTF8(ByVal sValue As String) As String
 
 
   If Len(sValue) = 0 Then Exit Function
-  EncodeUTF8 = WToA(StrConv(sValue, vbUnicode), CP_UTF8)
+  EncodeUTF8 = WToA(EncodeUnicode(sValue), CP_UTF8)
 
 End Function
 
@@ -112,3 +117,27 @@ Public Function IsUnicode(s As String) As Boolean
       
    End If
 End Function
+
+
+'-------------------------------------------------------------------------
+' DecodeUnicode - To read in bytes that are Unicode
+'-------------------------------------------------------------------------
+Public Function DecodeUnicode(ByVal sValue As String, Optional LCID) As String
+
+  If Len(sValue) = 0 Then Exit Function
+  DecodeUnicode = StrConv(sValue, vbFromUnicode, LocaleID)
+
+End Function
+
+
+'-------------------------------------------------------------------------
+' EncodeUnicode - To output in bytes that are Unicode
+'-------------------------------------------------------------------------
+Public Function EncodeUnicode(ByVal sValue As String, Optional LCID) As String
+
+
+  If Len(sValue) = 0 Then Exit Function
+  EncodeUnicode = StrConv(sValue, vbUnicode, LocaleID)
+
+End Function
+

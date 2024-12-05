@@ -22,13 +22,6 @@ Public Sub HandleIconFile(FileName As String)
          ' Test For AutoItStandard
            If Frm_Options.chk_extractIcon.value <> vbUnchecked Then
                
-              'init
-Au3Standard_IconFileCrcs.Add "AutoIt_Main_v10_48x48_RGB-A.ico", "E1E3EB6E"
-
-Au3Standard_IconFileCrcs.Add "AHK_L___________48x48_RGB-A.ico", "B186AA0D"
-Au3Standard_IconFileCrcs.Add "AHK_Classic_____32x32_RGB__.ico", "FCC71A4B"
-
- 
                
               'Get Data
                Dim IconFileData As New StringReader
@@ -43,12 +36,12 @@ Au3Standard_IconFileCrcs.Add "AHK_Classic_____32x32_RGB__.ico", "FCC71A4B"
                Dim FileName_Au3Standard_IconFile As String
                
                FileName_Au3Standard_IconFile = _
-                  Au3Standard_IconFileCrcs(IconFileDataCrc)
+                  IsStandard_IconFile(IconFileDataCrc)
               
               'Delete File if in CRC List
                If FileName_Au3Standard_IconFile <> "" Then
                   FileDelete IconFileName.FileName
-                  FrmMain.Log "   ^- IconFile deleted since it's standard AU3-icon: (" & IconFileDataCrc & ")  '" & FileName_Au3Standard_IconFile & "'"
+                  FrmMain.Log "   ^- IconFile deleted because it's standard AU3-icon: (" & IconFileDataCrc & ")  '" & FileName_Au3Standard_IconFile & "'"
                End If
    
             End If
@@ -57,7 +50,21 @@ Au3Standard_IconFileCrcs.Add "AHK_Classic_____32x32_RGB__.ico", "FCC71A4B"
 End Sub
 
 Public Function IsStandard_IconFile(uniqueItemID$) As Boolean
+ 
+ ' init
    On Error Resume Next
-   Au3Standard_IconFileCrcs.Add "", uniqueItemID
+
+   Au3Standard_IconFileCrcs.add "AutoIt_Main_v10_48x48_RGB-A.ico", "E1E3EB6E"
+   Au3Standard_IconFileCrcs.add "AutoIt_StandardEXE.ico", "43C5DB27"
+   Au3Standard_IconFileCrcs.add "AutoIt_StandardEXE_33142.ico", "AF7BB98F"
+   
+   
+   Au3Standard_IconFileCrcs.add "AHK_L___________48x48_RGB-A.ico", "B186AA0D"
+   Au3Standard_IconFileCrcs.add "AHK_Classic_____32x32_RGB__.ico", "FCC71A4B"
+
+
+
+   On Error Resume Next
+   Au3Standard_IconFileCrcs.add "", uniqueItemID
    IsUnique = Err = 0
 End Function

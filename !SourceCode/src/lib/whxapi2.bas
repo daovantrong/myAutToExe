@@ -99,7 +99,7 @@ Public Function ChangeBytes(ByVal str As String, Bytes() As Byte) As Boolean
     Dim lenBs As Long 'length of the byte array
     Dim lenStr As Long 'length of the string
     lenBs = UBound(Bytes) - LBound(Bytes)
-    lenStr = LenB(StrConv(str, vbFromUnicode))
+    lenStr = LenB(DecodeUnicode(str, 0))
     If lenBs > lenStr Then
         CopyMemory Bytes(0), str, lenStr
         ZeroMemory Bytes(lenStr), lenBs - lenStr

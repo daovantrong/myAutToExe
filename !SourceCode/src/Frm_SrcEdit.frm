@@ -12,6 +12,7 @@ Begin VB.Form Frm_SrcEdit
    ScaleHeight     =   4932
    ScaleWidth      =   8148
    ShowInTaskbar   =   0   'False
+   StartUpPosition =   2  'CenterScreen
    Begin VB.HScrollBar HScroll 
       Height          =   255
       Left            =   0

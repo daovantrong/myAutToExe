@@ -47,24 +47,24 @@ Private FormatMessageBuff As String * 256
 
 Public Sub RaiseDllError(Location$, FuncName$, ParamArray FuncParams())
   Dim Flags As Long, LastErr$
-  Dim Retval As Long, LanguageID As Long
+  Dim retval As Long, LanguageID As Long
  
   ' Den Fehlertext mit FormatMessage in der Standardsprache ausgeben
   Flags = FORMAT_MESSAGE_FROM_SYSTEM Or FORMAT_MESSAGE_IGNORE_INSERTS
   LanguageID = 0 'LANG_NEUTRAL Or (SUBLANG_DEFAULT * 1024)
   LastErr = Err.LastDllError
-  Retval = FormatMessage(Flags, 0&, Err.LastDllError, LanguageID, FormatMessageBuff, Len(FormatMessageBuff), 0&)
+  retval = FormatMessage(Flags, 0&, Err.LastDllError, LanguageID, FormatMessageBuff, Len(FormatMessageBuff), 0&)
   
-  If RangeCheck(Retval, 256, 1) Then
+  If RangeCheck(retval, 256, 1) Then
     
     Dim ErrMsg As String
-    ErrMsg = Left$(FormatMessageBuff, Retval)
+    ErrMsg = Left$(FormatMessageBuff, retval)
 
     Dim FunctionCall$
     FunctionCall = FuncName & Brackets(Join(FuncParams, ", "))
     
     Err.Raise vbObjectError, , _
-      FunctionCall & " @ " & Location & " failed!  GetLastError: 0x" & H32(LastErr) & " - " & ErrMsg
+      FunctionCall & " @ " & Location & " failed!  GetLastError: " & H32x(LastErr) & " - " & ErrMsg
     
   Else
     MsgBox "Whoops for some strange reason FormatMessage() failed.", vbCritical, "Error"

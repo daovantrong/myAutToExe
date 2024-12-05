@@ -3,10 +3,18 @@ Option Explicit
 
 Public File As New FileStream
 Public FileName As New ClsFilename
+Public FileName_Inital As New ClsFilename
 
    
-Const TIDY_PATH$ = "data\Tidy\Tidy.exe"
-Const STRIPPER_PATH$ = "data\AU3Stripper\AU3Stripper.exe"
+Const TIDY_PATH$ = _
+                              "data\Tidy\Tidy.exe"
+
+Const STRIPPER_PATH$ = _
+                              "data\AU3Stripper\AU3Stripper.exe"
+
+Public Const AU3_BuildInFunc_PATH$ = _
+                              "data\AU3_BuildFuncs\3.3.14.2.dat.txt"
+   
    
 Public Const ERR_NO_AUT_EXE& = vbObjectError Or &H10
 Public Const ERR_NO_OBFUSCATE_AUT& = vbObjectError Or &H20
@@ -107,11 +115,30 @@ End Sub
 
 Function Script_RawToText(ByRef ScriptData$) As String
    If isUTF16(ScriptData) Then
-      Script_RawToText = StrConv((Mid(ScriptData, 1 + Len(UTF16_BOM))), vbFromUnicode)
+      Script_RawToText = Mid(ScriptData, 1 + Len(UTF16_BOM))
    ElseIf isUTF8(ScriptData) Then
       Script_RawToText = Mid(ScriptData, 1 + Len(UTF8_BOM))
    Else
       Script_RawToText = ScriptData
+   End If
+
+End Function
+
+Function LoadScriptData()
+   
+   Dim ScriptData$
+   ScriptData = FileLoad(FileName.FileName)
+
+
+   If isUTF16(ScriptData) Then
+      LoadScriptData = DecodeUnicode(ScriptData)
+      
+   ElseIf isUTF8(ScriptData) Then
+      LoadScriptData = DecodeUTF8(ScriptData)
+      
+   Else
+      LoadScriptData = ScriptData
+      
    End If
 
 End Function
@@ -127,8 +154,13 @@ Sub SaveScriptData(ScriptData$, Optional skipTidy As Boolean)
 '      ScriptData = AddLineBreakToLongLines(Split(ScriptData, vbCrLf))
       
        ' overwrite script
-         If FrmMain.Chk_TmpFile.value = vbChecked Then
-            FileName.Name = FileName.Name & "_restore"
+         If FrmMain.DeleteTmpFile Then
+         
+
+            If FileExists(FileName) Then
+                FileName.Name = FileName.Name & "_restore"
+            End If
+            
             .Log "Saving script to: " & FileName.FileName
          Else
    '         FileDelete FileName.Name
@@ -177,7 +209,7 @@ Public Sub RunTidy(ScriptData$, Optional skipTidy As Boolean)
              TidyBackupFileName.Name = TidyBackupFileName.Name & "_old1"
              
            ' Delete Tidy BackupFile
-             If FrmMain.Chk_TmpFile.value = vbUnchecked Then
+             If FrmMain.DeleteTmpFile(TidyBackupFileName.FileName) Then
                 .Log "Deleting Tidy BackupFile..." ' & TidyBackupFileName.NameWithExt
                 FileDelete TidyBackupFileName.FileName
              End If
@@ -238,7 +270,7 @@ On Error GoTo err_Stripper
              TidyBackupFileName.Name = TidyBackupFileName.Name & "_old1"
              
            ' Delete Tidy BackupFile
-             If FrmMain.Chk_TmpFile.value = vbUnchecked Then
+             If FrmMain.DeleteTmpFile(TidyBackupFileName.FileName) Then
                 .Log "Deleting Tidy BackupFile..." ' & TidyBackupFileName.NameWithExt
                 FileDelete TidyBackupFileName.FileName
              End If

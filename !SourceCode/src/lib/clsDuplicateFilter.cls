@@ -24,8 +24,8 @@ End Sub
 Public Function IsUnique(uniqueItemID$) As Boolean
 Attribute IsUnique.VB_UserMemId = 0
    On Error Resume Next
-   itemStore.Add "", uniqueItemID
-   IsUnique = Err = 0
+   itemStore.add "", uniqueItemID
+   IsUnique = (Err = 0)
 End Function
 
 Private Sub Class_Initialize()

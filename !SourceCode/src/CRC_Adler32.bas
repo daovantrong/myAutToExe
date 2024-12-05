@@ -21,7 +21,7 @@ Public Function ADLER32$(Data As StringReader)
  '           a = GetTickCount
                
                Dim StrCharPos&, tmpBuff$
-               tmpBuff = StrConv(.mvardata, vbFromUnicode, LocaleID)
+               tmpBuff = DecodeUnicode(.mvardata)
 '               tmpBuff = .mvardata
                For StrCharPos = 1 To Len(.mvardata)
                   'The largest prime less than 2^16

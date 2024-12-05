@@ -76,7 +76,7 @@ Begin VB.Form FrmFuncRename
          BeginProperty Font 
             Name            =   "MS Sans Serif"
             Size            =   9.6
-            Charset         =   0
+            Charset         =   222
             Weight          =   700
             Underline       =   0   'False
             Italic          =   0   'False
@@ -130,7 +130,7 @@ Begin VB.Form FrmFuncRename
          BeginProperty Font 
             Name            =   "MS Sans Serif"
             Size            =   9.6
-            Charset         =   0
+            Charset         =   222
             Weight          =   700
             Underline       =   0   'False
             Italic          =   0   'False
@@ -362,8 +362,7 @@ Dim SkipGlobalConsts As Boolean
 Dim SkipFunctions As Boolean
 
 
-Dim AU3_BuildInFunc As New Collection
-Const AU3_BuildInFunc_PATH$ = "data\FuncRename\AU3_BuildFuncs.txt"
+Dim AU3_BuildInFunc As Collection
 
 Dim List_Fn_Assigned_Addedfuncs As New Collection
 
@@ -520,50 +519,53 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
          With myRegEx
             If KeepFunctions = False Then
                   
-               myRegEx.Pattern = RE_WSpace("", "Func", RE_Literal(SearchAndReplace_LookFor)) & _
+               .Pattern = RE_WSpace("", "Func", RE_Literal(SearchAndReplace_LookFor)) & _
                                        RE_AnyCharsNL & _
                                     "EndFunc" & RE_AnyChars
             Else
-               myRegEx.Pattern = RE_WSpace("", "Func", RE_Literal(SearchAndReplace_LookFor))
+               .Pattern = RE_WSpace("", "Func", RE_Literal(SearchAndReplace_LookFor))
             
             End If
+            
+           .Global = False
                           
-            SearchAndReplBuff = .Replace(SearchAndReplBuff, RE_Replace_Literal(FunctionBody_ReplaceText))
+            SearchAndReplBuff = .replace(SearchAndReplBuff, RE_Replace_Literal(FunctionBody_ReplaceText))
          
 'Patch for globals
-           FunctionBody_ReplaceText = vbCrLf & IIf(KeepFunctions, "", ";  ") & _
+            FunctionBody_ReplaceText = vbCrLf & IIf(KeepFunctions, "", ";  ") & _
                                     "Global Const " & SearchAndReplace_ReplaceWith
+                                    
             If SearchAndReplace_Include <> "" Then FunctionBody_ReplaceText = IncludeLine & FunctionBody_ReplaceText
             
-            
-            If KeepFunctions = False Then
-                  
-               myRegEx.Pattern = RE_WSpace("", "Global Const", RE_Literal(SearchAndReplace_LookFor)) ' & RE_AnyChars
-            Else
-               myRegEx.Pattern = RE_WSpace("", "Global Const", RE_Literal(SearchAndReplace_LookFor))
-            
-            End If
+            .Pattern = RE_WSpace("", _
+               RE_WSpace_OneOrMore("Global", "Const", RE_Literal(SearchAndReplace_LookFor), "")) ' & RE_AnyChars
                           
-            SearchAndReplBuff = .Replace(SearchAndReplBuff, RE_Replace_Literal(FunctionBody_ReplaceText))
+            SearchAndReplBuff = .replace(SearchAndReplBuff, RE_Replace_Literal(FunctionBody_ReplaceText))
          
          
          
-         
+          ' Replace all function names
+            Dim ReplacementsDone&
+            ReplacementsDone = &H7FFFFFFF
+            
+            .Pattern = RE_Literal(SearchAndReplace_LookFor) & "\b"
+            .Global = True
+            SearchAndReplBuff = .replace(SearchAndReplBuff, _
+               RE_Replace_Literal(SearchAndReplace_ReplaceWith))
+               
+'            ReplaceDo SearchAndReplBuff, SearchAndReplace_LookFor, SearchAndReplace_ReplaceWith, 1, ReplacementsDone
+'
+'   '         .List(ListItemIdx) = ReplacementsDone & vbTab & .List(ListItemIdx)
+'
+'            Log ReplacementsDone & " occurence replaced: " & SearchAndReplaceJob_Line
+'
+'          ' Mark unused functions with ;;
+'            If ReplacementsDone = 0 Then
+'               ReplaceDo SearchAndReplBuff, FunctionBody_ReplaceText, replace(FunctionBody_ReplaceText, "; ", ";;"), 1
+'            End If
          End With
        
-       ' Replace all function names
-         Dim ReplacementsDone&
-         ReplacementsDone = &H7FFFFFFF
-         ReplaceDo SearchAndReplBuff, SearchAndReplace_LookFor, SearchAndReplace_ReplaceWith, 1, ReplacementsDone
-         
-'         .List(ListItemIdx) = ReplacementsDone & vbTab & .List(ListItemIdx)
-         
-         Log ReplacementsDone & " occurence replaced: " & SearchAndReplaceJob_Line
-         
-       ' Mark unused functions with ;;
-         If ReplacementsDone = 0 Then
-            ReplaceDo SearchAndReplBuff, FunctionBody_ReplaceText, Replace(FunctionBody_ReplaceText, "; ", ";;"), 1
-         End If
+
       Next
    
    GUIEvent_ProcessEnd
@@ -623,7 +625,7 @@ Private Sub OpenAndFill( _
            
       If SkipFunctions = False Then
       
-       ' Seperate functions
+       ' Separate functions
          FuncList = Split(ScriptData.Data, vbCrLf & "Func ", , vbTextCompare)
          
          
@@ -638,7 +640,7 @@ Private Sub OpenAndFill( _
                                       "#include\s*[""<]([^>""])*" _
                                    )
                  .AddItem Match
-                 .ItemData(.ListCount - 1) = itemidx
+                 .itemdata(.ListCount - 1) = itemidx
               Next
               
               
@@ -649,7 +651,7 @@ Private Sub OpenAndFill( _
                   .AddItem (Split(item, vbCrLf)(0))
                  
                  'Store index of FuncList to find it later
-                  .ItemData(.ListCount - 1) = itemidx
+                  .itemdata(.ListCount - 1) = itemidx
                   
               End If
            Next
@@ -661,17 +663,26 @@ Private Sub OpenAndFill( _
      'BenchStart
       If SkipGlobalConsts = False Then
       
+         Const ConstSplit$ = vbCrLf & "Global " 'Const "
               
-       ' Seperate Const
-         Dim GlobalList
-         GlobalList = Split(ScriptData.Data, vbCrLf & "Global Const ", , vbTextCompare)
+       ' Separate Const
+         Dim GlobalList ' As MatchCollection
+         GlobalList = Split(ScriptData.Data, ConstSplit, , vbTextCompare)
+         
+         'Dim myRegexp As New RegExp
+         
+         'myRegexp.Pattern = ConstSplit$
          
          Dim counter&
          If ShowProgressbar Then GUIEvent_ProcessBegin UBound(GlobalList)
       
          For Each item In GlobalList
-         
-            If Left(item, 1) = "$" Then
+            
+            ReplaceDo item, "Const ", ""
+            ReplaceDo item, "Enum ", ""
+
+            
+            If IsAu3Var(item) Then
               
              ' Clean up Comments
                item = RemoveComments(Split(item, vbCrLf)(0))
@@ -702,7 +713,7 @@ Private Sub OpenAndFill( _
                FuncList(itemidx) = item
              
                'Store index of FuncList to find it later
-                .ItemData(insertPos + inserOffset) = itemidx
+                .itemdata(insertPos + inserOffset) = itemidx
                 
              ' Store pos to seek to first function
                Dim FirstFunctionPos&
@@ -750,17 +761,23 @@ End Sub
 
 
 Private Sub SearchAndReplace_RemoveItems()
-'   On Error GoTo Cmd_Remove_assign_Click_err
+   On Error GoTo Cmd_Remove_assign_Click_err
    With List_Fn_Assigned
       If .ListCount = 0 Then Exit Sub
       
+      Dim itemdata
+      itemdata = .itemdata(.ListIndex)
+      
       Dim Indexes()
-      Indexes = List_Fn_Assigned_FuncIdxs(.ItemData(.ListIndex))
+      Indexes = List_Fn_Assigned_FuncIdxs(itemdata)
+      
       
      'Add FunctionName & Index to Original
       With List_Fn_Org
-         .AddItem Split(Functions_Org(Indexes(0)), vbCrLf)(0), 0
-         .ItemData(0) = Indexes(0)
+         Dim Name$
+         Name = Split(Functions_Org(Indexes(0)), vbCrLf)(0)
+         .AddItem Name, 0
+         .itemdata(0) = Indexes(0)
          
          .ListIndex = 0
       End With
@@ -776,9 +793,13 @@ Private Sub SearchAndReplace_RemoveItems()
          If ListBox_FindNSelectItem(List_Fn_Inc, FuncName) = False Then
             
             .AddItem FuncName, 0
-            .ItemData(0) = Indexes(1)
+            .itemdata(0) = Indexes(1)
          End If
       End With
+      
+     List_Fn_Assigned_Addedfuncs.Remove Split(.Text, FN_ASSIGNED_FUNC_REPL_SEP$)(0)
+     List_Fn_Assigned_Addedfuncs.Remove Split(.Text, FN_ASSIGNED_FUNC_REPL_SEP$)(1)
+      
       
 RemoveAnyway:
 
@@ -831,7 +852,7 @@ On Error GoTo LoadSearchReplaceData_Err
 
    With List_Fn_Assigned
 
-'seperate Org & Inc Functions
+'separate Org & Inc Functions
       Dim item
       For Each item In Textlines
       
@@ -995,8 +1016,16 @@ Private Sub Form_Load()
    End With
    
  ' init AU3_BuildInFunc
+   Set AU3_BuildInFunc = New Collection
+   
    Collection_LoadInto _
       AU3_BuildInFunc_PATH, AU3_BuildInFunc
+   
+   AU3_BuildInFunc.add "IF", "IF"
+   AU3_BuildInFunc.add "ELSIF", "ELSIF"
+   AU3_BuildInFunc.add "WHILE", "WHILE"
+   AU3_BuildInFunc.add "NOT", "NOT"
+
    
 End Sub
 
@@ -1101,7 +1130,7 @@ On Error GoTo List_Fn_Assigned_DoSeek_err
    
      'Seek to Functions
       Dim Indexes()
-      Indexes = List_Fn_Assigned_FuncIdxs(.ItemData(.ListIndex))
+      Indexes = List_Fn_Assigned_FuncIdxs(.itemdata(.ListIndex))
       
       Txt_Fn_Inc = Functions_Inc(Indexes(1))
       Txt_Fn_Org = Functions_Org(Indexes(0))
@@ -1141,7 +1170,7 @@ Private Function List_Fn_Org__SeekToItem(ItemName) As Boolean
 End Function
 Private Sub List_Fn_Org_Click()
    With List_Fn_Org
-      Txt_Fn_Org = Functions_Org(.ItemData(.ListIndex))
+      Txt_Fn_Org = Functions_Org(.itemdata(.ListIndex))
    End With
    List_Fn_String_Org_Fill
 End Sub
@@ -1221,7 +1250,7 @@ Private Sub List_Fn_Inc_Click()
  ' Show FunctionText
    On Error Resume Next
    With List_Fn_Inc
-      Txt_Fn_Inc = Functions_Inc(.ItemData(.ListIndex))
+      Txt_Fn_Inc = Functions_Inc(.itemdata(.ListIndex))
    End With
 End Sub
 Private Function ListBox_FindItem(Listbox As Object, ItemText) As Integer
@@ -1347,6 +1376,13 @@ End Sub
 'Private Sub RE_MatchesToArray(Matches As MatchCollection, MatchArray As Variant)
 '
 'End Sub
+Private Sub GetKeywords(TextBox As TextBox, matches As MatchCollection)
+   FuncTextGetMatches TextBox, matches, _
+      Join(GetAu3KeyWords, "\b|\b"), _
+      True
+End Sub
+
+
 Private Sub GetStrings(TextBox As TextBox, matches As MatchCollection) 'Strings As Variant)
    FuncTextGetMatches TextBox, matches, _
       "((" & RE_Quote & ").*?\2)+"
@@ -1362,7 +1398,11 @@ Private Sub GetVars(TextBox As TextBox, matches As MatchCollection) 'Strings As 
       RE_WSpace(RE_Group("\$" & RE_AU3NAME), "")
 End Sub
 
-Private Sub FuncTextGetMatches(TextBox As TextBox, matches As MatchCollection, matchPattern As String) 'Strings As Variant)
+Private Sub FuncTextGetMatches( _
+   TextBox As TextBox, _
+   matches As MatchCollection, _
+   matchPattern As String, _
+   Optional IgnoreCase = False) 'Strings As Variant)
    
    TextBox.Text = RemoveComments(TextBox.Text)
    
@@ -1377,11 +1417,12 @@ Private Sub FuncTextGetMatches(TextBox As TextBox, matches As MatchCollection, m
    With myRegExp 'New RegExp
       .Global = True
       .MultiLine = True
+      .IgnoreCase = IgnoreCase
 
       .Pattern = matchPattern
       
 '      Dim Matches As MatchCollection
-      Set matches = .Execute(TextBox.Text)
+      Set matches = .execute(TextBox.Text)
       
 
    End With
@@ -1437,7 +1478,7 @@ Private Function RemoveComments$(Text)
 '      If Err Then Stop
       
      'Remove Comments
-      RemoveComments = .Replace(Text, "") '$1")
+      RemoveComments = .replace(Text, "") '$1")
       
 
    End With
@@ -1468,6 +1509,71 @@ Private Function GetFuncNameFromText(Text$) As String
    'Cut at '(' of for ex Func MyNewFunc(Arg1,arg2...
     GetFuncNameFromText = Split(Text, "(")(0)
 End Function
+
+Private Function ValidateKeywords(bQuietMode, Logtmp)
+      
+
+      Dim fn_inc As MatchCollection
+      GetKeywords Txt_Fn_Inc, fn_inc
+      
+      Dim fn_org As MatchCollection
+      GetKeywords Txt_Fn_Org, fn_org
+      
+      Dim isOk As Boolean
+      isOk = RE_MatchesCompare(fn_org, fn_inc)
+      ValidateKeywords = isOk
+      
+      If isOk = False Then
+      
+         Dim ErrText$
+         ErrText = "Rejected - contained keywords differ" & Logtmp
+      
+         If bQuietMode Then
+            Log ErrText
+            Exit Function
+         End If
+         
+        'Let user handle/decide about missmatch
+         With FrmFuncRename_StringMismatch
+            .create fn_org, fn_inc, _
+                     Txt_Fn_Org.Text, Txt_Fn_Inc.Text
+            
+            .Caption = ErrText
+            .Show vbModal
+            
+            Dim result As AcceptResult_enum
+            result = .AcceptResult
+            
+            Log Switch( _
+               (result = Result_False), ErrText, _
+               (result = Result_True), "Accepted by user", _
+               (True), "ERROR decision undefined.") & Logtmp
+   
+         End With
+         
+         If result = Result_False Then
+   '      If vbNo = MsgBox("Local strings don't match continue anyway?", vbYesNo + vbDefaultButton2) Then
+            Exit Function
+            
+         ElseIf result = Result_True Then
+          ' User agreed - go on
+'
+            ValidateKeywords = True
+            
+         ElseIf result = Result_Undefined Then
+            Err.Raise ERR_CANCEL_ALL
+         
+         Else
+   '         Stop
+            Exit Function
+         End If
+         
+      End If
+   
+
+End Function
+
+
 Private Function ValidateStrings(bQuietMode, Logtmp)
       
 
@@ -1483,21 +1589,27 @@ Private Function ValidateStrings(bQuietMode, Logtmp)
       
       If isOk = False Then
       
+         Dim ErrText$
+         ErrText = "Rejected - contained strings differ" & Logtmp
+      
          If bQuietMode Then
-            Log "Rejected - contained strings differ" & Logtmp
+            Log ErrText
             Exit Function
          End If
          
         'Let user handle/decide about missmatch
          With FrmFuncRename_StringMismatch
-            .create fn_org, fn_inc
+            .create fn_org, fn_inc, _
+                     Txt_Fn_Org.Text, Txt_Fn_Inc.Text
+            
+            .Caption = ErrText
             .Show vbModal
             
             Dim result As AcceptResult_enum
             result = .AcceptResult
             
             Log Switch( _
-               (result = Result_False), "Rejected by user - contained strings differ", _
+               (result = Result_False), ErrText, _
                (result = Result_True), "Accepted by user", _
                (True), "ERROR decision undefined.") & Logtmp
    
@@ -1705,13 +1817,17 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
      ' ===== Validate Strings =====
      If ValidateStrings(bQuietMode, Logtmp) = False Then Exit Function
       
+     ' ===== Validate Keywords =====
+     If ValidateKeywords(bQuietMode, Logtmp) = False Then Exit Function
+      
+'     ' Compare functiontype ( Buildin / NonBulidin)
+'      If CheckForFuncDependencies(True) Then
+'         Exit Function
+'      End If
+      
    End If 'isMatchByName
    
    
-   ' Check functions and if there is more to add
-     If CheckForFuncDependencies(True) Then
-         Exit Function
-      End If
    
    SearchAndReplace_AddItemCommit FuncOldName, FuncNewName, Txt_Include
    
@@ -1758,27 +1874,34 @@ Private Function CheckForFuncDependencies(Optional bOnlyValidate = False) As Boo
       Dim bDoQuit As Boolean
       If (Matches_fn_inc.Count <= 1) Or _
          (Matches_fn_org.Count <= 1) Then
-         log_verbose "Function has no included functions"
+         log_verbose "CheckForFuncDependencies: Function has no included functions"
 
          Exit Function
          
       ElseIf Matches_fn_inc.Count <> Matches_fn_org.Count Then
-         Dim errtext$
-         errtext = "Number of included functions is different"
-         Log errtext
+      
+         Dim ErrText$
+         ErrText = "Number of included functions is different"
+         Log ErrText
+         
          With FrmFuncRename_StringMismatch
-            .create Matches_fn_org, Matches_fn_inc
-            .Caption = errtext
+            .create Matches_fn_org, Matches_fn_inc, _
+                    Txt_Fn_Org.Text, Txt_Fn_Inc.Text
+
+            .Caption = ErrText
             .Show vbModal
-            CheckForFuncDependencies = .AcceptResult
+            CheckForFuncDependencies = (.AcceptResult <> Result_True)
+            'If .AcceptResult <> Result_True Then _
+               Exit Function
+            Exit Function
+
          End With
-         Exit Function
       End If
       
     ' Match_idx start at 0 but I exclude first match since it's the current function name
     
       Dim Match_idx&
-      For Match_idx = 1 To Matches_fn_inc.Count - 1
+      For Match_idx = 1 To Matches_fn_org.Count - 1
          
        ' GetFuncName include
          Dim fn_inc As String
@@ -1795,7 +1918,8 @@ Private Function CheckForFuncDependencies(Optional bOnlyValidate = False) As Boo
          
        ' Some checks before invoke adding it...
        
-       ' The cases Buildin;x or x;Buildin only occure incase of an error
+       ' both should be Au3 buildin functions or not.
+       ' Error if mix
          If IsAu3BuildInFunc(fn_inc) Xor IsAu3BuildInFunc(fn_org) Then
             Log Log_tmp & "Adding Canceled - Logic Error!  Only one of the two is a build-in function.  These are probably two completely different funcs. Exiting... "
             CheckForFuncDependencies = True
@@ -1874,11 +1998,31 @@ End Function
 Private Function CheckForVarDependencies(Optional bOnlyValidate = False) As Boolean
 
     ' ===== Get Funcs =====
-      Dim Matches_var_inc As MatchCollection
+      Dim var_inc_idx As New Collection
+      Dim Matches_var_inc  As MatchCollection
       GetVars Txt_Fn_Inc, Matches_var_inc
       
-      Dim Matches_var_org As MatchCollection
+    ' Create indexes so be used to access the MatchCollection
+    ' ... and as well (virtually) delete items
+      Dim i&
+      For i = 0 To Matches_var_inc.Count - 1
+         var_inc_idx.add i
+      Next
+      
+      
+      
+      
+      Dim var_org_idx As New Collection
+      Dim Matches_var_org  As MatchCollection
       GetVars Txt_Fn_Org, Matches_var_org
+      
+    ' Create indexes so be used to access the MatchCollection
+    ' ... and as well (virtually) delete items
+      For i = 0 To Matches_var_org.Count - 1
+         var_org_idx.add i
+      Next
+      
+      
       
     ' Checks
       Dim bDoQuit As Boolean
@@ -1890,29 +2034,36 @@ Private Function CheckForVarDependencies(Optional bOnlyValidate = False) As Bool
          
       ElseIf Matches_var_inc.Count <> Matches_var_org.Count Then
       
-         Dim errtext$
-         errtext = "Number of vars is different"
-         Log errtext
+         Dim ErrText$
+         ErrText = "Number of vars is different (doubleclick to remove vars from the list)"
+         Log ErrText
          
          With FrmFuncRename_StringMismatch
-            .create Matches_var_org, Matches_var_inc
-            .Caption = errtext
+            .create _
+                     Matches_var_org, Matches_var_inc, _
+                     Txt_Fn_Org.Text, Txt_Fn_Inc.Text, _
+                     var_org_idx, var_inc_idx
+                     
+                     
+            .Caption = ErrText
             .Show vbModal
+            
             CheckForVarDependencies = .AcceptResult
+            If .AcceptResult <> Result_True Then _
+               Exit Function
+            
          End With
-         Exit Function
       End If
       
-      Dim Match_idx&
-      For Match_idx = 0 To Matches_var_inc.Count - 1
+      For i = 1 To var_org_idx.Count
          
-       ' GetFuncName include
+       ' GetVarNames include
          Dim var_inc As String
-         var_inc = Matches_var_inc(Match_idx).SubMatches(0)
+         var_inc = Matches_var_inc(var_inc_idx(i)).SubMatches(0)
          
-       ' GetFuncName Script
+       ' GetVarNames Script
          Dim var_org As String
-         var_org = Matches_var_org(Match_idx).SubMatches(0)
+         var_org = Matches_var_org(var_org_idx(i)).SubMatches(0)
          
          
          Dim Log_tmp$
@@ -1922,7 +2073,8 @@ Private Function CheckForVarDependencies(Optional bOnlyValidate = False) As Bool
        ' Some checks before invoke adding it...
 
        ' Check: Is already in the List (important to avoid circle refs/infinity Rek)
-         If Collection_IsAlreadyIn(List_Fn_Assigned_Addedfuncs, var_org) Then
+         If Collection_IsAlreadyIn(List_Fn_Assigned_Addedfuncs, var_org) Then 'Or _
+            Collection_IsAlreadyIn(List_Fn_Assigned_Addedfuncs, var_inc)
             log_verbose Log_tmp & "Skipping '" & var_org & "' because it is already in the list."
          
          Else
@@ -1990,17 +2142,38 @@ End Function
 Private Function SearchAndReplace_AddItemCommit( _
    FuncOldName, FuncNewName$, Txt_Include, _
    Optional bhasInclude = True)
-
+   
+   
+   ' fix possible NameCollision
+   Dim newNameBase$
+   newNameBase = FuncNewName
+   
+   Dim Name_suffixCounter&
+   
+   While Collection_IsAlreadyIn(List_Fn_Assigned_Addedfuncs, FuncNewName)
+   
+    ' Should only be applied to vars  sample:
+    '    _GDIPlus_BitmapDispose
+    '    _GDIPlus_ImageDispose
+      Debug.Assert IsAu3Var(newNameBase)
+      
+      FuncNewName = newNameBase & "_" & Name_suffixCounter
+      Inc Name_suffixCounter
+   Wend
+   
+   If Name_suffixCounter > 0 Then
+      Log "SearchAndReplace_AddItemCommit: Already on rename List. Renamed '" & newNameBase & "' => '" & FuncNewName & "' to avoid name collision"
+   End If
    
    
  '
    Dim FuncNewNameIdx&
    If bhasInclude Then _
-       FuncNewNameIdx = List_Fn_Inc.ItemData( _
+       FuncNewNameIdx = List_Fn_Inc.itemdata( _
                         List_Fn_Inc.ListIndex)
        
    Dim FuncOldNameIdx&
-       FuncOldNameIdx = List_Fn_Org.ItemData( _
+       FuncOldNameIdx = List_Fn_Org.itemdata( _
                         List_Fn_Org.ListIndex)
 
    
@@ -2023,9 +2196,9 @@ Private Function SearchAndReplace_AddItemCommit( _
 
       
     ' Store Functionidx finding & display function text on click
-      List_Fn_Assigned_FuncIdxs.Add Array(FuncOldNameIdx, FuncNewNameIdx)
+      List_Fn_Assigned_FuncIdxs.add Array(FuncOldNameIdx, FuncNewNameIdx)
       
-      .ItemData(.ListIndex) = List_Fn_Assigned_FuncIdxs.Count
+      .itemdata(.ListIndex) = List_Fn_Assigned_FuncIdxs.Count
       
       
    End With
@@ -2046,7 +2219,11 @@ Private Function SearchAndReplace_AddItemCommit( _
    
    ' Mark as Added
      On Error Resume Next
-     List_Fn_Assigned_Addedfuncs.Add FuncOldName, FuncOldName
+     List_Fn_Assigned_Addedfuncs.add FuncOldName, FuncOldName
+     
+     'also add new name to avoid naming different vars the same
+     List_Fn_Assigned_Addedfuncs.add FuncNewName, FuncNewName
+     
      On Error GoTo 0
    
 End Function
@@ -2060,7 +2237,7 @@ End Sub
 
 'On Enter Do Add Item
 Private Sub List_Fn_Inc_KeyPress(KeyAscii As Integer)
-   
+   On Error Resume Next
    Select Case KeyAscii
       Case vbKeyReturn
          SearchAndReplace_AddItem
@@ -2108,7 +2285,9 @@ End Sub
 Private Sub List_Fn_String_Org_Click()
    
    If List_Fn_String_Org_EventBlocker Then Exit Sub
-    Txt_SearchSync_Org = List_Fn_String_Org.Text
+   
+    Txt_SearchSync_Org = UndoAutoItString(List_Fn_String_Org.Text)
+    
     If NumOccurrenceFound = 0 Then Txt_SearchSync_Org_Change
 End Sub
 
@@ -2223,7 +2402,7 @@ Private Sub Txt_Fn_Org_FileName_Change()
       If Err Then Log Err.Description
       'TODO Quit when error during init
       
-      'Refresh includes List
+'      'Refresh includes List
       Txt_Fn_Inc_FileName_Change
       
       
@@ -2308,8 +2487,8 @@ End Sub
 Private Sub Txt_SearchSync_Org_Change()
    Lbl_SearchSyncStatus_Org = ""
    
-   Dim SearchStringIsAVar
-   SearchStringIsAVar = ("$" = Left(Txt_Fn_Org, 1))
+   Dim SearchStringIsAVar As Boolean
+   SearchStringIsAVar = IsAu3Var(Txt_Fn_Org)
    
    
    SkipGlobalConsts = Not (SearchStringIsAVar)
@@ -2391,7 +2570,7 @@ Private Sub SearchSync(SearchText$, FuncList, Fn_List As Listbox, Fn_Data As Tex
    Dim item
    For item = 0 To Fn_List.ListCount - 1
     ' That is not optimal and might slow down speed
-      SearchBuffer.ConcatVariant FuncList(Fn_List.ItemData(item))
+      SearchBuffer.ConcatVariant FuncList(Fn_List.itemdata(item))
    Next
    
    NumOccurrenceFound = GetNumOccurrenceIn(SearchBuffer.value, SearchText, FIND_OCCURENCE_MAX) 'chk_SearchIsA_RE) '

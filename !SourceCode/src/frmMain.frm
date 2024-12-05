@@ -7,11 +7,20 @@ Begin VB.Form FrmMain
    ClientWidth     =   9300
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
-   OLEDropMode     =   1  'Manual
+   OLEDropMode     =   1  'Manuell
    ScaleHeight     =   9588
    ScaleWidth      =   9300
    Begin VB.ListBox List_Positions 
-      Height          =   1968
+      BeginProperty Font 
+         Name            =   "Consolas"
+         Size            =   7.8
+         Charset         =   0
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   1848
       Left            =   3480
       TabIndex        =   14
       ToolTipText     =   "Right click for close"
@@ -20,7 +29,7 @@ Begin VB.Form FrmMain
       Width           =   1215
    End
    Begin VB.CommandButton Cmd_Skip 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Cancel          =   -1  'True
       Caption         =   "Skip >>>"
       Height          =   260
@@ -44,8 +53,8 @@ Begin VB.Form FrmMain
       Top             =   8520
       Width           =   9135
       Begin VB.TextBox txt_OffAdjust 
-         Alignment       =   1  'Right Justify
-         Appearance      =   0  'Flat
+         Alignment       =   1  'Rechts
+         Appearance      =   0  '2D
          Height          =   285
          Left            =   3360
          TabIndex        =   16
@@ -65,8 +74,8 @@ Begin VB.Form FrmMain
          Width           =   375
       End
       Begin VB.TextBox Txt_Scriptstart 
-         Alignment       =   1  'Right Justify
-         Appearance      =   0  'Flat
+         Alignment       =   1  'Rechts
+         Appearance      =   0  '2D
          Height          =   285
          Left            =   3360
          TabIndex        =   11
@@ -144,7 +153,7 @@ Begin VB.Form FrmMain
       Width           =   855
    End
    Begin VB.ListBox ListLog 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       BeginProperty Font 
          Name            =   "Consolas"
          Size            =   7.8
@@ -156,30 +165,30 @@ Begin VB.Form FrmMain
       EndProperty
       Height          =   1644
       Left            =   120
-      OLEDropMode     =   1  'Manual
+      OLEDropMode     =   1  'Manuell
       TabIndex        =   0
       ToolTipText     =   "Double click to see more ! Single Click an entry that starts with an offset jump to it in Winhex."
       Top             =   6615
       Width           =   9135
    End
    Begin VB.ListBox List_Source 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Height          =   5592
       ItemData        =   "frmMain.frx":63B3
       Left            =   120
       List            =   "frmMain.frx":63B5
-      OLEDropMode     =   1  'Manual
+      OLEDropMode     =   1  'Manuell
       TabIndex        =   4
       Top             =   600
       Visible         =   0   'False
       Width           =   9135
    End
    Begin VB.TextBox Txt_Script 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Height          =   5655
       Left            =   120
       MultiLine       =   -1  'True
-      OLEDropMode     =   1  'Manual
+      OLEDropMode     =   1  'Manuell
       TabIndex        =   2
       Top             =   600
       Width           =   9135
@@ -189,7 +198,7 @@ Begin VB.Form FrmMain
       ItemData        =   "frmMain.frx":63B7
       Left            =   120
       List            =   "frmMain.frx":63B9
-      OLEDropMode     =   1  'Manual
+      OLEDropMode     =   1  'Manuell
       TabIndex        =   10
       Text            =   "Drag the compiled AutoItExe / AutoHotKeyExe or obfucated script in here, or enter/paste path+filename."
       Top             =   120
@@ -197,7 +206,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.Shape Sh_ProgressBar 
       FillColor       =   &H00FF0000&
-      FillStyle       =   0  'Solid
+      FillStyle       =   0  'Ausgefüllt
       Height          =   135
       Index           =   0
       Left            =   120
@@ -207,7 +216,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.Shape Sh_ProgressBar 
       FillColor       =   &H00FFC0C0&
-      FillStyle       =   0  'Solid
+      FillStyle       =   0  'Ausgefüllt
       Height          =   135
       Index           =   1
       Left            =   120
@@ -525,6 +534,11 @@ End Sub
 Public Sub Log_Clear()
 On Error Resume Next
    ListLog.Clear
+  
+      
+'   LogData.Clear
+    ArrayDelete LogData
+   
 End Sub
 
 
@@ -544,14 +558,6 @@ End Sub
 Private Sub ListLogShowCaption()
    Log Me.Caption
    Log String(80, "=")
-End Sub
-
-Private Sub ListLogClear()
-   ListLog.Clear
-   
-'   LogData.Clear
-    ArrayDelete LogData
-   
 End Sub
 
 
@@ -635,7 +641,7 @@ Private Function GetCurLineFromTidyOutput(TextLine As String, MatchKeyWord$) As 
       .Pattern = MatchKeyWord & RE_Group("\d+") & RE_NewLine
       
       Dim Match As Match
-      For Each Match In .Execute(TextLine)
+      For Each Match In .execute(TextLine)
          GetCurLineFromTidyOutput = Match.SubMatches(0)
       Next
    End With
@@ -711,7 +717,7 @@ End Sub
 Private Sub Form_KeyDown(KeyCode As Integer, Shift As Integer)
    Select Case KeyCode
 '      Case vbKeyDelete, vbKeyBack
-'         ListLogClear
+'         Log_Clear
          
       Case vbKeyEscape
          CancelAll = True
@@ -839,12 +845,14 @@ Function WH_Goto(ByVal Position As Currency) As Long
 End Function
 
 Sub WH_close()
+   On Error Resume Next
    WHX_Done
 End Sub
 
 
 
 Private Sub List_Positions_Click()
+   On Error Resume Next
    WH_Open
    WH_Goto HexToInt(List_Positions.Text)
 '   WH_close
@@ -874,16 +882,28 @@ Private Sub ListLog_Click()
 End Sub
 
 Private Sub ListLog_DblClick()
-   frmLogView.txtlog = Replace( _
+   On Error Resume Next
+   frmLogView.txtlog = replace( _
                         FrmMain.Log_GetData, _
                         vbNullChar, ".")
    frmLogView.Show
 End Sub
 
+
+Public Function DeleteTmpFile(Optional FileName = "") As Boolean
+
+   Dim FileNameObj As New ClsFilename
+   FileNameObj.FileName = FileName
+   
+   DeleteTmpFile = Chk_TmpFile.value = vbUnchecked _
+                     And Not ( _
+                        FileNameObj.NameWithExt = FileName_Inital.NameWithExt _
+                     )
+End Function
 Private Sub ListLog_KeyUp(KeyCode As Integer, Shift As Integer)
    Select Case KeyCode
       Case vbKeyDelete, vbKeyBack
-         ListLogClear
+         Log_Clear
          
    End Select
    
@@ -894,7 +914,7 @@ End Sub
 
 Private Sub ListLog_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
    If Button = MouseButtonConstants.vbRightButton Then
-      ListLogClear
+      Log_Clear
    End If
 End Sub
 
@@ -931,12 +951,12 @@ Private Function PatchAway_NO_CMDEXECUTE(Script As ClsFilename)
       Reader.Data = FileLoad(Script.FileName)
       
       Dim PATCH_SEARCH_W$
-      PATCH_SEARCH_W = StrConv(PATCH_SEARCH, vbUnicode, LocaleID)
+      PATCH_SEARCH_W = EncodeUnicode(PATCH_SEARCH)
       
       If .FindString(PATCH_SEARCH_W) Then
          .Move -Len(PATCH_SEARCH_W)
          
-         .FixedString(-1) = StrConv(PATCH_REPLACE, vbUnicode, LocaleID)
+         .FixedString(-1) = EncodeUnicode(PATCH_REPLACE)
          
          
          Script.Name = Script.Name & "_AllowExec"
@@ -945,7 +965,7 @@ Private Function PatchAway_NO_CMDEXECUTE(Script As ClsFilename)
       Else
          
          
-         PATCH_SEARCH_W = DeCryptNew(StrConv(PATCH_SEARCH, vbUnicode, LocaleID), Xorkey_SrcFile_FileInstNEW_Data + Len(PATCH_SEARCH))
+         PATCH_SEARCH_W = DeCryptNew(EncodeUnicode(PATCH_SEARCH), Xorkey_SrcFile_FileInstNEW_Data + Len(PATCH_SEARCH))
       
          If .FindString(PATCH_SEARCH_W) Then
             .Move -Len(PATCH_SEARCH_W)
@@ -1034,7 +1054,11 @@ Private Function GetAutoItVersion(Script As ClsFilename, Optional ShellExitCode 
 End Function
 
 Private Sub mi_HexToBinTool_Click()
-   HexToBinTool
+   mi_HexToBinTool.enabled = False
+   
+      HexToBinTool
+      
+   mi_HexToBinTool.enabled = True
 End Sub
 
 Private Sub mi_LocalID_Click()
@@ -1043,8 +1067,16 @@ InputValue:
     
     Dim InputboxTmp$
     InputboxTmp = InputBox( _
-        "You will need to adjust that value if your Windows is not a german of english one and you are getting errors(checksum fail;modified JB LZSS Signature) when decompiling ya own freshly compiled files or the included examples." _
-        & "See '!SourceCode\languages-ids.txt' for your LCID. '0' will tell VB to use the current LCID. Any invalid value will reset this to the default(German).", _
+        "SystemLCID: " & H16(GetSystemDefaultLCID) & vbCrLf & _
+        "UserLCID: " & H16(GetUserDefaultLCID) & vbCrLf & _
+        "" & vbCrLf & _
+        "Well try one of these. Mostly 'SystemLCID' works." & vbCrLf & _
+        "" & vbCrLf & _
+        "You will need to adjust that value if your Windows is not a german of english one " & _
+        "and you are getting errors(checksum fail;modified JB LZSS Signature) when decompiling " & _
+        "ya own freshly compiled files or the included examples." _
+        & "See '!SourceCode\languages-ids.txt' for your LCID. '0' will tell VB to use the current LCID. " & _
+        "Any invalid value will reset this to the default(German).", _
         "Enter your LocalID(as hex) for handling strings", H16(LocaleID))
 
     If InputboxTmp = "" Then Exit Sub
@@ -1086,10 +1118,11 @@ End Sub
 
 
 Private Sub HexToBinTool()
-
+   On Error GoTo HexToBinTool_err
+   
    Dim FileName As New ClsFilename
-   FileName.FileName = InputBox("FileName:", "HexToBinTool", Combo_Filename)
-   'FileName.FileName = Combo_Filename
+'   FileName.FileName = InputBox("FileName:", "HexToBinTool", Combo_Filename)
+   FileName.FileName = Combo_Filename
    
    If FileName.FileName = "" Then Exit Sub
    
@@ -1107,12 +1140,12 @@ Private Sub HexToBinTool()
    
    ' http://regex101.com
     .Pattern = RE_WSpace( _
-       RE_Group("A0000171\w*"), _
-       "\(", RE_Quote & "(?:0x)" & _
+       RE_Group("\w*"), _
+       "\(", RE_Quote & "(?:0.?x)" & _
           RE_HEXDIGET & "*?" & RE_Quote, "\)")
 
    
-      Set matches = .Execute(Data)
+      Set matches = .execute(Data)
       Dim FunctionName$
       If matches.Count < 1 Then
          FunctionName = "FnNameOfBinaryToString"
@@ -1122,13 +1155,20 @@ Private Sub HexToBinTool()
 
       End If
    
-      FunctionName = InputBox("FunctionName:", "", FunctionName)
+'      FunctionName = InputBox("FunctionName:", "", FunctionName)
 
    End With
    
    Dim obfu As New ClsDeobfuscator
    Dim OccurenceFound&
-   OccurenceFound = BinaryToString(obfu, Data, FunctionName)
+   
+   'OccurenceFound = BinaryToString(obfu, Data, FunctionName)
+   
+   'Some special Version for 7Kscript
+   '1.   03x 476B74627966257E7478 4
+   '2.   0x3 74B64726976652E74787 4
+   '3.   7Kdrive.txt
+   OccurenceFound = BinaryToString2(obfu, Data, FunctionName)
 
    If OccurenceFound Then
       FileName.Name = FileName.Name & "_HexToBin"
@@ -1144,6 +1184,17 @@ Private Sub HexToBinTool()
    End If
       
       
+Exit Sub
+HexToBinTool_err:
+Select Case Err
+   Case 0:
+   Case ERR_CANCEL_ALL:
+      Log Err.Description
+   
+   Case Else:
+      Log Err.Description
+
+End Select
 
 End Sub
 
@@ -1171,7 +1222,7 @@ Private Sub CustomDecrypt()
       .Pattern = RE_WSpace(RE_Group("\w*?") & "\(", RE_Quote & "0x", _
                             RE_HEXDIGET & "*?", RE_Quote, ".*?", "\)")
       Dim matches As MatchCollection
-      Set matches = .Execute(Data)
+      Set matches = .execute(Data)
       Dim FunctionName$
       If matches.Count < 1 Then
          
@@ -1207,7 +1258,7 @@ FunctionName = "_deCode"
                               RE_AU3_String$, _
                             "\)")
                             
-      Set matches = .Execute(Data)
+      Set matches = .execute(Data)
       Dim Match As Match
       For Each Match In matches
          With Match
@@ -1251,7 +1302,23 @@ FunctionName = "_deCode"
 End Sub
 
 Private Sub Form_Load()
-
+'
+'   Dim myReplaceMulti As New ClsReplaceMulti
+'
+'
+'   With myReplaceMulti
+'      .Init "Test a, Test b, Test C"
+'      .add "a", "11"
+'      .add "b", "22"
+'      .add "c", "33"
+'
+'      Debug.Print .execute
+'
+'
+'   End With
+   
+ '  BatchReplace " 1 - 2 ", "1->2,2->3"
+   
  '  CamoGet
 
 
@@ -1295,7 +1362,9 @@ Private Sub Form_Load()
    
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
+   'LocaleID = LocaleID_THAI
    LocaleID = LocaleID_GER
+   
    FormSettings_Load Me, "txt_OffAdjust"
    
    
@@ -1312,8 +1381,9 @@ Private Sub Form_Load()
    'Extent Listbox width
    Listbox_SetHorizontalExtent ListLog, 6000
    
-   ListLogClear
+   Log_Clear
    ListLogShowCaption
+   CheckForFileDependencies
 
  
  ' Commandlinesupport   :)
@@ -1342,7 +1412,31 @@ Private Sub Form_Load()
 
 End Sub
    
+Private Sub CheckForFileDependencies()
+   Const dataDir$ = "data"
+   If Not FileExists(dataDir) Then
+      Dim ErrorTitle$
+      ErrorTitle = "!!! Check for file dependencies failed !!!"
+      
+      Dim ErrorText$
+      ErrorText = "For proper function MATE needs the files in the dir '" & CurDir & "\" & dataDir & "'"
+      
+      Log ErrorTitle
+      Log ErrorText
+      
+      Log ""
+      Log "Maybe you only extracted '" & App.EXEName & "' from the archive or you just copied it without copying the directory '" & dataDir & "\' as well."
+      
+      MsgBox ErrorText$, vbCritical, ErrorTitle
+   End If
    
+   '"data\RanRot_MT.dll",  "Decryption",0
+   '"data\LZSS.exe",       "Decompression of Script",0
+   '"data\upx.exe",        "Decompression of ScriptExe",1
+   '"data\Tidy\Tidy.exe",   "Tidy decompiled Script",1
+   '"data\ExtractIcon.exe","Extracts icon of ScriptExe",2
+   '"data\whxapi.dll",     "Winhex to List offsets",3
+End Sub
 Private Sub ProcessCommandline()
 
    Dim CommadLine As New CommandLine
@@ -1477,14 +1571,14 @@ Private Sub mi_FunctionRenamer_Click()
    
 End Sub
 
-Private Sub mi_SeperateIncludes_Click()
+Private Sub mi_SeparateIncludes_Click()
    Dim File$
    File = InputBox("Normally seperating includes is done automatically after you decompiled some au3.exe(of old none tokend format)." & vbCrLf & _
           "However that tool is useful in the case you have some decompiled *.au3 with these '; <AUT2EXE INCLUDE-START: C:\ ...' comments you like to process." & vbCrLf & vbCrLf & _
-          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'seperate au3 includes' on file", Combo_Filename)
+          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'separate au3 includes' on file", Combo_Filename)
    If File <> "" Then
       FileName.FileName = File
-      SeperateIncludes
+      SeparateIncludes
    End If
 End Sub
 
@@ -1579,12 +1673,15 @@ Sub StartProcessing()
 
 ' Clear Log (expect when run via commandline)
   If IsCommandlineMode = False Then
-     ListLogClear
+     Log_Clear
      ListLogShowCaption
   End If
   Txt_Script = ""
   
   FileName = Combo_Filename
+  
+  FileName_Inital = Combo_Filename
+  
   
 ' Log String(80, "=")
 ' log "           -=  " & Me.Caption & "  =-"
@@ -1620,7 +1717,7 @@ Sub StartProcessing()
      Select Case Err
      Case 0, ERR_NO_OBFUSCATE_AUT
         If Frm_Options.Chk_RestoreIncludes.value = vbChecked Then _
-           SeperateIncludes
+           SeparateIncludes
            
            
      Case Else
@@ -1649,7 +1746,7 @@ StartProcessing_err:
 ' Add some fileName if it weren't done during decompile()
   If Collection_IsAlreadyIn(ExtractedFiles, "MainScript") = False Then
       If Not (ExtractedFiles Is Nothing) Then
-         ExtractedFiles.Add File.FileName, "MainScript"
+         ExtractedFiles.add File.FileName, "MainScript"
       End If
   End If
 
@@ -1914,5 +2011,6 @@ updateStartLocations_List_err:
 End Sub
 
 Private Sub Txt_Scriptstart_Validate(Cancel As Boolean)
+   On Error Resume Next
    WH_close
 End Sub

@@ -52,7 +52,7 @@ Public Function UnUPX() As Long
          End If
 
          'Dim tmp As String
-         'tmp = StrConv(FileData, vbUnicode, LocaleID)
+         'tmp = EncodeUnicode(FileData)
          If filedata.FindString("UPX") = 0 Then
             .log_verbose "No UPX marker found exiting..."
             Exit Function

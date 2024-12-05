@@ -2,23 +2,23 @@ VERSION 5.00
 Begin VB.Form Frm_Options 
    BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Options"
-   ClientHeight    =   7020
-   ClientLeft      =   48
-   ClientTop       =   288
+   ClientHeight    =   7215
+   ClientLeft      =   45
+   ClientTop       =   285
    ClientWidth     =   8400
    LinkTopic       =   "Options"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   7020
+   ScaleHeight     =   7215
    ScaleWidth      =   8400
    ShowInTaskbar   =   0   'False
-   StartUpPosition =   3  'Windows Default
+   StartUpPosition =   2  'CenterScreen
    Begin VB.Frame Frame3 
       Caption         =   "Get XorKey's"
       Height          =   855
-      Left            =   120
+      Left            =   135
       TabIndex        =   54
-      Top             =   6120
+      Top             =   6300
       Width           =   8175
       Begin VB.TextBox Txt_GetCamoFileName 
          Alignment       =   1  'Right Justify
@@ -779,7 +779,7 @@ End Sub
 
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
-   If UnloadMode <> vbFormCode Then
+   If UnloadMode = vbFormCode Then
       Settings_save
    End If
 End Sub

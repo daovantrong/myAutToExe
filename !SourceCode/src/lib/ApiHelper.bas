@@ -126,10 +126,10 @@ On Error GoTo ShellEx_err
   'Commented out because sometimes there are false positives( PID get's invalid betweem Shell() and OpenProcess()
 '      RaiseDllError "ShellEx()", "OpenProcess", "PROCESS_QUERY_INFORMATION", 0, "PID: " & PID
       If Err.LastDllError <> ERROR_INVALID_PARAMETER Then
-         Log "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
+         Log "OpenProcess() failed. GetLastError: " & H32x(Err.LastDllError)
       End If
       
-'      Err.Raise vbObjectError, , "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
+'      Err.Raise vbObjectError, , "OpenProcess() failed. GetLastError: " & H32x(Err.LastDllError)
     End If
 
      

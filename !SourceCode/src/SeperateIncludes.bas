@@ -25,12 +25,12 @@ Dim EndSym_Len&
 Dim str As StringReader
 Dim Level&
 
-Public Sub SeperateIncludes()
+Public Sub SeparateIncludes()
    
 '   FrmMain.Log ""
 '   FrmMain.Log "==============================================================="
    
-   FrmMain.Log_Stage "AHK / AutoIT(Old) seperate includes", 4
+   FrmMain.Log_Stage "AHK / AutoIT(Old) separate includes", 4
    FrmMain.Log "Seperating Includes of : " & FileName.FileName
    
    
@@ -70,7 +70,7 @@ Public Sub SeperateIncludes()
  ' Make DirName with scriptname
    With IncludeFileName
       .mvarFileName = FileName.mvarFileName
-      .Name = "_" & .Name & "_Seperated\"
+      .Name = "_" & .Name & "_Separated\"
       .NameWithExt = ""
    End With
    
@@ -78,15 +78,15 @@ Public Sub SeperateIncludes()
    
  ' Convert unicode to accii
    If bUTF16detected Then
-      ScriptData = StrConv(ScriptData, vbFromUnicode, LocaleID)
+      ScriptData = DecodeUnicode(ScriptData)
    End If
    
-   SeperateIncludes2 ScriptData
+   SeparateIncludes2 ScriptData
    
 End Sub
 
 
-Public Sub SeperateIncludes2(ScriptData$)
+Public Sub SeparateIncludes2(ScriptData$)
    
   '
    Set str = New StringReader
@@ -105,7 +105,7 @@ Public Sub SeperateIncludes2(ScriptData$)
       
       GUIEvent_ProcessBegin str.Length
       
-         SeperateIncludes_Recursiv INCLUDE_END
+         SeparateIncludes_Recursiv INCLUDE_END
       
       GUIEvent_ProcessEnd
       
@@ -115,7 +115,7 @@ Public Sub SeperateIncludes2(ScriptData$)
 End Sub
 
 
-Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
+Private Sub SeparateIncludes_Recursiv(ByVal EndSym$)
    
    
    EndSym_Len = Len(EndSym)
@@ -200,7 +200,7 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
          
       '! Recursiv Call of this function !
          Inc Level
-         SeperateIncludes_Recursiv newEndSym
+         SeparateIncludes_Recursiv newEndSym
          
        ' now the function returned because some
        ' ; ----------------------------------------------------------------------------
@@ -293,7 +293,7 @@ Public Sub AHK_RemoveLineBreaks(ByRef ScriptData As StringReader)
 End Sub
 
 
-'Public Sub AHK_SeperateIncludes_NEW(ByRef ScriptData As StringReader, OutputPath$)
+'Public Sub AHK_SeparateIncludes_NEW(ByRef ScriptData As StringReader, OutputPath$)
 '   Dim myRegExp As New RegExp
 '   With myRegExp
 '
@@ -301,7 +301,7 @@ End Sub
 '      .Pattern = "; <COMPILER: v.*" & RE_NewLine
 '      .Global = True
 '
-'    ' Seperate & Save includes
+'    ' Separate & Save includes
 '      ScriptData.Position = 0
 '
 '      Dim Match As Match
@@ -363,11 +363,11 @@ End Sub
 'End Sub
 
 
-Public Sub AHK_SeperateIncludes(ByRef ScriptData As StringReader, OutputPath$)
-'   On Error GoTo AHK_SeperateIncludes_err
+Public Sub AHK_SeparateIncludes(ByRef ScriptData As StringReader, OutputPath$)
+'   On Error GoTo AHK_SeparateIncludes_err
    
 '   If ScriptData.FindString("; #include ") = 0 Then
-'      Log "There are no AHK-includes that could be seperated."
+'      Log "There are no AHK-includes that could be separated."
 '      Exit Sub
 '   End If
    
@@ -471,7 +471,7 @@ Public Sub AHK_SeperateIncludes(ByRef ScriptData As StringReader, OutputPath$)
    
 '   If ScriptData.Length > 10000 Then
 '      If vbYes <> MsgBox("Due to some strange RegExp bug this can take some time. (please look at sourcecode and tell me if you found some better solution)" & vbCrLf & _
-'         "Do you really like to seperated includes?", vbDefaultButton2 Or vbYesNo Or vbQuestion, "Seperate AHK-includes") Then Exit Sub
+'         "Do you really like to separated includes?", vbDefaultButton2 Or vbYesNo Or vbQuestion, "Separate AHK-includes") Then Exit Sub
 '   End If
 '
 '   Dim myRegExp As New RegExp
@@ -492,7 +492,7 @@ Public Sub AHK_SeperateIncludes(ByRef ScriptData As StringReader, OutputPath$)
 ''.Execute ScriptData
 ''      BenchEnd
 '
-'    ' Seperate & Save includes
+'    ' Separate & Save includes
 '      Dim Match As Match
 '      For Each Match In myRegExp.Execute(ScriptData)
 '
@@ -516,6 +516,6 @@ Public Sub AHK_SeperateIncludes(ByRef ScriptData As StringReader, OutputPath$)
 '      ScriptData = .Replace(ScriptData, "$1$3")
 '
 '   End With
-AHK_SeperateIncludes_err:
+AHK_SeparateIncludes_err:
 End Sub
 

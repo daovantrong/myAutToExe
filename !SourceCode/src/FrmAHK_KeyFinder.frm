@@ -12,6 +12,7 @@ Begin VB.Form FrmAHK_KeyFinder
    ScaleHeight     =   1500
    ScaleWidth      =   1935
    ShowInTaskbar   =   0   'False
+   StartUpPosition =   2  'CenterScreen
    Begin VB.CommandButton cmd_cancel 
       Cancel          =   -1  'True
       Caption         =   "Cancel"

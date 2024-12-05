@@ -227,7 +227,7 @@ Public Property Get FixedStringW(Optional ByVal Length& = -1) As String
    
    FixedStringW = Mid(mvardata, mvarPosition, Length)
    
-   FixedStringW = StrConv(FixedStringW, vbFromUnicode)
+   FixedStringW = DecodeUnicode(FixedStringW)
    
    ToMove = Length
 End Property
@@ -289,7 +289,7 @@ Public Property Get int8() As Long
 '    int8 = Asc(FixedString(1))
 '    Debug.Assert AscB(Mid(mvardata, mvarPosition, 1)) = Asc(Mid(mvardata, mvarPosition, 1))
     int8 = Asc(Mid$(mvardata, mvarPosition, 1))
-'    int8 = AscB(MidB(StrConv(mvardata, vbFromUnicode), mvarPosition, 1))
+'    int8 = AscB(MidB(DecodeUnicode(mvardata, 0), mvarPosition, 1))
 
     ToMove = 1
 

@@ -3,6 +3,10 @@ Option Explicit
 Public Const DETOKENISE_MAKER$ = "; DeTokenise by "
 #Const LineBreak_BeforeAndAfterFunctions = False
 
+
+
+
+Const DETOKENISE_ENFORCE_HEXNUMBERS As Boolean = False 'True
 Const AUTOIT_SourceCodeLine_MAXLEN& = 4096
 
 Const whiteSpaceTerminal$ = " "
@@ -13,9 +17,9 @@ Const TokenFile_RequiredInputExtensions = ".tok .mem"
 
 Dim bAddWhiteSpace As Boolean
 
-
 Sub DeToken()
    
+   Dim dbg_CMDIndexFilter As New clsDuplicateFilter
    FrmMain.Log_Stage "AutoIT DeTokise", 2
    
    Dim bVerbose As Boolean
@@ -54,7 +58,7 @@ Sub DeToken()
       
       Dim Lines&
       Lines = .int32
-      FL "Code Lines: " & Lines & "   0x" & H32(Lines)
+      FL "Code Lines: " & Lines & "   " & H32x(Lines)
       
     ' File shouldn't start with MZ 00 00 -> ExeFile
     ' &HDFEFFF -> Unicodemarker
@@ -71,7 +75,8 @@ Sub DeToken()
 '  the Filestream     (Benchmark: ~31k)
    End With
 
-   With New StringReader
+   Dim TokenData As New StringReader
+   With TokenData
       .Data = File.FixedString(-1)
       
       File.CloseFile
@@ -97,18 +102,29 @@ Sub DeToken()
       
       
       Dim cmd&
-      Dim Size&
 
       Dim SourceCode ' As New Collection
       Dim SourceCodeLineCount&
       ReDim SourceCode(1 To Lines):     SourceCodeLineCount = 1:
       Dim TokenCount&: TokenCount = 0
       
-      Dim RawString As StringReader: Set RawString = New StringReader
-      Dim DecodeString As StringReader: Set DecodeString = New StringReader
+      Dim LineTokenCount&: LineTokenCount = 0
+      
 
       If bVerbose Then Frm_SrcEdit.Show
       
+      On Error Resume Next
+      
+      Dim CMD_0_Keywords
+      CMD_0_Keywords = GetAu3KeyWords()
+      
+      Dim CMD_1_AutoItFunctions As New Collection
+      Collection_LoadInto _
+         AU3_BuildInFunc_PATH, _
+         CMD_1_AutoItFunctions
+         
+      On Error GoTo DeToken_Err
+         
       Do
    
          Dim TypeName$
@@ -137,68 +153,107 @@ Sub DeToken()
          cmd = .int8
          Inc TokenCount
          
+         Inc LineTokenCount
+
          
          Dim TokenInfo$
          TokenInfo = "Token: " & H8(cmd) & "      (Line: " & SourceCodeLineCount & "  TokenCount: " & TokenCount & ")"
        ' Log it ''" & Chr(Cmd) & "'
-         FL_verbose TokenInfo
-'         If RangeCheck(SourceCodeLineCount, 3188, 3184) Then
+'         FL_verbose TokenInfo
+'         If RangeCheck(SourceCodeLineCount, 19078, 19076) Then
 '            Stop
 '            If FrmMain.Chk_verbose <> vbChecked Then FrmMain.Chk_verbose = vbChecked
 '         Else
 '           If FrmMain.Chk_verbose <> vbUnchecked Then FrmMain.Chk_verbose = vbUnchecked
 '         End If
-'Debug.Assert Not (SourceCodeLine Like "*$NY*")
-         
+'Debug.Assert Not (ArrayGetLast(SourceCodeLine) Like "*CBEN_FIRST*")
+'
          
          Select Case cmd
+
          
 '------- Numbers -----------
-         Case &H0 To &HF
-            '&H5
+
+         Case &H5
+'         Case &H2 To &HF
             Dim int32$
             int32 = .int32
-            Atom = int32
+
             
-          ' Bugfix for 3.3.8.1 (29th January, 2012)
-          ' Tokenoptimisation occure'+-123' -> '-123'
-            Dim LastAtom
-            If LastAtom = "+" Then
-               If Atom <= -1 Then
-                  log_verbose " Tokenoptimisation occured '+-' -> '-'  @line: " & SourceCodeLineCount
-                  Dim tmp$
-                  tmp = ArrayGetLast(SourceCodeLine)
-                  tmp = Left2(tmp) ' Cut last char
-                  ArraySetLast SourceCodeLine, tmp
+            If DETOKENISE_ENFORCE_HEXNUMBERS Then
+               Atom = H32x(int32)
+               
+            Else
+            
+               Atom = int32
+                           
+             ' Bugfix for 3.3.8.1 (29th January, 2012)
+             ' Tokenoptimisation occure'+-123' -> '-123'
+             '(not do on hex numbers - since negative hexnumbers'll not have a leading 'minus' )
+               Dim LastAtom
+               If LastAtom = "+" Then
+                  If int32 <= -1 Then
+                     Dim tmp$
+                     tmp = ArrayGetLast(SourceCodeLine)
+                     tmp = Left2(tmp) ' Cut last char
+                     ArraySetLast SourceCodeLine, tmp
+                     
+                     log_verbose " Tokenoptimisation occured '+-' -> '-'  @line: " & SourceCodeLineCount
+   
+                  End If
                End If
+
             End If
                          
 
             
             TypeName = "Int32"
-            FL_verbose TypeName & ": 0x" & H32(int32) & "   " & int32
+            FL_verbose TypeName & ": " & H32x(int32) & "   " & int32
             
           ' So far this value has always been 5
-            Debug.Assert cmd = 5
+          '  Debug.Assert cmd = 5
          
          Case &H10 To &H1F
+         
+          ' Const Max_sInt64 = 922337203685477.5807@      '9223372036854775807
             Dim Int64 As Currency
             Int64 = .int64Value
-            'int64 = H32(.int32)
-            'int64 = H32(.int32) & int64
-            'Replace 123,45 -> 12345
-            Atom = Replace(CStr(Int64), DecimalKomma, "")
+            
+            If ((Int64 < 0) Or DETOKENISE_ENFORCE_HEXNUMBERS) Then
+            
+          ' output negative values as hex
+               .Move -8
+               Atom = H32(.int32)
+               Atom = H32x(.int32) & Atom
+               
+            Else
+
+               'Replace 123,4578 -> 1234578
+               'Atom = replace(format(Int64), DecimalKomma, "")
+               'Problem: 123,45 -> 12345 but realvalue is 1234500
+               
+               'Atom = Int64 * 10000
+               'Problem: can overflow at the 'last 10.000'
+               
+                Atom = replace(Format(Int64, "0.0000"), DecimalKomma, "")
+            
+
+            End If
+           
             TypeName = "Int64"
             FL_verbose TypeName & ": " & Int64
             
             Debug.Assert cmd = &H10
+            
+            
+            
          
          Case &H20 To &H2F
            'Get DoubleValue
             Dim Double_$
             Double_ = .DoubleValue
             'Replace 123,11 -> 123.11
-            Atom = Replace(CStr(Double_), DecimalKomma, ".")
+            Atom = replace(CStr(Double_), DecimalKomma, ".")
             
             TypeName = "64Bit-float"
             FL_verbose TypeName & ": " & Double_
@@ -206,126 +261,53 @@ Sub DeToken()
             'Mostly &h20
             Debug.Assert cmd = &H20
          
+'------- Tokenise Commands -----------
+         Case &H0 To &H1 'Keywords
+            
+            Dim bUsesTokeniseCommands As Boolean
+            
+            If bUsesTokeniseCommands = False Then
+               bUsesTokeniseCommands = True
+               Log "DeTokeniser notice: This script uses tokenized commands !"
+            End If
+         
+            Dim Index
+            Index = .int32
+      
+            On Error Resume Next
+            
+            Select Case cmd
+               Case &H0
 
-'------- Strings -----------
+                  Atom = CMD_0_Keywords(Index)
+'                  If dbg_CMDIndexFilter.IsUnique(str(Index)) Then
+'                     Debug.Print Index, Atom, TokenInfo
+'                  End If
+                
+      
+               Case &H1
+      
+                  Atom = CMD_1_AutoItFunctions(Index + 1)
+                  If Err Then Atom = "*CMD_1_" & Index & "*"
+                  
+'                  If dbg_CMDIndexFilter.IsUnique(str(Index)) Then
+'                     Debug.Print Index, Atom, TokenInfo
+'                  End If
+               
+         End Select
+         
+         On Error GoTo DeToken_Err
+   
+         Atom = DT_HandleCommand(cmd, Atom, TypeName)
+
+'------- Commands & Strings -----------
          Case &H30 To &H3F 'Keywords
             
-           'Get StrLength and load it
-            Size = .int32
-            FL_verbose "StringSize: " & H32(Size)
             
-            If Size > (.Length - .Position) Then
-               Err.Raise vbObjectError, , "Invalid string size(bigger than the file)!"
-            End If
+            Atom = DT_DecodeString(TokenData)
+            
+            Atom = DT_HandleCommand(cmd, Atom, TypeName)
 
-            RawString = .FixedStringW(Size)
-           
-           'XorDecode String
-            Dim pos&, XorKey_l As Byte, XorKey_h As Byte
-            
-            XorKey_l = (Size And &HFF)
-            XorKey_h = ((Size \ &H100) And &HFF) ' 2^8 = 256
-            
-            Dim tmpBuff() As Byte
-            tmpBuff = RawString
-            
-            For pos = LBound(tmpBuff) To UBound(tmpBuff) Step 2
-               tmpBuff(pos) = tmpBuff(pos) Xor XorKey_l
-               tmpBuff(pos + 1) = tmpBuff(pos + 1) Xor XorKey_h
-'               DecodeString = tmpBuff
-               
-               'If 0 = (pos Mod &H8000) Then myDoEvents
-            Next
-            
-            DecodeString = tmpBuff
-            
-            
-'Comment out due to bad performance
-'            RawString.Position = 0
-'            DecodeString = Space(RawString.Length \ 2)
-'            Do Until RawString.EOS
-'               DecodeString.int8 = RawString.int8 Xor Size
-'               If Not (RawString.EOS) Then Debug.Assert RawString.int8 = 0
-'            Loop
-            
-            
-'------- Commands -----------
-            Select Case cmd
-            
-            Case &H30 'BlockElement (FUNC, IF...) and the Rest of 42 Elements: "AND OR NOT IF THEN ELSE ELSEIF ENDIF WHILE WEND DO UNTIL FOR NEXT TO STEP IN EXITLOOP CONTINUELOOP SELECT CASE ENDSELECT SWITCH ENDSWITCH CONTINUECASE DIM REDIM LOCAL GLOBAL CONST FUNC ENDFUNC RETURN EXIT BYREF WITH ENDWITH TRUE FALSE DEFAULT ENUM NULL"
-               TypeName = "BlockElement"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-               
-               Atom = DecodeString
-               bAddWhiteSpace = True
-              
-               #If LineBreak_BeforeAndAfterFunctions Then
-                  If Atom = "ENDFUNC" Then
-                     Atom = Atom & vbCrLf
-                  ElseIf Atom = "FUNC" Then
-                     Atom = vbCrLf & Atom
-                  End If
-               #End If
-
-            
-            Case &H31 'FunctionCall with params
-               Atom = DecodeString
-               
-               TypeName = "AutoItFunction"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-               
-            Case &H32 'Macro
-               Atom = "@" & DecodeString
-               
-               TypeName = "Macro"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-            
-            Case &H33 'Variable
-               Atom = "$" & DecodeString
-               
-               TypeName = "Variable"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-            
-            Case &H34 'FunctionCall
-               Atom = DecodeString
-               
-               TypeName = "UserFunction"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-            
-            Case &H35 'Property
-               Atom = "." & DecodeString
-               
-               TypeName = "Property"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-            
-            Case &H36 'UserString
-               
-               Atom = MakeAutoItString(DecodeString.Data)
-               
-               TypeName = "UserString"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-            
-            Case &H37 '# PreProcessor
-               Atom = DecodeString
-               bAddWhiteSpace = True
-               
-               TypeName = "PreProcessor"
-               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
-            
-            
-            Case Else
-               'Unknown StringToken
-               If HandleTokenErr("ERROR: Unknown StringToken") Then
-               Else
-                  Err.Raise vbObjectError Or 1, , "Unknown StringToken"
-                  Stop
-
-               End If
-               
-               
-            End Select
-            
- '           log String(40, "_")
          
 '------- Operators -----------
          Case &H40 To &H58
@@ -356,8 +338,8 @@ Sub DeToken()
                Case &H54: Atom = "/=" '5       2F
                Case &H55: Atom = "*=" '4       2A
                Case &H56: Atom = "&=" '6       26
-               Case &H57: Atom = "?" '6       26
-               Case &H58: Atom = ":" '6       26
+               Case &H57: Atom = "?"  '6       ternary op1
+               Case &H58: Atom = ":"  '6       ternary op2
                
                
             End Select
@@ -400,6 +382,8 @@ Sub DeToken()
             If bVerbose Then _
                Frm_SrcEdit.LineBreak
            
+            LineTokenCount = 0
+           
           ' Reset AddWhiteSpace on next item
             bWasLastAnOperator = True
             DelayedReturn False
@@ -408,7 +392,7 @@ Sub DeToken()
          Case Else
             
            'Unknown Token
-            Log H32(TokenOffset) & " @ " & FileName.NameWithExt & " -> Unknown Token_Command: 0x" & H8(cmd)
+            Log H32(TokenOffset) & " @ " & FileName.NameWithExt & " -> Unknown Token_Command: " & H8x(cmd)
             
             If HandleTokenErr("ERROR: Unknown Token") Then
             Else
@@ -437,17 +421,16 @@ Sub DeToken()
                ArrayAdd SourceCodeLine, Atom
                If bVerbose Then Frm_SrcEdit.AddItem _
                   whiteSpaceTerminal & Atom, cmd, TypeName, _
-                  TokenInfo & " @ 0x" & H32(TokenOffset)
+                  TokenInfo & " @ " & H32x(TokenOffset)
             Else
               'Append to Last
                
                ArrayAppendLast SourceCodeLine, Atom
                If bVerbose Then Frm_SrcEdit.AddItem _
                   Atom, cmd, TypeName, _
-                  TokenInfo & " @ 0x" & H32(TokenOffset)
+                  TokenInfo & " @ " & H32x(TokenOffset)
 
             End If
-            DoEventsVerySeldom
             
             bWasLastAnOperator = RangeCheck(cmd, &H56, &H40)
 '         Else
@@ -455,6 +438,7 @@ Sub DeToken()
             
          End If
          LastAtom = Atom
+         
 
       Loop Until .EOS
     
@@ -472,15 +456,15 @@ Select Case Err
      Dim ErrSourceCodeLine$
      ErrSourceCodeLine = Join(SourceCodeLine, whiteSpaceTerminal)
      
-     Dim errtext$
-     errtext = "ERROR: " & Err.Description & vbCrLf & _
+     Dim ErrText$
+     ErrText = "ERROR: " & Err.Description & vbCrLf & _
       "FileOffset: " & H32(.Position) & vbCrLf & _
       " when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & ErrSourceCodeLine
-     Log errtext
-     MsgBox errtext, vbCritical, "Unexpected Error during detokenising"
+     Log ErrText
+     MsgBox ErrText, vbCritical, "Unexpected Error during detokenising"
      
     'Set incomplete SourceCodeLine
-     SourceCode(SourceCodeLineCount) = ErrSourceCodeLine & " <- " & errtext
+     SourceCode(SourceCodeLineCount) = ErrSourceCodeLine & " <- " & ErrText
      Inc SourceCodeLineCount
 
     'Cut down SourceCodeArray to Error
@@ -490,9 +474,9 @@ Select Case Err
 End Select
 
   
-  If FrmMain.Chk_TmpFile = vbUnchecked Then
+  If FrmMain.DeleteTmpFile(FileName.FileName) Then
      Log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
-     FileDelete (FileName)
+     FileDelete FileName.FileName
   End If
 
 
@@ -534,11 +518,142 @@ DeToken_Finally:
 
 End Sub
 
-Private Function HandleTokenErr(errtext$) As Boolean
+Private Function DT_DecodeString(TokenData As StringReader) As String
+   Dim Size&
+   Dim RawString As StringReader: Set RawString = New StringReader
+      
+   With TokenData
+          'Get StrLength and load it
+            Size = .int32
+            FL_verbose "StringSize: " & H32(Size)
+            
+            If Size > (.Length - .Position) Then
+               Err.Raise vbObjectError, , "Invalid string size(bigger than the file)!"
+            End If
+
+            RawString = .FixedStringW(Size)
+           
+           'XorDecode String
+            Dim pos&, XorKey_l As Byte, XorKey_h As Byte
+            
+            XorKey_l = (Size And &HFF)
+            XorKey_h = ((Size \ &H100) And &HFF) ' 2^8 = 256
+            
+            Dim tmpBuff() As Byte
+            tmpBuff = RawString
+            
+            For pos = LBound(tmpBuff) To UBound(tmpBuff) Step 2
+               tmpBuff(pos) = tmpBuff(pos) Xor XorKey_l
+               tmpBuff(pos + 1) = tmpBuff(pos + 1) Xor XorKey_h
+'               DecodeString = tmpBuff
+               
+               'If 0 = (pos Mod &H8000) Then myDoEvents
+            Next
+            
+            DT_DecodeString = tmpBuff
+            
+'            Debug.Assert CStr(tmpBuff) <> "TAGNMSELCHANGE"
+            
+            
+'Comment out due to bad performance
+'            RawString.Position = 0
+'            DecodeString = Space(RawString.Length \ 2)
+'            Do Until RawString.EOS
+'               DecodeString.int8 = RawString.int8 Xor Size
+'               If Not (RawString.EOS) Then Debug.Assert RawString.int8 = 0
+'            Loop
+   End With
+End Function
+Private Function DT_HandleCommand( _
+                                 cmd As Long, _
+                                 DecodeString As String, _
+                                 ByRef TypeName$) As String
+   Dim Atom$
+   Select Case cmd
+   
+   Case &H30, 0 'Keyword (FUNC, IF...)
+      TypeName = "Keyword"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+      
+      Atom = DecodeString
+      bAddWhiteSpace = True
+     
+      #If LineBreak_BeforeAndAfterFunctions Then
+         If Atom = "ENDFUNC" Then
+            Atom = Atom & vbCrLf
+         ElseIf Atom = "FUNC" Then
+            Atom = vbCrLf & Atom
+         End If
+      #End If
+
+   
+   Case &H31, 1 'FunctionCall with params
+      Atom = DecodeString
+      
+      TypeName = "AutoItFunction"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+      
+   Case &H32 'Macro
+      Atom = "@" & DecodeString
+      
+      TypeName = "Macro"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+   
+   Case &H33 'Variable
+      Atom = MakeAu3Var(DecodeString)
+      
+      TypeName = "Variable"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+   
+   Case &H34 'FunctionCall
+      Atom = DecodeString
+      
+      TypeName = "UserFunction"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+   
+   Case &H35 'Property
+      Atom = "." & DecodeString
+      
+      TypeName = "Property"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+   
+   Case &H36 'UserString
+      
+      Atom = MakeAutoItString(DecodeString)
+      
+      TypeName = "UserString"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+   
+   Case &H37 '# PreProcessor
+      Atom = DecodeString
+      bAddWhiteSpace = True
+      
+      TypeName = "PreProcessor"
+      FL_verbose """" & DecodeString & """   Type: " & TypeName
+   
+   
+   Case Else
+      'Unknown StringToken
+      If HandleTokenErr("ERROR: Unknown StringToken") Then
+      Else
+         Err.Raise vbObjectError Or 1, , "Unknown StringToken"
+         Stop
+
+      End If
+      
+      
+   End Select
+            
+ '           log String(40, "_")
+ 
+   DT_HandleCommand = Atom
+End Function
+
+Private Function HandleTokenErr(ErrText$) As Boolean
 
    With File
    
-      If vbYes = MsgBox("An Token error occured - possible due to corrupted scriptdata. Contiune?", vbCritical + vbYesNo, errtext) Then
+      If vbYes = MsgBox("An Token error occured - possible due to corrupted scriptdata. Contiune?", vbCritical + vbYesNo, ErrText) Then
          HandleTokenErr = True
          
 '         Dim Hexdata As New clsStrCat, HexdataLine&
@@ -573,7 +688,7 @@ Function MakeAutoItString$(RawString$)
       ' HasSingleQuote ?
         If InStr(RawString, "'") <> 0 Then
          ' Scenario3: " This is a 'Example' on correct "Quoting" String "
-           MakeAutoItString = """" & Replace(RawString, """", """""") & """"
+           MakeAutoItString = """" & replace(RawString, """", """""") & """"
         Else
          ' Scenario2: " This is a "Example". "
            MakeAutoItString = "'" & RawString & "'"
@@ -594,14 +709,21 @@ Public Function UndoAutoItString$(Au3Str$)
   'Get stringchar ( should be " or ')
    StringTerminal$ = Left(Au3Str, 1)
    
-  'Cut away Lead&Tailing " or '
-  'Is length of Au3Str is smaller than 2 this will give an error
-  'since it's no valid Au3String
-   Au3Str = Mid(Au3Str, 2, Len(Au3Str) - 2)
-   
-   
-  'Replaces '' -> '  or "" -> "
-   UndoAutoItString = Replace(Au3Str, StringTerminal & StringTerminal, StringTerminal)
+   If StringTerminal = """" Or StringTerminal = "'" Then
+       
+       
+      'Cut away Lead&Tailing " or '
+      'Is length of Au3Str is smaller than 2 this will give an error
+      'since it's no valid Au3String
+       Au3Str = Mid(Au3Str, 2, Len(Au3Str) - 2)
+       
+       
+      'Replaces '' -> '  or "" -> "
+       UndoAutoItString = replace(Au3Str, StringTerminal & StringTerminal, StringTerminal)
+   Else
+      'No String
+      UndoAutoItString = Au3Str
+   End If
    
 End Function
 
