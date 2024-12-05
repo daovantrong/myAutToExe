@@ -19,12 +19,12 @@ Option Compare Text
 Dim DeObfu_FunctionNames As New Collection
 Dim NewScript$
 
-Sub Log(Text$)
-   FrmMain.Log Text
+Sub Log(text$)
+   FrmMain.Log text
 End Sub
 
-Sub log2(Text$)
-   FrmMain.log2 Text
+Sub log2(text$)
+   FrmMain.log2 text
 End Sub
 
 Private Sub DeObfuscate_Encodeit()
@@ -239,6 +239,11 @@ Public Sub DeObfuscate()
          If InStr(1, NewScript, "lobal $Os") Then
             Log "Deobfuscating van Zande 1.0.15..."
             DeObfuscate_VanZande1_0_15
+         ElseIf InStr(1, NewScript, ".tbl") Then
+            Log "Deobfuscating van Zande 1.0.24..."
+            DeObfuscate_VanZande1_0_15
+         
+         
          Else
             Log "Deobfuscating van Zande 1.0.14..."
             DeObfuscate_VanZande1_0_14
@@ -258,14 +263,19 @@ End Sub
 Private Sub DeObfuscate_VanZande1_0_15()
 
 
- ' Merge lines with _ at the end
-   NewScript = Replace(NewScript, " _" & vbCrLf, "")
+ ' Merge lines with _ at the end + Add vbCrLf after last EndFunc
+   NewScript = Replace(NewScript, " _" & vbCrLf, "") ' & vbCrLf
    
 ''Correct case (may it's safer to let tidy do)
 '   NewScript = Replace(NewScript, "Func ", "Func ", , , vbTextCompare)
 '   NewScript = Replace(NewScript, "EndFunc ", "EndFunc ", , , vbTextCompare)
 '   NewScript = Replace(NewScript, "IsDeclared", "IsDeclared", , , vbTextCompare)
 '   NewScript = Replace(NewScript, "EndIf", "EndIf", , , vbTextCompare)
+
+   
+   Dim OSString$
+   OSString = strCropWithSeek(NewScript, "($", "[")
+   NewScript = Replace(NewScript, OSString, "Os", , , vbTextCompare)
 
    NewScript = Replace(NewScript, "$Os [", "$Os[", , , vbTextCompare)
 
@@ -280,8 +290,12 @@ Private Sub DeObfuscate_VanZande1_0_15()
    
 '=== Prepare ===
 
+
+    strCropAndDelete NewScript, "Global $", "StringTrimLeft(String(StringToBinary(""\"" & Hex(Random(256, 268435455, 1), 7))), 2)"
+
     Dim FnNameLoadTBL$
     FnNameLoadTBL$ = strCropAndDelete(NewScript, "global $Os" & vbCrLf, "()")
+  
   
   
     Dim FnNameHexToString$
@@ -694,7 +708,9 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr$, ByRef NewStr$)
    ReplaceDo Data, "ShellExecute", "Shell_xecute"
       ReplaceDo Data, "Execute(" & ReplaceStr & ")", NewStr
    ReplaceDo Data, "Shell_xecute", "ShellExecute"
-      ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr)
+      ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr), , , vbTextCompare
+      
+'      ReplaceDo Data, "NUMBER(" & ReplaceStr & ")", FormatNumber(NewStr)
       ReplaceDo Data, ReplaceStr, """" & Replace(NewStr, """", """""") & """"
 End Sub
 

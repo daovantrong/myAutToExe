@@ -87,7 +87,7 @@ Function ShellEx&(FileName$, Params$, Optional WinStyle As VbAppWinStyle = vbHid
 Dim RetVal
 '   On Error Resume Next
 '  RetVal = ShellExecute(Me.hwnd, "open", """" & App.Path & "/" & "lzss.exe""", "-d """ & dbgFile.FileName & """ """ & outFileName & """", "", SW_NORMAL)
-   RetVal = Shell("""" & FileName & """ " & Params, WinStyle)
+   RetVal = Shell(Quote(FileName) & " " & Params, WinStyle)
    
    If RetVal Then
     Dim hProcess&, ExitCode&

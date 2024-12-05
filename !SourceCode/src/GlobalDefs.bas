@@ -56,7 +56,7 @@ Sub SaveScriptData(ScriptData$)
 'FrmMain.Chk_TmpFile.Value = vbChecked
    
     ' overwrite script
-      If FrmMain.Chk_TmpFile.Value = vbChecked Then
+      If FrmMain.Chk_TmpFile.value = vbChecked Then
          FileName.Name = FileName.Name & "_restore"
          .Log "Saving script to: " & FileName.FileName
       Else
@@ -90,7 +90,7 @@ Sub SaveScriptData(ScriptData$)
          TidyBackupFileName.Name = TidyBackupFileName.Name & "_old1"
          
        ' Delete Tidy BackupFile
-         If FrmMain.Chk_TmpFile.Value = vbUnchecked Then
+         If FrmMain.Chk_TmpFile.value = vbUnchecked Then
             .Log "Deleting Tidy BackupFile..." ' & TidyBackupFileName.NameWithExt
             FileDelete TidyBackupFileName.FileName
          End If

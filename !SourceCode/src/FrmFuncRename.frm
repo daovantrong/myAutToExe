@@ -246,8 +246,8 @@ Dim List_Fn_Assigned_FuncIdxs As New Collection
 Private Function ConfigValue_Load(Key$, Optional DefaultValue)
    ConfigValue_Load = GetSetting(App.Title, Me.Name, Key, DefaultValue)
 End Function
-Property Let ConfigValue_Save(Key$, Value As Variant)
-      SaveSetting App.Title, Me.Name, Key, Value
+Property Let ConfigValue_Save(Key$, value As Variant)
+      SaveSetting App.Title, Me.Name, Key, value
 End Property
 
 Private Sub Log(Text$)
@@ -605,7 +605,7 @@ Private Function GetListBoxData$(Listbox As Listbox)
       Next
    End With
    
-   GetListBoxData = LogData.Value
+   GetListBoxData = LogData.value
    
 End Function
 
@@ -911,6 +911,9 @@ End Sub
 
 
 Private Sub Txt_Fn_Inc_FileName_Change()
+
+On Error GoTo Txt_Fn_Inc_FileName_Change_Err
+
    If FileExists(Txt_Fn_Inc_FileName) Then
       
       OpenAndFill Txt_Fn_Inc_FileName, Script_Inc, Functions_Inc, List_Fn_Inc
@@ -929,6 +932,16 @@ Private Sub Txt_Fn_Inc_FileName_Change()
       
       Txt_Include = .NameWithExt
    End With
+
+Err.Clear
+Txt_Fn_Inc_FileName_Change_Err:
+Select Case Err
+   Case 0
+
+   Case Else
+      MsgBox Err.Description, vbCritical, "Error " & Hex(Err.Number) & "  in Formular FrmFuncRename.Txt_Fn_Inc_FileName_Change()"
+
+End Select
 End Sub
 
 Private Sub Txt_Fn_Inc_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)

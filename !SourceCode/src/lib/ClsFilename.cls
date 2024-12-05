@@ -32,6 +32,7 @@ End Property
 '         FileName.FileName = Mid(.lpstrFile, .nFileOffset, .nFileExtension - .nFileOffset)
 '         FileName.Ext = Mid(.lpstrFile, .nFileExtension, -1)
 
+'LastDir
 Public Property Get Dir() As String
 On Error Resume Next
 Dim tmp
@@ -89,8 +90,8 @@ On Error Resume Next
 End Property
 
 Public Property Let NameWithExt(ByVal vNewValue As String)
-   mvarFileName = Replace(Path & vNewValue, "\\", "\")
-'   mvarFileName = Path & vNewValue
+'   mvarFileName = Replace(Path & vNewValue, "\\", "\")
+   mvarFileName = Path & vNewValue
 End Property
 
 Public Sub MakePath()

@@ -120,40 +120,40 @@ Function Min(ParamArray values())
    Next
 End Function
 
-Function limit(Value&, Optional ByVal upperLimit = &H7FFFFFFF, Optional lowerLimit = 0) As Long
+Function limit(value&, Optional ByVal upperLimit = &H7FFFFFFF, Optional lowerLimit = 0) As Long
    'limit = IIf(Value > upperLimit, upperLimit, IIf(Value < lowerLimit, lowerLimit, Value))
 
-   If (Value > upperLimit) Then _
+   If (value > upperLimit) Then _
       limit = upperLimit _
    Else _
-      If (Value < lowerLimit) Then _
+      If (value < lowerLimit) Then _
          limit = lowerLimit _
       Else _
-         limit = Value
+         limit = value
    
 End Function
 
-Function RangeCheck(ByVal Value&, Max&, Optional Min& = 0, Optional errtext, Optional ErrSource$) As Boolean
-   RangeCheck = (Min <= Value) And (Value <= Max)
+Function RangeCheck(ByVal value&, Max&, Optional Min& = 0, Optional errtext, Optional ErrSource$) As Boolean
+   RangeCheck = (Min <= value) And (value <= Max)
    If (RangeCheck = False) And (IsMissing(errtext) = False) Then Err.Raise vbObjectError, ErrSource, errtext & " Value must between '" & Min & "'  and '" & Max & "' !"
 End Function
 
-Public Function H8(ByVal Value As Long)
-   H8 = Right(String(1, "0") & Hex(Value), 2)
+Public Function H8(ByVal value As Long)
+   H8 = Right(String(1, "0") & Hex(value), 2)
 End Function
 
-Public Function H16(ByVal Value As Long)
-   H16 = Right(String(3, "0") & Hex(Value), 4)
+Public Function H16(ByVal value As Long)
+   H16 = Right(String(3, "0") & Hex(value), 4)
 End Function
 
-Public Function H32(ByVal Value As Double)
-   If Value <= &H7FFFFFFF Then
-      H32 = Hex(Value)
+Public Function H32(ByVal value As Double)
+   If value <= &H7FFFFFFF Then
+      H32 = Hex(value)
    Else
     ' split Number in High a Low part...
       Dim High&, Low&
-      High = Value / &H10000
-      Low = Value - (CDbl(High) * &H10000)
+      High = value / &H10000
+      Low = value - (CDbl(High) * &H10000)
       
       H32 = H16(High) & H16(Low)
    End If
@@ -197,14 +197,14 @@ Public Function szNullCut$(zeroString$)
 End Function
 
 
-Public Function Inc(ByRef Value, Optional Increment& = 1)
-   Value = Value + Increment
-   Inc = Value
+Public Function Inc(ByRef value, Optional Increment& = 1)
+   value = value + Increment
+   Inc = value
 End Function
 
-Public Function Dec(ByRef Value, Optional DeIncrement& = 1)
-   Value = Value - DeIncrement
-   Dec = Value
+Public Function Dec(ByRef value, Optional DeIncrement& = 1)
+   value = value - DeIncrement
+   Dec = value
 End Function
 
 
@@ -304,12 +304,12 @@ Function strCutOut$(Str$, pos&, Length&, Optional TextToInsert = "")
 End Function
 
 
-Public Function Int16ToUInt32&(Value%)
+Public Function Int16ToUInt32&(value%)
       Const N_0x8000& = 32767
-      If Value >= 0 Then
-         Int16ToUInt32 = Value
+      If value >= 0 Then
+         Int16ToUInt32 = value
       Else
-         Int16ToUInt32 = CLng(Value And N_0x8000) + N_0x8000
+         Int16ToUInt32 = CLng(value And N_0x8000) + N_0x8000
       End If
       
 End Function
@@ -337,3 +337,6 @@ Public Function FileExists(FileName) As Boolean
 FileExists_err:
 End Function
 
+Public Function Quote(Text As String) As String
+   Quote = """" & Text & """"
+End Function

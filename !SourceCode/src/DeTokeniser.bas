@@ -14,7 +14,7 @@ Sub DeToken()
 
    
    
-   With File
+   With file
     
       Log "Trying to DeTokenise: " & FileName.FileName
       
@@ -96,7 +96,7 @@ Sub DeToken()
             Dim int32$
             int32 = .longValue
             Atom = int32
-            FL_verbose "Ini32: 0x" & H32(int32) & "   " & int32
+            FL_verbose "Int32: 0x" & H32(int32) & "   " & int32
             
 '            Debug.Assert Cmd = 5
          
@@ -246,7 +246,7 @@ Sub DeToken()
                Case &H49: Atom = "+": bDontAddWhiteSpace = False ' 7      2B
                Case &H4A: Atom = "-": bDontAddWhiteSpace = False ' 8      2D
                Case &H4B: Atom = "/"  ' 10     2F
-               Case &H4C: Atom = "*"  ' 9      2A
+               Case &H4C: Atom = "*": bDontAddWhiteSpace = False ' 9      2A
                Case &H4D: Atom = "&" ' 11     26
                Case &H4E: Atom = "["  '        5B
                Case &H4F: Atom = "]"  '        5D
@@ -258,8 +258,8 @@ Sub DeToken()
                Case &H55: Atom = "*=" '4       2A
                Case &H56: Atom = "&=" '6       26
             End Select
-
-
+            FL_verbose """" & Atom & """   Type: operator" '   Don'tAddWhiteSpace=" & bDontAddWhiteSpace
+            
          Case &H7F
             'Execute
             
@@ -343,7 +343,7 @@ End Sub
 
 
 Private Sub LogSourceCodeLine(TextLine$)
-   If FrmMain.Chk_verbose.Value = vbChecked Then
+   If FrmMain.Chk_verbose.value = vbChecked Then
    
       On Error Resume Next
       With FrmMain.List_Source

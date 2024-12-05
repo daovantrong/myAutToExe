@@ -15,6 +15,14 @@ Begin VB.Form FrmMain
       TabIndex        =   6
       Top             =   8520
       Width           =   9135
+      Begin VB.TextBox Txt_Scriptstart 
+         Height          =   285
+         Left            =   7800
+         TabIndex        =   13
+         ToolTipText     =   $"frmMain.frx":628A
+         Top             =   480
+         Width           =   855
+      End
       Begin VB.CheckBox Chk_TmpFile 
          Caption         =   "Don't delete temp files (for ex. compressed scriptdata)"
          Height          =   435
@@ -115,9 +123,9 @@ Begin VB.Form FrmMain
    Begin VB.ListBox List_Source 
       Appearance      =   0  '2D
       Height          =   5685
-      ItemData        =   "frmMain.frx":628A
+      ItemData        =   "frmMain.frx":6321
       Left            =   120
-      List            =   "frmMain.frx":628C
+      List            =   "frmMain.frx":6323
       TabIndex        =   5
       Top             =   600
       Visible         =   0   'False
@@ -195,7 +203,7 @@ Sub FL_verbose(Text)
 End Sub
 
 Sub log_verbose(TextLine$)
-   If Chk_verbose.Value = vbChecked Then Log TextLine
+   If Chk_verbose.value = vbChecked Then Log TextLine
 End Sub
 
 
@@ -258,8 +266,8 @@ End Sub
 Private Function ConfigValue_Load(Key$, Optional DefaultValue)
    ConfigValue_Load = GetSetting(App.Title, Me.Name, Key, DefaultValue)
 End Function
-Property Let ConfigValue_Save(Key$, Value As Variant)
-      SaveSetting App.Title, Me.Name, Key, Value
+Property Let ConfigValue_Save(Key$, value As Variant)
+      SaveSetting App.Title, Me.Name, Key, value
 End Property
 
 
@@ -267,11 +275,20 @@ End Property
 '///////////////////////////////////////////
 '// Load/Save a CheckBox State
 Sub CheckBox_Load(ByVal ChkBox As CheckBox)
-   ChkBox.Value = ConfigValue_Load(ChkBox.Name, ChkBox.Value)
+   ChkBox.value = ConfigValue_Load(ChkBox.Name, ChkBox.value)
 End Sub
 Sub CheckBox_Save(ByVal ChkBox As CheckBox)
-   ConfigValue_Save(ChkBox.Name) = ChkBox.Value
+   ConfigValue_Save(ChkBox.Name) = ChkBox.value
 End Sub
+
+
+Sub TextBox_Load(ByVal Txt As TextBox)
+   Txt.Text = ConfigValue_Load(Txt.Name, Txt.Text)
+End Sub
+Sub TextBox_Save(ByVal Txt As TextBox)
+   ConfigValue_Save(Txt.Name) = Txt.Text
+End Sub
+
 
 
 '///////////////////////////////////////////
@@ -285,6 +302,7 @@ Sub FormSettings_Load()
    Dim controlItem
    For Each controlItem In Fr_Options.Container
       CheckBox_Load controlItem
+'      TextBox_Load controlItem
    Next
  
 End Sub
@@ -294,24 +312,13 @@ Sub FormSettings_Save()
    Dim controlItem
    For Each controlItem In Fr_Options.Container
       CheckBox_Save controlItem
+'      TextBox_Save controlItem
    Next
 End Sub
 
 
 Private Sub Form_Load()
 
-
-'   Dim Map() As Byte
-'   Dim s$
-'   Do
-'      s = ChrW(&H5B9A) ' & ChrW(&H9A5B)
-''      MidB(s, 2) = "4"
-'      s = UTF8.EncodeUTF8(T(s))
-'      Map = s
-'      s = Map
-'
-'   Loop While 1
-'
 
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
@@ -416,7 +423,7 @@ Public Function GetLogdata$()
    
    End If
    
-   GetLogdata = LogData.Value
+   GetLogdata = LogData.value
    
 End Function
 
@@ -513,7 +520,7 @@ Private Sub Txt_Filename_Change()
           Select Case Err
           Case 0, ERR_NO_OBFUSCATE_AUT
             
-            If Chk_RestoreIncludes.Value = vbChecked Then SeperateIncludes
+            If Chk_RestoreIncludes.value = vbChecked Then SeperateIncludes
           
           Case Else
             Log Err.Description
@@ -639,4 +646,13 @@ End Sub
 
 Private Sub Txt_Script_KeyDown(KeyCode As Integer, Shift As Integer)
    Cancel = KeyCode <> vbKeySpace
+End Sub
+
+Private Sub Txt_Scriptstart_Change()
+   On Error Resume Next
+   Dim scriptstart&
+   scriptstart = "&h" & Txt_Scriptstart
+   
+   Chk_NormalSigScan.Enabled = (Err.Number <> 0)
+   
 End Sub

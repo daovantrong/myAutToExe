@@ -1,7 +1,6 @@
 # myAutToExe (mATE)
 ## AutoIt Decompiler 
 
- ## cw2k 
 >I’m a huge fan of AutoIt – I think the program is a wonderful tool for administrators as well as casual programmers who just like to mess with stuff. However, I recently discovered that the developer of AutoIt, in an ongoing quest for “security,” has disabled the ability to reverse-engineer autoit scripts!
 
 >Now, I’m all for security when people write software, but giving scripts this level of security actually introduces security risks! I just don’t like running some random AutoIt script without being able to look at the source code. If I run a “normal” compiled app, my virus scanner will generally let me know if it’s safe to run. But a script written in AutoIt can so easily be a trojan (or other destructive tool) and nothing can likely catch it because of the nature of scripted programs.

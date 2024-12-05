@@ -75,6 +75,7 @@ Dim bIsProbablyOldScript As Boolean
 
 Dim bIsNewScriptType As Boolean
 
+Dim PEFile_EOF_Offset&
 
 Sub FL_verbose(Text)
    FrmMain.FL_verbose Text
@@ -359,8 +360,8 @@ End Function
 Private Sub FindStartOfScriptAlternative()
    With File
       
-      bIsProbablyOldScript = FrmMain.Chk_ForceOldScriptType.Value = vbChecked
-      If FrmMain.Chk_ForceOldScriptType.Value = CheckBoxConstants.vbGrayed Then
+      bIsProbablyOldScript = FrmMain.Chk_ForceOldScriptType.value = vbChecked
+      If FrmMain.Chk_ForceOldScriptType.value = CheckBoxConstants.vbGrayed Then
       
          bIsNewScriptType = False
          
@@ -644,15 +645,77 @@ Public Sub Decompile()
       .Create FileName.FileName, False, False, True
       .Position = 0
       
+
+      If FrmMain.Chk_NormalSigScan.Enabled = False Then
+         .Position = "&h" & FrmMain.Txt_Scriptstart
+         .Move Len(AU3Sig)
+     
      'Find Start of Script and Quit this function with runtime error if search fails
-      If FrmMain.Chk_NormalSigScan = vbChecked Then
+      ElseIf FrmMain.Chk_NormalSigScan = vbChecked Then
          FindStartOfScript
       Else
          FindStartOfScriptAlternative
       End If
       
       
+      Dim ScriptStartPos&
+      ScriptStartPos = .Position - Len(AU3Sig)
+      Log ""
+      Log " ---> ScriptStartOffset: " & H32(ScriptStartPos)
       
+      
+    ' --- Save Stub  - if not PEFile ---
+      
+      If Not IsValidPEFile Then
+       If ScriptStartPos > 0 Then
+          Log "This is no PE-Exe File & Script don't start at Offset 0 -> Saving StubData"
+     
+      ' Store current FilePos
+        Dim FilePos_old
+        FilePos_old = .Position
+        
+        
+      ' Copy data from exe-File into stub-File
+        .Position = 0
+        
+        Dim FileName_FileStub$
+        FileName_FileStub = FileName.NameWithExt & ".stub"
+        Log "Copy FileStubData into: " & FileName_FileStub
+        
+        Dim FileStub As New FileStream
+        FileStub.Create FileName.Path & FileName_FileStub, True, False, False
+        FileStub.FixedString(-1) = .FixedString(ScriptStartPos)
+        FileStub.CloseFile
+        
+      ' Restore current FilePos
+       .Position = FilePos_old
+       End If
+       
+     Else
+       Log "      EndOf_PE-ExeFile: " & H32(PEFile_EOF_Offset)
+                   
+      ' ==> Create output fileName
+        Dim IconFileName As New ClsFilename
+        IconFileName = File.FileName      ' initialise with ScriptPath
+        IconFileName.Ext = ".ico"
+        
+        Log "Extracting ExeIcon/s to: " & Quote(IconFileName.FileName)
+        ShellEx App.Path & "\" & "ExtractExeIcon.exe", _
+                Quote(File.FileName) & " " & Quote(IconFileName.FileName)
+
+'        Dim IconFile As New FileStream
+'        With IconFile
+'         .Create IconFileName.FileName, True, False, False
+'
+'         .FixedString(-1) = HexStringToString("0000010001002020200000000000A808000016000000")
+'
+'         .FixedString(-1) = PE_info.GetFirstIcon
+'         .CloseFile
+'        End With
+        
+     End If
+    
+    
     
     ' ===> Check if it's an old or New AutoIt Script
       Dim SubType As New StringReader:   SubType.DisableAutoMove = True
@@ -791,10 +854,19 @@ Public Sub Decompile()
             ResType = DeCrypt(.FixedString(4), 5882) '000016FA
          End If
       If ResType <> "FILE" Then
-         Log "Processing Finished!"
-       ' No valid FILE Marker so seek back
-         .Move -4
-         Exit For
+         If FrmMain.Chk_NormalSigScan.Enabled Then
+Processing_Finished:
+               Log "Processing Finished!"
+            ' No valid FILE Marker so seek back
+               .Move -4
+               Exit For
+         Else
+            FrmMain.Txt_Scriptstart.FontBold = True
+            FrmMain.Txt_Scriptstart.ForeColor = vbRed
+            If vbNo = MsgBox("Invalid File Maker found - continue anyway?", vbYesNo, "Manually extract mode enabled.(Please delete script start value textbox to disable.)") Then
+               GoTo Processing_Finished
+            End If
+         End If
       End If
    
          Log "=== > Processing FILE: #" & FileCount
@@ -1043,7 +1115,7 @@ Public Sub Decompile()
              '    if 'Create DebugFile' was not checked it will be delete on close
                Dim tmpFile As New FileStream
                With tmpFile
-                  .Create OutFileName.Path & OutFileName.Name & ".pak", True, FrmMain.Chk_TmpFile.Value = vbUnchecked, False
+                  .Create OutFileName.Path & OutFileName.Name & ".pak", True, FrmMain.Chk_TmpFile.value = vbUnchecked, False
                   .Data = ScriptData.Data
                    Log "Compressed scriptdata written to " & .FileName
          
@@ -1061,7 +1133,7 @@ Public Sub Decompile()
                   
                 ' Run "LZSS.exe -d *.debug *.au3" to extract the script (...and wait for it execution to finish)
                   ShellEx App.Path & "\" & "lzss.exe", _
-                        "-d """ & .FileName & """ """ & OutFileName & """"
+                        "-d " & Quote(.FileName) & " " & Quote(OutFileName.FileName)
                   
                   .CloseFile
                End With
@@ -1160,11 +1232,14 @@ Public Sub Decompile()
       
    Next
    
-      
-   ' if there are more than 8 bytes overlay save them to *.overlay file
-   ' For clearity reason I pasted overlay logging to a seperated function
-   Decompile_Log_ProcessOverlay .Length - .Position, .FixedString(-1), bIsOldScript
-   ' ==> Exe Processing finished
+   If FileCount >= 2 Then
+      ' if there are more than 8 bytes overlay save them to *.overlay file
+      ' For clearity reason I pasted overlay logging to a seperated function
+      Decompile_Log_ProcessOverlay .Length - .Position, .FixedString(-1), bIsOldScript
+      ' ==> Exe Processing finished
+   Else
+      Log "Skip saving overlay at " & H32(.Position) & " since there were no files extracted so far."
+   End If
    .CloseFile
    
    Log String(79, "=")
@@ -1181,14 +1256,16 @@ FL "End of script data " & "  FileLen: " & H32(.Length) & "  => Overlay: " & H32
 Dim tmp As New StringReader
 tmp = Left(overlaybytes, &H20)
 Log "overlaybytes: " & ValuesToHexString(tmp) & "  " & overlaybytes
-      If overlaySize > (IIf(bIsOldScript, 3, 2) * 4) Then
+      Dim overlaySkipBytes As Long
+      overlaySkipBytes = (IIf(bIsOldScript, 3, 2) * 4)
+      If overlaySize > overlaySkipBytes Then
          Dim ovlFile As New FileStream
          With ovlFile
             .Create File.FileName & ".overlay", True, False, False
             Log ">>>ATTENTION: There are more overlay data than usual <<<"
             Log "saving overlaydata to: " & .FileName
             
-            .Data = overlaybytes
+            .Data = Mid(overlaybytes, overlaySkipBytes + 1)
             
             .CloseFile
          End With
@@ -1310,4 +1387,37 @@ Private Function ADLER32$(Data As StringReader)
    End With
 End Function
 
+Private Function IsValidPEFile() As Boolean
+   Dim myPEFile As New PE_info
 
+   On Error GoTo IsValidPEFile_Err
+   
+      With PE_Header
+       ' Store current FilePos
+         Dim FilePos_old
+         FilePos_old = File.Position
+         myPEFile.Create
+
+         
+         Dim LastSection&
+         LastSection = .NumberofSections - 1
+         With .Sections(LastSection)
+            PEFile_EOF_Offset = .PointertoRawData + .RawDataSize
+         End With
+         
+      End With
+   
+   Err.Clear
+IsValidPEFile_Err:
+   Select Case Err
+      Case 0
+         IsValidPEFile = True
+         
+      Case Else
+'         FrmMain.Log Err.Description & " Error " & Hex(Err.Number) & "  in Modul DeCompiler.IsValidPEFile()"
+         IsValidPEFile = False
+   End Select
+   
+   File.Position = FilePos_old
+   
+End Function
