@@ -1,9 +1,9 @@
 Attribute VB_Name = "DeCompiler"
 Option Explicit
 
+'used to loacted script start via the "FILE"-Marker Normally this is 6382 or 0x18EE
+Public FILE_DecryptionKey_New As Long
 
-'for mt_MT_Init to do a multiplation without 'overflow error'
-'Private Declare Function Mul Lib "MSVBVM60.DLL" Alias "_allmul" (ByVal dw1 As Long, ByVal dw2 As Long, ByVal dw3 As Long, ByVal dw4 As Long) As Long
 
 'Mersenne Twister
 Private Declare Function MT_Init Lib "RanRot_MT.dll" (ByVal initSeed As Long) As Long
@@ -16,6 +16,8 @@ Private Declare Function RanRot_GetI8 Lib "RanRot_MT.dll" () As Long
 'Private Declare Function Uncompress Lib "LZSS.DLL" (ByVal CompressedData$, ByVal CompressedDataSize&, ByVal OutData$, ByVal OutDataSize&) As Long
 'Private Declare Function GetUncompressedSize Lib "LZSS.DLL" (ByVal CompressedData$, ByRef nUncompressedSize&) As Long
 
+Private RandSeed As Long
+Private isAutoIT2Script As Boolean
 
 
 '    Sub Main()
@@ -76,6 +78,8 @@ Dim bIsProbablyOldScript As Boolean
 Dim bIsNewScriptType As Boolean
 
 Dim PEFile_EOF_Offset&
+
+Dim ScriptData As StringReader
 
 Sub FL_verbose(Text)
    FrmMain.FL_verbose Text
@@ -230,8 +234,12 @@ Private Function DeCrypt(ByVal Data$, Key&)
    'http://www.ecrypt.eu.org/stream/svn/viewcvs.cgi/ecrypt/trunk/submissions/cryptmt/cryptmt.c?rev=1&view=markup
    'http://www.math.sci.hiroshima-u.ac.jp/~m-mat/MT/MT2002/emt19937ar.html
    
- ' Key->StartSeed for MT
-   MT_Init (Key)
+   If isAutoIT2Script Then
+      RandV2_Init Key
+   Else
+   ' Key->StartSeed for MT
+      MT_Init Key
+   End If
    
    Dim inBuff As New StringReader
    Dim OutBuff As New StringReader
@@ -240,31 +248,54 @@ Private Function DeCrypt(ByVal Data$, Key&)
 
  ' Decrypt/Encrypt by  Xor Data from MT with inData
    Do While inBuff.EOS = False
-      OutBuff.int8 = inBuff.int8 Xor (MT_GetI8 And &HFF)
-      'DeCrypt = DeCrypt & Chr(inBuff.int8 Xor (MT_GetI8 And &HFF))
+      If isAutoIT2Script Then
+         OutBuff.int8 = inBuff.int8 Xor (RandV2 And &HFF)
+      Else
+         OutBuff.int8 = inBuff.int8 Xor (MT_GetI8 And &HFF)
+      End If
+         
+         'DeCrypt = DeCrypt & Chr(inBuff.int8 Xor (MT_GetI8 And &HFF))
    Loop
    
    DeCrypt = OutBuff.Data
 End Function
 
 
+Private Sub RandV2_Init(Seed&)
+   RandSeed = Seed
+End Sub
+
+
+Private Function RandV2&()
+   RandSeed = AddInt32(MulInt32(RandSeed, 214013), 2531011) '&H343FD 214013  &H269EC3
+    RandV2 = "&h" & Left(H32(RandSeed), 4) ' & &H7FFF
+   
+End Function
+
+
+
 
 Private Function TestForV3_26() As Boolean
+   FL_verbose "Testing for AutoIT3.26 Script..."
    With File
       .Position = .Length - 4 - 4
       TestForV3_26 = .FixedString(8) = "AU3!EA06"
    End With
+   If TestForV3_26 = False Then FL_verbose "...FAILED!"
 End Function
 
 
 Private Function TestForV3_2() As Boolean
+   FL_verbose "Testing for AutoIT3.2 Script..."
    With File
       .Position = .Length - 4 - 4
       TestForV3_2 = .FixedString(8) = "AU3!EA05"
    End With
+   If TestForV3_2 = False Then FL_verbose "...FAILED!"
 End Function
 
 Private Function TestForV3_1() As Boolean
+   FL_verbose "Testing for AutoIT3.1 Script..."
    With File
       .Position = .Length - 4 - 4 - 4
 
@@ -307,25 +338,29 @@ Private Function TestForV3_1() As Boolean
       End If   'Script_Start < Script_End
    
    End With
+   
+   If TestForV3_1 = False Then FL_verbose "...FAILED!"
+
 End Function
 
 Private Function TestForV3_0() As Boolean
-   
+   FL_verbose "Testing for AutoIT3.0 Script..."
+
    With File
       .Position = .Length - 4 - 4
       
       ' ==== Handler for old Scripts ====
       Dim Script_Start&
       Script_Start = .longValue
-'     FL "Script_Start: " & H32(Script_Start)
+      FL_verbose "Script_Start: " & H32(Script_Start)
       
       Dim Script_CRC&
       Script_CRC = .longValue Xor Script_KEY&
-'     FL "Script_CRC: " & H32(Script_CRC) & "  (XORed with 0x" & H32(Script_KEY)
+      FL_verbose "Script_CRC: " & H32(Script_CRC) & "  (XORed with 0x" & H32(Script_KEY)
       
       Dim Script_End&
       Script_End = .Length - 4
-'     log " ===> Script_End: " & H32(Script_End)
+      log_verbose " ===> Script_End: " & H32(Script_End)
       
       If RangeCheck(Script_Start, .Length, &H1001) Then
          
@@ -348,12 +383,47 @@ Private Function TestForV3_0() As Boolean
             modified_AU3_Signature = .FixedString(Len(AU3Sig))
             Log IIf(modified_AU3_Signature <> AU3Sig, "Modified ", "") & "AU3_Signature: " & ValuesToHexString(modified_AU3_Signature) & "  " & modified_AU3_Signature
          
-            Exit Function
          End If
       End If
    End With
+   If TestForV3_0 = False Then FL_verbose "...FAILED!"
    
 End Function
+
+
+Private Function TestForV2_0() As Boolean
+   
+   FL_verbose "Testing for AutoIT2 Script..."
+   
+   With File
+      .Position = .Length - 4
+      
+      ' ==== Handler for old Scripts ====
+      Dim Script_Start&
+      Script_Start = .longValue
+      FL_verbose "Script_Start: " & H32(Script_Start)
+      
+      Dim Script_End&
+      Script_End = .Length - 4
+      log_verbose " ===> Script_End: " & H32(Script_End)
+      
+      If RangeCheck(Script_Start, .Length, &H1001) Then
+         
+         .Position = Script_Start
+          
+         Dim modified_AU3_Signature As New StringReader
+         modified_AU3_Signature = .FixedString(Len(AU3Sig))
+         Log IIf(modified_AU3_Signature <> AU3Sig, "Modified ", "") & "AU3_Signature: " & ValuesToHexString(modified_AU3_Signature) & "  " & modified_AU3_Signature
+         
+         TestForV2_0 = True
+         
+       Else
+         FL_verbose "...FAILED!"
+       End If
+   End With
+   
+End Function
+
 
 
 
@@ -381,46 +451,62 @@ Private Sub FindStartOfScriptAlternative()
             Log "Script Type 3.0 found."
             Exit Sub
             
+         ElseIf TestForV2_0 Then
+            Log "Script Type 2.0 found."
+            isAutoIT2Script = True
+            Exit Sub
+            
+            
          End If 'of New ScriptType
       
       End If 'of Force ScriptType
       
-      .Position = 0
           
 ' === Alternativ Scan ===
-          
           
     '  Signature not found - try alternative search...
       'Err.Raise vbObjectError + 41022, , "Error: The executable file is not recognised as a compiled AutoIt script."
 Log "AlternativeSigScan for 'FILE'-signature in au3-body..."
+'The Compiled Script AutoIT File format
+'--------------------------------------
+'
+'AutoIt_Signature        size 0x14 Byte  String "£HK...AU3!"
+'MD5PassphraseHash       size 0x10 Byte                      [LenKey=FAC1, StrKey=C3D2 AHK only]
+'ResType                 size 0x4 Byte   eString: "FILE"     [             StrKey=16FA]
+'^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Search for that !
      
-     'FF 6D B0 CE                    ÿm°Î
-      .FindString HexvaluesToString("FF 6D B0 CE")
-      If .Position = 0 Then
-         
-         'Not Found - Search for signature of new Aut3Script
-         .FindString HexvaluesToString("6B 43 CA 52")
-         If .Position = 0 Then
-            '...Error Exit Sub
-            Err.Raise ERR_NO_AUT_EXE, , "'FILE'-signature not found."
+'     .FindString HexvaluesToString("FF 6D B0 CE")  'FF 6D B0 CE       ÿm°Î
+      If FindLocation(DeCrypt("FILE", 5882), "FILE-(old)signature", True) = -1 Then  '16FA
+                 '.FindString HexvaluesToString("6B 43 CA 52")
+         If FindLocation(DeCryptNew("FILE", FILE_DecryptionKey_New), "FILE-(new)signature", True) = -1 Then  '6382) '18EE
+           ' Not Found - Search for signature of new Aut3Script
+           ' ...Error Exit Sub
+            Err.Raise ERR_NO_AUT_EXE, , "'FILE'-signature not found. Please enter start of script manually."
             Exit Sub
+
          Else
+         
             '...Finally found :)
             If bIsNewScriptType = False Then
                Log "Modified Script Type 3.2.5+ found."
-               bIsNewScriptType = True
             End If
+            
+            bIsNewScriptType = True
+      
          End If
-
+         
       End If
    
    '  FILE-Signature found ! Now move back to script start...
-      
+'      SeekBackwardsScriptStart
+'End Sub
+'Private Sub SeekBackwardsScriptStart()
+
       Dim FilePos_BodyStart&
-      FilePos_BodyStart = .Position
+      FilePos_BodyStart = .Position - 4
       
    '  Determinate if it's an AUTOHOTKEY or AUTOIT SCRIPT ...
-      .Move 4 ' skip over string 'FILE'
+'      .Move 4 ' skip over string 'FILE'
    
       Dim Au3SrcFile_FileInst As Boolean
       Dim SrcFile_FileInst$
@@ -536,50 +622,69 @@ Log "Seeking back to script start position..."
    End With
 
 End Sub
-
-'// FindStartOfScript - Locate startoffset of scriptdata
-'// Note:  Tries to find AutoIt3 start signature
-'//        if it fails search for 'FILE' (encrypted)
 Private Sub FindStartOfScript()
+   
+   If FrmMain.Chk_NormalSigScan.value = vbChecked Then
+      Dim Location&
+      Location = FindLocation(AU3Sig.Data, "AutoIt Signature")
+   Else
+      Location = -1
+   End If
+   
+   If Location = -1 Then
+      FindStartOfScriptAlternative
+   End If
+
+End Sub
+
+Private Function FindLocation(SearchPattern$, Optional PatternName$ = "", Optional AlwaysUseFirstLocation As Boolean = False) As Long
    
    With File
        
-      ' ===> Find Script Signature in FileData  (and place FileReadPointer behind it)
-Log "Scanning for AutoIt Signature:" & ValuesToHexString(AU3Sig) & "   " & AU3Sig
-      
+      Dim tmp As New StringReader
+      tmp = SearchPattern
+       
+     ' ===> Find Script Signature in FileData  (and place FileReadPointer behind it)
+      Log "Scanning for " & PatternName & ": " & ValuesToHexString(tmp) & "   " & SearchPattern
+     
+     
+     'Search for AutoIt Signature( from behind)
       Dim Locations As Collection
-      Set Locations = New Collection
+      Set Locations = .FindStrings(SearchPattern)
+
       
-      .Position = 0
-      Do While .FindString(AU3Sig.Data, True)       '"AU3!"
-         Locations.Add .Position
-      Loop
       
        ' and check if Findpattern was found more than one time
       If Locations.Count = 0 Then
        '  Signature not found - try alternative search...
          'Err.Raise vbObjectError + 41022, , "Error: The executable file is not recognised as a compiled AutoIt script."
    Log "...not found."
+         FindLocation = -1
         
-        'FF 6D B0 CE                    ÿm°Î
-         FindStartOfScriptAlternative
-      
-      ElseIf Locations.Count = 1 Then
-        'Okay one occurance - as it should be
-         .Move Len(AU3Sig)
-         
       Else
-         Dim SeektoLocation&
-         SeektoLocation = InputBox("There are " & Locations.Count & " possible location were the Script starts, please choose one to try:", , Locations.Count)
-         RangeCheck SeektoLocation, Locations.Count, 1, "Invalid location value!"
+      
+         If (Locations.Count = 1) Or AlwaysUseFirstLocation Then
+         'Okay one occurance - as it should be
+            Dim SeektoLocation&
+            SeektoLocation = 1
+         
+         Else
+            SeektoLocation = InputBox("There are " & Locations.Count & " possible location were the Script starts, please choose one to try:", , 1)
+            RangeCheck SeektoLocation, Locations.Count, 1, "Invalid location value!"
+         End If
          
          .Position = Locations(SeektoLocation)
-         .Move Len(AU3Sig)
+         .Move Len(SearchPattern)
+      
+      
+         FindLocation = .Position
+
       End If
+         
          
    End With
 
-End Sub
+End Function
 
 Private Function FormatFileTime(TimeStamp As FILETIME) As String
    Dim SysTime As SYSTEMTIME
@@ -630,8 +735,11 @@ End Sub
 '//   Not indented lines are for log purpose only (and not so important)
 Public Sub Decompile()
 
+   isAutoIT2Script = False
    AU3Sig = HexvaluesToString("A3 48 4B BE 98 6C 4A A9 99 4C 53 0A 86 D6 48 7D") ' & "AU3!"  "£HK¾˜lJ©™LS.†ÖH}"
-
+   
+'MOD !!!
+'   AU3Sig = HexvaluesToString("37 F0 20 E0 03 E0 F2 4B E7 76 7B FF 7A B6 76 D0") '7ð ààòKçv{ÿz¶vÐ
 
 'log "---------------------------------------------------------"
    
@@ -650,11 +758,11 @@ Public Sub Decompile()
          .Position = "&h" & FrmMain.Txt_Scriptstart
          .Move Len(AU3Sig)
      
-     'Find Start of Script and Quit this function with runtime error if search fails
-      ElseIf FrmMain.Chk_NormalSigScan = vbChecked Then
-         FindStartOfScript
+     'Find start of script and quit this function with runtime error if search fails
+'      ElseIf FrmMain.Chk_NormalSigScan = vbChecked Then
+'         FindStartOfScript
       Else
-         FindStartOfScriptAlternative
+         FindStartOfScript
       End If
       
       
@@ -692,7 +800,7 @@ Public Sub Decompile()
        End If
        
      Else
-       Log "      EndOf_PE-ExeFile: " & H32(PEFile_EOF_Offset)
+       Log "      EndOf_PE-ExeFile : " & H32(PEFile_EOF_Offset)
                    
       ' ==> Create output fileName
         Dim IconFileName As New ClsFilename
@@ -733,12 +841,23 @@ Public Sub Decompile()
       ElseIf SubType.int8 = 4 Then
          bIsOldScript = True
       
+    ' AutoIT2 script
+      ElseIf SubType.int8 = 1 Then
+         bIsOldScript = True
+         isAutoIT2Script = True
+      
+      
       Else
          'err.Raise vbObjectError,,"Unexpected Script subtype"
          FL "Unexpected Script subtype: " & "0x" & H32(SubType.int32) & " " & SubType.Data
       End If
+      
+
 
       Log "~ Note:  The following offset values are were the data ends (and not were it starts) ~"
+
+
+      
 
     
     ' ===> Get Script Password
@@ -759,7 +878,7 @@ Public Sub Decompile()
          
          bIsNewScriptType = Type2 = "EA06"
          If bIsNewScriptType Then
-            FL "New AutoIt Script Found.  - Type2 = " & Type2
+            FL "New tokenised AutoIt script found."
          
          ElseIf Type2 <> "EA05" Then
             FL "Type2 = " & Type2 & "  Normally you would get 'Error: Unsupported Version of AutoIt script.' here"
@@ -845,28 +964,38 @@ Public Sub Decompile()
       Log "------------ Processing Body -------------"
       Dim FileCount&
       For FileCount = 1 To &H7FFFFFF
+      
+        'so the rare case, that we're already at the end
+         If .EOF Then Exit For
 
       '===> read various Header data
          Dim ResType$
          If bIsNewScriptType Then
-            ResType = DeCryptNew(.FixedString(4), 6382) '18EE
+            ResType = DeCryptNew(.FixedString(4), FILE_DecryptionKey_New) '6382) '18EE
          Else
             ResType = DeCrypt(.FixedString(4), 5882) '000016FA
          End If
-      If ResType <> "FILE" Then
-         If FrmMain.Chk_NormalSigScan.Enabled Then
+         If ResType <> "FILE" Then
+         
+           ' Is checkbox normal signature scan unchecked OR
+           ' minimal Overlay(0x40Bytes) ?
+            If (FrmMain.Chk_NormalSigScan.value = vbUnchecked) Or _
+               (.Length - .Position <= &H40) Then
 Processing_Finished:
-               Log "Processing Finished!"
-            ' No valid FILE Marker so seek back
-               .Move -4
-               Exit For
-         Else
-            FrmMain.Txt_Scriptstart.FontBold = True
-            FrmMain.Txt_Scriptstart.ForeColor = vbRed
-            If vbNo = MsgBox("Invalid File Maker found - continue anyway?", vbYesNo, "Manually extract mode enabled.(Please delete script start value textbox to disable.)") Then
-               GoTo Processing_Finished
+                  Log "Processing Finished!"
+               ' No valid FILE Marker so seek back
+                  .Move -4
+                  Exit For
+                        
+            Else
+            
+               FrmMain.Txt_Scriptstart.FontBold = True
+               FrmMain.Txt_Scriptstart.ForeColor = vbRed
+               If vbNo = MsgBox("Invalid File Maker found - continue anyway?", vbYesNo, "Manually extract mode enabled.(Please delete script start value textbox to disable.)") Then
+                  GoTo Processing_Finished
+               End If
             End If
-         End If
+      
       End If
    
          Log "=== > Processing FILE: #" & FileCount
@@ -904,6 +1033,7 @@ Processing_Finished:
             bIsAHK_Script = True
             
          ElseIf SrcFile_FileInst = ">" Then
+           '; <COMPILER: v1.0.47.0>
            'Note: AHK_add is Applied after script is Decrypted and Decompressed
             bDoAHK_add = True
             bIsAHK_Script = True
@@ -946,35 +1076,84 @@ Processing_Finished:
             FL "ADLER32 CRC of unencrypted script data: " & H32(ScriptData_CRC)
          End If
          
-         Dim pCreationTime As FILETIME, pLastWrite As FILETIME
-         pCreationTime.dwHighDateTime = .longValue
-         pCreationTime.dwLowDateTime = .longValue
-         pLastWrite.dwHighDateTime = .longValue
-         pLastWrite.dwLowDateTime = .longValue
-         FL "FileTime (number of 100-nanosecond intervals since January 1, 1601) "
-         Log Space(4) & "pCreationTime:  " & H32(pCreationTime.dwHighDateTime) & H32(pCreationTime.dwLowDateTime) & "  " & FormatFileTime(pCreationTime)
-         Log Space(4) & "pLastWrite   :  " & H32(pLastWrite.dwHighDateTime) & H32(pLastWrite.dwLowDateTime) & "  " & FormatFileTime(pLastWrite)
-       
+         If isAutoIT2Script = False Then
+           Dim pCreationTime As FILETIME, pLastWrite As FILETIME
+           pCreationTime.dwHighDateTime = .longValue
+           pCreationTime.dwLowDateTime = .longValue
+           pLastWrite.dwHighDateTime = .longValue
+           pLastWrite.dwLowDateTime = .longValue
+           FL "FileTime (number of 100-nanosecond intervals since January 1, 1601) "
+           Log Space(4) & "pCreationTime:  " & H32(pCreationTime.dwHighDateTime) & H32(pCreationTime.dwLowDateTime) & "  " & FormatFileTime(pCreationTime)
+           Log Space(4) & "pLastWrite   :  " & H32(pLastWrite.dwHighDateTime) & H32(pLastWrite.dwLowDateTime) & "  " & FormatFileTime(pLastWrite)
+         End If
+         
         '==> Read encrypted script data
          FL "Begin of script data"
          
-         Dim ScriptData As New StringReader
+         Set ScriptData = New StringReader
          ScriptData = .FixedString(ScriptSize)
    
+         ' ==> Create output fileName
+         Dim OutFileName As New ClsFilename
+         ' initialise with ScriptPath
+         OutFileName = File.FileName
+         
+         If (CompiledPathName.Name Like "*>*") Or (CompiledPathName.Ext Like "*tmp*") Then
+            
+            OutFileName.Ext = Switch(bIsAHK_Script, ".ahk", _
+                                     bIsNewScriptType, ".tok", _
+                                     isAutoIT2Script, ".aut", _
+                                     True, ".au3")
+            If ExtractedFiles.Count > 0 Then
+               OutFileName.Name = OutFileName.Name & "_" & ExtractedFiles.Count
+            End If
+         
+         Else
+            
+            'if its an absolute path like "C:\Documents and Settings\EnCodeItInfo\Restart_EnCoded1.au3"
+            'Just use the filename and don't create subdirs
+            If InStr(SrcFile_FileInst, ":") Then
+               OutFileName.NameWithExt = CompiledPathName.Dir & CompiledPathName.NameWithExt
+            Else
+            ' Set Dir
+              OutFileName.NameWithExt = SrcFile_FileInst
+            End If
+            
+            ' create Dir if it doesn't exists
+            OutFileName.MakePath
+            
+         End If
+              
+   ' ~~~ Saving Raw encrypted scriptdata ~~~
+         Dim RawScriptFileName As New ClsFilename
+         RawScriptFileName = OutFileName
+         RawScriptFileName.Ext = ".raw"
+         
+         Dim RawScriptFile As New FileStream
+         With RawScriptFile
+            .Create RawScriptFileName.FileName, True, FrmMain.Chk_TmpFile.value = vbUnchecked, False
+            .Data = ScriptData.Data
+            .CloseFile
+         End With
+         
+         
          
    ' ~~~ Process decrypted scriptdata ~~~
          Log "Decrypting script data..."
        
          'MD5PassphraseHash_ByteSum = MD5PassphraseHash_ByteSum + 8879 '&H22AF
          If bIsNewScriptType Then
-            RanRot_Init (MD5PassphraseHash_ByteSum + 9335) ' &H2477
+            RanRot_Init MD5PassphraseHash_ByteSum + 9335 ' &H2477
+         ElseIf isAutoIT2Script Then
+            RandV2_Init MD5PassphraseHash_ByteSum + 8879  ' &H22AF
          Else
-            MT_Init (MD5PassphraseHash_ByteSum + 8879)  ' &H22AF
+            MT_Init MD5PassphraseHash_ByteSum + 8879  ' &H22AF
          End If
             
       
          With ScriptData
-            
+           
+                 
            ' ==> Decrypt scriptdata
 
 '            Dim Benchmark&
@@ -984,9 +1163,18 @@ Processing_Finished:
             
             For StrCharPos = 1 To Len(.mvardata)
                
+               
+               Dim KeyByte&
+               If bIsNewScriptType Then
+                  KeyByte = RanRot_GetI8
+               ElseIf isAutoIT2Script Then
+                  KeyByte = RandV2
+               Else
+                  KeyByte = MT_GetI8
+               End If
+               
                MidB$(tmpBuff, StrCharPos, 1) = ChrB$(AscB(MidB$(tmpBuff, StrCharPos, 1)) _
-                     Xor _
-                     (IIf(bIsNewScriptType, RanRot_GetI8, MT_GetI8) And &HFF))
+                     Xor (KeyByte And &HFF))
                      
 
                If 0 = (StrCharPos Mod &H8000) Then DoEvents
@@ -1013,36 +1201,6 @@ Processing_Finished:
 
 '            Debug.Print GetTickCount - Benchmark 'Benchmark:24063
             
-          ' ==> Create output fileName
-            Dim OutFileName As New ClsFilename
-          ' initialise with ScriptPath
-            OutFileName = File.FileName
-            
-            
-            If (CompiledPathName.Name Like "*>*") Or (CompiledPathName.Ext Like "*tmp*") Then
-               
-               OutFileName.Ext = Switch(bIsAHK_Script, ".ahk", bIsNewScriptType, ".tok", True, ".au3")
-               If ExtractedFiles.Count > 0 Then
-                  OutFileName.Name = OutFileName.Name & "_" & ExtractedFiles.Count
-               End If
-           
-            Else
-               
-               'if its an absolute path like "C:\Documents and Settings\EnCodeItInfo\Restart_EnCoded1.au3"
-               'Just use the filename and don't create subdirs
-               If InStr(SrcFile_FileInst, ":") Then
-                  OutFileName.NameWithExt = CompiledPathName.Dir & CompiledPathName.NameWithExt
-               Else
-               ' Set Dir
-                 OutFileName.NameWithExt = SrcFile_FileInst
-               End If
-               
-               ' create Dir if it doesn't exists
-               OutFileName.MakePath
-               
-            End If
-      
-      
       
           ' Do ADLER32 CRCTest for AutoIT Scripts
             If bIsOldScript = False Then
@@ -1072,33 +1230,37 @@ Processing_Finished:
                Log "JB LZSS Signature:" & LZSS_Signature
       
                If LZSS_Signature = "EA04" Then
-                  Dim LZSS_Signature_new$
-                  LZSS_Signature_new = "EA05"
-                  Log "Forcing/overwrite signature to '" & LZSS_Signature_new
-                  .Move -4
-                  .FixedString(4) = LZSS_Signature_new
+                  OverWriteSignature "EA05"
                Else
       
                   ' Check signature of compressed data
                   Dim ExpectedSignature$
-                  ExpectedSignature = Switch(bIsOldScript, "JB01", bIsNewScriptType, "EA06", True, "EA05")
+                  ExpectedSignature = Switch(bIsOldScript, "JB01", _
+                                             bIsNewScriptType, "EA06", _
+                                             isAutoIT2Script, "JB01", _
+                                             True, "EA05")
                   If LZSS_Signature <> ExpectedSignature Then
                   Log "WARNING: Normally signature is '" & ExpectedSignature & "' - possible reasons: 'modified' AutToExe, decryption failure, new version..."
                      'If signature looks weird probably decryption fail and this is of no use
 
                      Do
+                        Dim LZSS_Signature_new$
                         LZSS_Signature_new = InputBox("Current value is '" & LZSS_Signature & "'" & vbCrLf & "Valid values are 'JB01', 'EA05' and 'EA06'." & vbCrLf & "Note: If current value looks weird probably decryption fail and so data might be garbage." & vbCrLf & vbCrLf & "Since this is an Auto" & IIf(bIsOldScript, "HotKey", "IT") & " Script the recommanded value is '" & ExpectedSignature & "'" & vbCrLf & vbCrLf & "Press >OK< to change this value or" & vbCrLf & ">Cancel< to keep this it unchanged.", "Compression signature is invalid !", ExpectedSignature)
                      Loop Until (Len(LZSS_Signature_new) = 4) Or (Len(LZSS_Signature_new) = 0)
+                     
                      If (Len(LZSS_Signature_new) = 4) Then
    '                  If vbYes = MsgBox("Do you want to force it to : " & ExpectedSignature & " so this stream can be decompressed?" & vbCrLf & vbCrLf & "Note: If signature looks weird probably decryption fail and this is of no use", vbYesNo + vbDefaultButton1 + vbExclamation, "LZSS_Signature of decrypted data is '" & LZSS_Signature & "'") Then
-                        Log "Forcing/overwrite signature to '" & LZSS_Signature_new
-                        .Move -4
-                        .FixedString(4) = LZSS_Signature_new 'InputBox("You may change the signature here", "", ExpectedSignature)
+                        OverWriteSignature LZSS_Signature_new
                      End If
                   End If
                   
                End If
          
+             ' Change AutoIT2 To "JB00" so LZSS.exe can differ between AutoIT2 and AutoHotKey
+               If LZSS_Signature = "JB01" And isAutoIT2Script Then
+                  OverWriteSignature "JB00"
+               End If
+               
                
       '         Dim SizeUncompressed& ', w1&, w2&
       '         SizeUncompressed = .int8
@@ -1154,6 +1316,7 @@ Processing_Finished:
 
                  'init AHK_Sub_Key
                   AHK_Sub_Key = SizeUncompressed And 255
+                  AHK_Sub_Key = AHK_Sub_Key + &H40  '<-BugFix (That line was missing)
                   If AHK_Sub_Key = 0 Then AHK_Sub_Key = &H40
                   
                         Log "Appling AHK extra decryption; substraction Key: " & H8(AHK_Sub_Key)
@@ -1421,3 +1584,25 @@ IsValidPEFile_Err:
    File.Position = FilePos_old
    
 End Function
+
+
+
+Sub CheckScriptFor_COMPILED_Macro()
+   With File
+      .Create FileName.FileName, False, False, True
+      .Position = 0
+      Dim FoundPos
+      FoundPos = .FindString("@COMPILED", , vbTextCompare)
+      If FoundPos >= 0 Then
+         Log "WARNING: The '@COMPILED' was found in the script - at position: " & FoundPos & _
+             " to avoid 'bad suprises' you should manually check the code at this location(s) before you run it."
+      End If
+   End With
+      
+End Sub
+
+Private Sub OverWriteSignature(LZSS_Signature_new$)
+   Log "Forcing/overwrite signature to '" & LZSS_Signature_new
+   ScriptData.Move -4
+   ScriptData.FixedString(4) = LZSS_Signature_new
+End Sub

@@ -42,6 +42,18 @@ Private Declare Function GetSystemMetrics Lib "user32" (ByVal nIndex As Integer)
 
 Private BenchtimeA&, BenchtimeB&
 
+'for mt_MT_Init to do a multiplation without 'overflow error'
+Private Declare Function iMul Lib "MSVBVM60.DLL" Alias "_allmul" (ByVal dw1 As Long, ByVal dw2 As Long, ByVal dw3 As Long, ByVal dw4 As Long) As Long
+
+
+Function MulInt32&(a&, b&)
+  MulInt32 = iMul(a, 0, b, 0)
+End Function
+
+Function AddInt32&(a As Double, b As Double)
+  AddInt32 = "&h" & H32(a + b)
+End Function
+
 
 'Returns whether the user has DBCS enabled
 Private Function isDBCSEnabled() As Boolean
@@ -133,9 +145,9 @@ Function limit(value&, Optional ByVal upperLimit = &H7FFFFFFF, Optional lowerLim
    
 End Function
 
-Function RangeCheck(ByVal value&, Max&, Optional Min& = 0, Optional errtext, Optional ErrSource$) As Boolean
+Function RangeCheck(ByVal value&, Max&, Optional Min& = 0, Optional ErrText, Optional ErrSource$) As Boolean
    RangeCheck = (Min <= value) And (value <= Max)
-   If (RangeCheck = False) And (IsMissing(errtext) = False) Then Err.Raise vbObjectError, ErrSource, errtext & " Value must between '" & Min & "'  and '" & Max & "' !"
+   If (RangeCheck = False) And (IsMissing(ErrText) = False) Then Err.Raise vbObjectError, ErrSource, ErrText & " Value must between '" & Min & "'  and '" & Max & "' !"
 End Function
 
 Public Function H8(ByVal value As Long)
@@ -152,7 +164,7 @@ Public Function H32(ByVal value As Double)
    Else
     ' split Number in High a Low part...
       Dim High&, Low&
-      High = value / &H10000
+      High = Int(value / &H10000)
       Low = value - (CDbl(High) * &H10000)
       
       H32 = H16(High) & H16(Low)
@@ -337,6 +349,19 @@ Public Function FileExists(FileName) As Boolean
 FileExists_err:
 End Function
 
-Public Function Quote(Text As String) As String
+Public Function Quote(ByRef Text As String) As String
    Quote = """" & Text & """"
 End Function
+
+Public Function Brackets(ByRef Text As String) As String
+   Brackets = "(" & Text & ")"
+End Function
+Public Function WSpace(ParamArray Elements()) As String
+   Dim WS$ ' WhiteSpace
+   WS = "\s*"
+   
+   WSpace = Join(Elements, WS)
+End Function
+
+
+

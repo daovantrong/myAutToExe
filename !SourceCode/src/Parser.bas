@@ -19,8 +19,8 @@ End Function
 
 
 Function BB$()
-   Dim text$, char$
-   text = ""
+   Dim Text$, char$
+   Text = ""
    
    Do While Str.EOS = False
       char = Str.FixedString(1)
@@ -30,20 +30,20 @@ Function BB$()
             BB
          
          '  dirty fix:
-            text = text & char & EndSym
+            Text = Text & char & EndSym
 
          Case EndSym ' ")"
             Dec Level
             Exit Do
 
          Case Else
-            text = text & char
+            Text = Text & char
             
       End Select
       
    Loop
    
-   BB = text
+   BB = Text
 '   Debug.Print Space(Level * 2) & text
    
 End Function
@@ -118,7 +118,7 @@ notice_user:
               'notice in the log - user should manually fix this
                CrackAtPos = MAX_CODE_LINE_LENGHT
                NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos)
-               log " PROBLEM: Line " & Line & " is longer than " & MAX_CODE_LINE_LENGHT & " Bytes. Tidy will refuse to work. Fix this manually an then apply Tidy."
+               Log " PROBLEM: Line " & Line & " is longer than " & MAX_CODE_LINE_LENGHT & " Bytes. Tidy will refuse to work. Fix this manually an then apply Tidy."
                
             End If
            
@@ -130,7 +130,7 @@ notice_user:
          NewLine.Concat Mid(Lines(Line), linePos)
          
          
-         Lines(Line) = NewLine.Value
+         Lines(Line) = NewLine.value
          
       End If
    Next

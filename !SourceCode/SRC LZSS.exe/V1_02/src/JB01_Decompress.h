@@ -37,6 +37,8 @@
 
 
 // Alg ID
+
+#define JB00_ALGID			"JB00"				// Algorithm ID (4 bytes)
 #define JB01_ALGID			"JB01"				// Algorithm ID (4 bytes)
 #define EA05_ALGID			"EA05"				// Algorithm ID (4 bytes)
 #define EA05_LITERAL		0
@@ -100,7 +102,7 @@ class JB01_Decompress
 public:
 	// Functions
 	JB01_Decompress() { SetDefaults(); }		// Constructor
-
+    
 	int		Decompress();
 
 	void	SetDefaults(void);
@@ -188,7 +190,13 @@ private:
 	//EA05
 	UINT CompressedStreamReadMatchLen(void);
 	int		DecompressLoop_EA05(void);
-	bool	m_isStreamTypeJB01;
+	    
+    //JB01
+    bool	m_isStreamTypeJB01;
+    
+    //JB00
+    bool	m_isStreamTypeJB00;
+    int		DecompressLoop_JB00(void);
 
 	//EA06
 	bool	m_isStreamTypeEA06;

@@ -32,6 +32,15 @@ Public Function Replace(ByRef Text As String, _
 
 End Function
 
+Public Sub ReplaceDoMulti(ByRef Text As String, _
+    ByRef sOld As String, ByRef sNew As String, _
+    Optional ByVal Compare As VbCompareMethod = vbBinaryCompare)
+  
+  Text = Join(Split(Text, sOld, , Compare), sNew)
+  
+End Sub
+
+
 Public Sub ReplaceDo(ByRef Text As String, _
     ByRef sOld As String, ByRef sNew As String, _
     Optional ByVal Start As Long = 1, _

@@ -1,14 +1,25 @@
 VERSION 5.00
 Begin VB.Form FrmMain 
    Caption         =   "myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler<"
-   ClientHeight    =   9510
+   ClientHeight    =   9465
    ClientLeft      =   2595
    ClientTop       =   5235
-   ClientWidth     =   9345
+   ClientWidth     =   9300
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
-   ScaleHeight     =   9510
-   ScaleWidth      =   9345
+   ScaleHeight     =   9465
+   ScaleWidth      =   9300
+   Begin VB.TextBox txt_FILE_DecryptionKey 
+      Appearance      =   0  '2D
+      Height          =   285
+      Left            =   8160
+      TabIndex        =   14
+      Tag             =   "18EE"
+      Text            =   "18EE"
+      ToolTipText     =   "That Box is mean for the FILE-decryptionKey - normally there should be no reason to touch this."
+      Top             =   9000
+      Width           =   495
+   End
    Begin VB.Frame Fr_Options 
       Height          =   855
       Left            =   120
@@ -16,8 +27,9 @@ Begin VB.Form FrmMain
       Top             =   8520
       Width           =   9135
       Begin VB.TextBox Txt_Scriptstart 
+         Appearance      =   0  '2D
          Height          =   285
-         Left            =   7800
+         Left            =   6960
          TabIndex        =   13
          ToolTipText     =   $"frmMain.frx":628A
          Top             =   480
@@ -229,11 +241,15 @@ On Error Resume Next
 '   List1.AddItem H32(GetTickCount) & vbTab & TextLine
  
  ' Process windows messages (=Refresh display)
-   If (List1.ListCount < 10000) Or (Rnd < 0.1) Then
+   If RangeCheck(List1.ListCount, 10000) Then
        ' Scroll to last item ; when there are more than &h7fff items there will be an overflow error
       Dim ListCount&
       List1.ListIndex = List1.ListCount - 1
       DoEvents
+      
+   ElseIf (Rnd < 0.1) Then
+      DoEvents
+      
    End If
 End Sub
 
@@ -302,7 +318,7 @@ Sub FormSettings_Load()
    Dim controlItem
    For Each controlItem In Fr_Options.Container
       CheckBox_Load controlItem
-'      TextBox_Load controlItem
+      TextBox_Load controlItem
    Next
  
 End Sub
@@ -319,10 +335,15 @@ End Sub
 
 Private Sub Form_Load()
 
-
+   
+   
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
    FormSettings_Load
+  
+  'Just for the case of the first run
+   txt_FILE_DecryptionKey_Change
+   txt_FILE_DecryptionKey_Validate True
    
    'Extent Listbox width
    Listbox_SetHorizontalExtent List1, 6000
@@ -484,6 +505,36 @@ Private Sub Timer_OleDrag_Timer()
 End Sub
 
 
+Private Sub txt_FILE_DecryptionKey_Change()
+   With txt_FILE_DecryptionKey
+      On Error Resume Next
+      .ForeColor = IIf(txt_FILE_DecryptionKey_IsValid, vbBlack, vbRed)
+   End With
+End Sub
+
+Function txt_FILE_DecryptionKey_IsValid() As Boolean
+   With txt_FILE_DecryptionKey
+      On Error Resume Next
+      H16 "&h" & .Text
+      txt_FILE_DecryptionKey_IsValid = (Err = 0) And _
+                                       (Len(.Text) <= 4)
+   End With
+End Function
+Private Sub txt_FILE_DecryptionKey_Validate(Cancel As Boolean)
+   With txt_FILE_DecryptionKey
+      
+      If txt_FILE_DecryptionKey_IsValid Then
+         .Text = H16("&h" & .Text)
+      Else
+         .Text = .Tag
+      End If
+      
+      FILE_DecryptionKey_New = "&h" & .Text
+
+   End With
+
+End Sub
+
 Private Sub Txt_Filename_Change()
    
    On Error GoTo Txt_Filename_err
@@ -525,11 +576,13 @@ Private Sub Txt_Filename_Change()
           Case Else
             Log Err.Description
           End Select
-          
- '        End If
+  
+         CheckScriptFor_COMPILED_Macro
+ 
+'        End If
       Next
 
-
+' ErrorHandle for For-Each-Loop
 Err.Clear
 GoTo Txt_Filename_err
 
@@ -546,6 +599,12 @@ DeObfuscate:
       DeObfuscate.DeObfuscate
       
 Txt_Filename_err:
+  ' Add some fileName if it weren't done during decompile()
+    If ExtractedFiles.Count Then
+      ExtractedFiles.Add File.FileName
+    End If
+
+  
   ' Note: Resume is necessary to reenable Errorhandler
   '       Else the VB-standard Handler will catch the error -> Exit Programm
     Select Case Err
@@ -568,12 +627,12 @@ Txt_Filename_err:
        Log Err.Description
        Resume Txt_Filename_err
     End Select
+'-----------------------------------------------
    
     
     'Save Log Data
     On Error Resume Next
     
-'    If UBound(ExtractedFiles) < 0 Then
     FileName = ExtractedFiles(1).FileName
     FileName.NameWithExt = "_myExeToAut.log"
     

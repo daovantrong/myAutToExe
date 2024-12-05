@@ -7,9 +7,15 @@ Public FileName As New ClsFilename
 Public Const ERR_NO_AUT_EXE& = vbObjectError + &H10
 Public Const ERR_NO_OBFUSCATE_AUT& = vbObjectError + &H20
 
-Public Const DE_OBFUSC_TYPE_NOT_OBFUSC& = 0
-Public Const DE_OBFUSC_TYPE_VANZANDE& = 1
-Public Const DE_OBFUSC_TYPE_ENCODEIT& = 2
+Public Const DE_OBFUSC_TYPE_NOT_OBFUSC& = &H0
+Public Const DE_OBFUSC_TYPE_VANZANDE& = &H10000
+Public Const DE_OBFUSC_TYPE_ENCODEIT& = &H20000
+Public Const DE_OBFUSC_TYPE_CHR_ENCODE& = 10
+
+Public Const DE_OBFUSC_VANZANDE_VER14& = &H10014
+Public Const DE_OBFUSC_VANZANDE_VER15& = &H10015
+Public Const DE_OBFUSC_VANZANDE_VER24& = &H10024
+
 
 Public Const NO_AUT_DE_TOKEN_FILE& = &H100
 
@@ -28,7 +34,7 @@ Sub DoEventsSeldom()
 End Sub
 
 Sub DoEventsVerySeldom()
-   If Rnd < 0.00001 Then
+   If Rnd < 0.0001 Then
       DoEvents
    End If
 End Sub
@@ -64,12 +70,14 @@ Sub SaveScriptData(ScriptData$)
          .Log "Save/overwrite script to: " & FileName.FileName
       End If
 
-     
-     File.Create FileName.FileName, True, False, False
-     File.Position = 0
-     File.FixedString(-1) = ScriptData
-     File.setEOF
-     File.CloseFile
+      With File
+         .Create FileName.FileName, True, False, False
+         .Position = 0
+         .FixedString(-1) = ScriptData
+         .setEOF
+         .CloseFile
+      End With
+   
      
      ShowScript ScriptData
      

@@ -25,6 +25,14 @@
 #include <Array.au3>
 #include <Date.au3>
 
+;////////////////////////////////////////////////////////////////////
+;/// CriticalExit - Show Message with critical error and exit
+;//
+Func CriticalExit($MessageText, $MessageTitle="CriticalError")
+      MsgBox(0x10, $MessageTitle, $MessageText)
+      exit
+EndFunc
+
 
 ;  ==== myStatic File StreamReader ====
 ;  Before use these Data must be set:
@@ -99,7 +107,7 @@ local $fileInputScript_Drive, $fileInputScript_Dir, $fileInputScript_Name, $file
 ;* Open Compiled Autoit Exe File & Read in FileData...
    logAdd("opening: " & $fileInputScript)
    $hfileInputScript = FileOpen($fileInputScript,16)
-   $filedata = FileRead($hfileInputScript,)
+   $filedata = FileRead($hfileInputScript)
    if @error Then CriticalExit ("Error: Opening/Reading file failed with error: " & @error, "For some reason the File: " & $fileInputScript & " could not be be opened/read.")
    FileClose($hfileInputScript)
 
@@ -110,7 +118,7 @@ local $fileInputScript_Drive, $fileInputScript_Dir, $fileInputScript_Name, $file
 ;* Find AutoItSignature (seperate Interpreter & Script Part)
    const $AU3Sig  = _HexToString("A3484BBE986C4AA9994C530A86D6487D")
    $Scripts = StringSplit($filedata,$AU3Sig,1)
-   if @error Then CriticalExit ("Error: Unsupported Version of AutoIt script.","Au3 signature scan failed")
+   if @error Then CriticalExit ("Error: Unsupported Version of AutoIt script. (This version only supports non-tokenised AutoIT Scripts)","Au3 signature scan failed")
 
 
 
@@ -217,7 +225,7 @@ local $fileInputScript_Drive, $fileInputScript_Dir, $fileInputScript_Name, $file
    ;  Save Filedata to *.AU3
       $hfileOutScript = FileOpen($fileOutScript,2 + 16)
       FileWrite($hfileOutScript,$DecScriptData)
-      if @error Then CriticalExit(0,"Error: Create or WriteFile failed with error: " & @error,"For some reason the decrypted scriptdata cannot be written to file: " & $fileInputScript)
+      if @error Then CriticalExit("Error: Create or WriteFile failed with error: " & @error,"For some reason the decrypted scriptdata cannot be written to file: " & $fileInputScript)
       FileClose($hfileOutScript)
 
 
@@ -333,14 +341,6 @@ EndFunc
 ;DebugMessage
 func dm($Msg,$Title)
    MsgBox(0,$Title,$Msg)
-EndFunc
-
-;////////////////////////////////////////////////////////////////////
-;/// CriticalExit - Show Message with critical error and exit
-;//
-Func CriticalExit($MessageTitle, $MessageText)
-      MsgBox(0x10, $MessageTitle, $MessageText,)
-      exit
 EndFunc
 
 

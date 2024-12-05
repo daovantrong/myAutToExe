@@ -146,8 +146,12 @@ int JB01_Decompress::Decompress(void)
 	// Do the decompression depending on type
 	if (m_isStreamTypeJB01)
 		DecompressLoop();
-	else
+	else if (m_isStreamTypeJB00)
+        DecompressLoop_JB00();
+    else    
         DecompressLoop_EA05();
+
+
 
 	// Free memory used by decompression
 	FreeMem();
@@ -193,9 +197,10 @@ int JB01_Decompress::ReadUserCompHeader(ULONG &nSize)
 	bBuffer[4] = '\0';
 
 	// Set Compress StreamType
-	m_isStreamTypeJB01 = !strcmp((char*)bBuffer, JB01_ALGID);
+    m_isStreamTypeJB00 = !strcmp((char*)bBuffer, JB00_ALGID);
+    m_isStreamTypeJB01 = !strcmp((char*)bBuffer, JB01_ALGID);
 	m_isStreamTypeEA06 = !strcmp((char*)bBuffer, EA06_ALGID);
-	if (m_isStreamTypeEA06 || m_isStreamTypeJB01 || (!strcmp((char*)bBuffer, EA05_ALGID)) )
+	if (m_isStreamTypeJB00 || m_isStreamTypeEA06 || m_isStreamTypeJB01 || (!strcmp((char*)bBuffer, EA05_ALGID)) )
 		return JB01_E_OK;							// Return with success message
 
 	else
@@ -803,10 +808,8 @@ UINT JB01_Decompress::CompressedStreamReadMatchLen(void)
 } // CompressedStreamReadMatchLen()
 
 
-
-
 ///////////////////////////////////////////////////////////////////////////////
-// DecompressLoop_EA05()
+// DecompressLoop_JB01()
 ///////////////////////////////////////////////////////////////////////////////
 
 int JB01_Decompress::DecompressLoop_EA05(void)
@@ -844,6 +847,72 @@ int JB01_Decompress::DecompressLoop_EA05(void)
 
 			// Decode (and read more if required) to get the length of the match
 			nLen = CompressedStreamReadMatchLen() + JB01_MINMATCHLEN;
+
+			// Write out our match
+			nTempPos = m_nDataPos - nOffset;
+			while (nLen)
+			{
+				--nLen;
+				m_bData[m_nDataPos & JB01_DATA_MASK] = m_bData[nTempPos & JB01_DATA_MASK];
+				nTempPos++;
+				m_nDataPos++;
+				m_nDataUsed++;
+			}
+		}
+
+
+		// Write it out
+		WriteUserData();
+
+		MonitorCallback();
+		if (m_bAbortRequested)
+			return JB01_E_ABORT;
+	}
+
+	return JB01_E_OK;
+
+} // DecompressLoop()
+
+
+///////////////////////////////////////////////////////////////////////////////
+// DecompressLoop_JB00()
+///////////////////////////////////////////////////////////////////////////////
+
+int JB01_Decompress::DecompressLoop_JB00(void)
+{
+	ULONG	nMaxPos;
+	UINT	nTemp;
+	UINT	nLen;
+	UINT	nOffset;
+	ULONG	nTempPos;
+
+	// Perform decompression until we fill our predicted size (uncompressed size)
+	nMaxPos		= m_nDataSize;
+
+	while(m_nDataPos < nMaxPos)
+	{
+
+		// Read in the 1 bit flag
+		nTemp=CompressedStreamReadBits(1);
+
+		// Was it a literal byte, or a (offset,len) match pair?
+		if (nTemp == EA05_LITERAL  )			// use nTemp == 0
+		{
+			// Store the literal byte
+			nTemp=CompressedStreamReadBits(8);
+			m_bData[m_nDataPos & JB01_DATA_MASK] = (UCHAR)nTemp;
+			m_nDataPos++;
+			m_nDataUsed++;
+		}
+		else
+		{
+
+			// Read the offset
+			//nOffset = CompressedStreamReadOffset();
+			nOffset = CompressedStreamReadBits(0xd) + JB01_MINMATCHLEN; //0xf= HS_LZSS_WINBITS
+
+			// Decode (and read more if required) to get the length of the match
+			nLen = CompressedStreamReadBits(0x4) + JB01_MINMATCHLEN;
 
 			// Write out our match
 			nTempPos = m_nDataPos - nOffset;

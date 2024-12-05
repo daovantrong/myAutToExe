@@ -27,6 +27,8 @@ Private Const GENERIC_WRITE = &H40000000
 Private Const GENERIC_READ = &H80000000
 Private Const FILE_SHARE_READ = &H1
 Private Const FILE_SHARE_WRITE = &H2
+Private Const FILE_SHARE_DELETE = &H4
+
 Private Const CREATE_ALWAYS = 2
 Private Const CREATE_NEW = 1
 Private Const OPEN_ALWAYS = 4
@@ -97,14 +99,14 @@ Private Declare Function GetFileSize Lib "kernel32" (ByVal hFile As Long, lpFile
 
 
 
-Private Function StrtoLng(ByVal Value$) As Long
-   MemCopyStrToLng StrtoLng, Value, 4
+Private Function StrtoLng(ByVal value$) As Long
+   MemCopyStrToLng StrtoLng, value, 4
 End Function
 
-Private Function LngtoStr(ByRef Value&) As String
+Private Function LngtoStr(ByRef value&) As String
    Dim tmp$
    tmp = Space(4)
-   MemCopyLngToStr tmp, Value, 4
+   MemCopyLngToStr tmp, value, 4
    LngtoStr = tmp
 End Function
 
@@ -163,6 +165,10 @@ Public Property Get FixedString(ByVal Length As Long) As String
  ' Read Fixed String
    RetVal = ReadFile(hFile, FixedString, Length, bytesRead, 0)
    If RetVal < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
+   
+ ' Limit buffer incase the file is smaller
+   FixedString = Left(FixedString, bytesRead)
+   
 End Property
 
 Public Property Let char(ByRef vData As String)
@@ -190,22 +196,22 @@ Public Sub FindBytes(ParamArray Bytes())
    End With
 End Sub
 
-Public Function FindString&(StringToFind$, Optional SearchBackwards As Boolean = False)
+Public Function FindString&(StringToFind$, Optional SearchBackwards As Boolean = False, Optional VbCompareMethod As VbCompareMethod = vbBinaryCompare)
    Dim tmp$, oldPos&
    oldPos = Position
       tmp = FixedString(-1)
       
       If SearchBackwards Then
-         FindString = InStrRev(tmp, StringToFind) - 1
+         FindString = InStrRev(tmp, StringToFind, , VbCompareMethod) - 1
       Else
-         FindString = InStr(1, tmp, StringToFind, vbBinaryCompare) - 1
+         FindString = InStr(1, tmp, StringToFind, VbCompareMethod) - 1
       End If
       
       If FindString = -1 Then
          Position = oldPos
-         FindString = 0
+'         FindString = 0
       Else
-         Position = FindString
+         Position = FindString + oldPos
       End If
 '   Dim i
 '   i = 1
@@ -224,6 +230,23 @@ Public Function FindString&(StringToFind$, Optional SearchBackwards As Boolean =
 '   FindString = Position
 End Function
 
+Public Function FindStrings(StringToFind$) As Collection
+   Dim oldPos&
+   oldPos = Position
+   
+   Position = 0
+   
+   Set FindStrings = New Collection
+   Do While FindString(StringToFind) >= 0
+       FindStrings.Add Position
+       Move Len(StringToFind)
+   Loop
+  
+ ' Restore old position if not found
+   If FindStrings.Count = 0 Then Position = oldPos
+   
+End Function
+
 
 
 Public Function getTerminatedString(ParamArray TerminatorStrings()) As String
@@ -234,15 +257,15 @@ Public Function getTerminatedString(ParamArray TerminatorStrings()) As String
   Dim TerminatorStringsMatchIndexes
   ReDim TerminatorStringsMatchIndexes(UBound(TerminatorStrings))
   
-  Dim Value As String
-  Value = " "
+  Dim value As String
+  value = " "
 
   Dim i&
 
 ' Begin of FileRead-Loop
   Do
    ' Fill buffer
-     If ReadFile(hFile, Value, 1, bytesRead, 0) <= 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
+     If ReadFile(hFile, value, 1, bytesRead, 0) <= 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
 
    ' if no byte was read we reached the End of File
      If bytesRead = 0 Then
@@ -252,12 +275,12 @@ Public Function getTerminatedString(ParamArray TerminatorStrings()) As String
      End If
    
    ' append char to String
-     getTerminatedString = getTerminatedString & Value
+     getTerminatedString = getTerminatedString & value
    
      For i = LBound(TerminatorStrings) To UBound(TerminatorStrings)
     
       ' If char of the string does not match ...
-        If Value <> Mid$(TerminatorStrings(i), TerminatorStringsMatchIndexes(i) + 1, 1) Then
+        If value <> Mid$(TerminatorStrings(i), TerminatorStringsMatchIndexes(i) + 1, 1) Then
          
          '... reset stringIndexMatchPointer
           TerminatorStringsMatchIndexes(i) = 0
@@ -398,13 +421,13 @@ End Property
 
 
 Public Property Get intValue() As Integer
-    Dim bytesRead&, Value As Long
-    bytesRead = ReadFileLong(hFile, Value, 2, bytesRead, 0)
+    Dim bytesRead&, value As Long
+    bytesRead = ReadFileLong(hFile, value, 2, bytesRead, 0)
     ' 54298
-    If Value And &H8000 Then
-       intValue = (Value And &H7FFF) Or &H8000
+    If value And &H8000 Then
+       intValue = (value And &H7FFF) Or &H8000
     Else
-       intValue = Value
+       intValue = value
     End If
 End Property
 
@@ -526,7 +549,7 @@ Public Property Get hFile() As Long
      'Open file as with new file handle
       mvarhFile = CreateFile(FileName, _
                               GENERIC_READ Or (GENERIC_WRITE And Not (Readonly)), _
-                              FILE_SHARE_READ Or FILE_SHARE_WRITE, _
+                              FILE_SHARE_READ Or FILE_SHARE_WRITE Or FILE_SHARE_DELETE, _
                               0, CreationDisposition, _
                               FileFlagsAndAttributes, 0)
       If mvarhFile = -1 Then

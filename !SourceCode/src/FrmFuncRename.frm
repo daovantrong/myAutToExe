@@ -370,7 +370,7 @@ Private Sub OpenAndFill(FileName$, ScriptData As StringReader, FuncList, List_Fu
 'Seperate functions
 '   Txt_Fn_Org = ScriptData.Data
 
-   FuncList = Split(ScriptData.Data, vbCrLf & "Func ")
+   FuncList = Split(ScriptData.Data, vbCrLf & "Func ", , vbTextCompare)
    'ReDim Preserve FuncList(1 To UBound(FuncList))
    
    With List_Func

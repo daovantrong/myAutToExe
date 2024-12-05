@@ -19,9 +19,9 @@ Dim Level&
 
 Public Sub SeperateIncludes()
    
-   FrmMain.log ""
-   FrmMain.log "==============================================================="
-   FrmMain.log "Seperating Includes of : " & FileName.FileName
+   FrmMain.Log ""
+   FrmMain.Log "==============================================================="
+   FrmMain.Log "Seperating Includes of : " & FileName.FileName
    
    
   'Read *.au3 into ScriptData
@@ -40,7 +40,7 @@ Public Sub SeperateIncludes()
       If bUTF16detected Then 'LittleEndian of UTF16
       
       ElseIf UnicodeBomBuff = &HFFFE Then
-         log "ERR: BigEndian of UTF16 detected - Please convert input file manually to 8-bit Accii or LittleEndian UTF16."
+         Log "ERR: BigEndian of UTF16 detected - Please convert input file manually to 8-bit Accii or LittleEndian UTF16."
       Else
         'Seek to begin
          .Position = 0
@@ -64,7 +64,7 @@ Public Sub SeperateIncludes()
       .NameWithExt = ""
    End With
    
-   FrmMain.log "  " & Len(ScriptData) & IIf(bUTF16detected, "(Unicode)", "") & " bytes loaded."
+   FrmMain.Log "  " & Len(ScriptData) & IIf(bUTF16detected, "(Unicode)", "") & " bytes loaded."
    
  ' Convert unicode to accii
    If bUTF16detected Then
@@ -148,7 +148,7 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
          Inc IncludeListCount
                                
        ' show IncludeFileName
-         FrmMain.log Space(Level) & "#" & IncludeListCount & " " & IncludePath & vbTab & " -> " & IncludePathNew
+         FrmMain.Log Space(Level) & "#" & IncludeListCount & " " & IncludePath & vbTab & " -> " & IncludePathNew
                                
        ' Make includepath for insert "#include <...>" l
          Dim IncludeLinePath$
@@ -223,9 +223,9 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
          
            ' Log
             If Err = 457 Then '"Dieser Schlüssel ist bereits einem Element dieser Auflistung zugeordnet"
-               FrmMain.log Space(Level) & "Duplicate Include - Skipped"
+               FrmMain.Log Space(Level) & "Duplicate Include - Skipped"
             Else
-               FrmMain.log Space(Level) & "Unexp. Err: " & Err.Description
+               FrmMain.Log Space(Level) & "Unexp. Err: " & Err.Description
             End If
           
          End If
@@ -257,3 +257,6 @@ Private Sub SeperateIncludes_Recursiv(ByVal EndSym$)
    Loop
    
 End Sub
+
+
+

@@ -19,13 +19,275 @@ Option Compare Text
 Dim DeObfu_FunctionNames As New Collection
 Dim NewScript$
 
-Sub Log(text$)
-   FrmMain.Log text
+Sub Log(Text$)
+   FrmMain.Log Text
 End Sub
 
-Sub log2(text$)
-   FrmMain.log2 text
+Sub log2(Text$)
+   FrmMain.log2 Text
 End Sub
+
+Private Sub GUI_Show_Text(Text$)
+   FrmMain.Txt_Script = Text
+End Sub
+
+Private Sub GUI_StatusBar_SetCurrentLine(ByVal Line&)
+
+End Sub
+
+Private Sub GUI_StatusBar_SetLines(ByVal Lines&)
+
+End Sub
+
+
+
+'Private Function Eval(Expr As String) As String
+'   'Dim x  As MSScriptControl.ScriptControl
+'   'Set x = New MSScriptControl.ScriptControl
+'   Dim x As Object
+'   Set x = CreateObject("MSScriptControl.ScriptControl") 'regsvr32.exe <WINXP>\SYSTEM32\msscript.ocx
+'   x.Language = "VBScript"
+'
+'   Eval = x.Eval(Expr)
+'
+'   Set x = Nothing
+'
+'
+'End Function
+'
+'Sub ReBase_Array(ByRef Arr, Dim_Min, Optional Dim_Max)
+'
+'   If IsMissing(Dim_Max) Then Dim_Max = UBound(Arr)
+'
+'   Dim NewArr As New Collection
+'
+'   Dim i&
+'   For i = Dim_Min To Dim_Max
+'      NewArr.Add Arr(i)
+'   Next
+'
+'   Arr = CollectionToArray(NewArr)
+'End Sub
+
+Private Sub DeObfuscate_Chr_Encode()
+   
+'   If NewScript Like "*""[!""]*" Then
+'      Log "Skipping Replacing 'Consts Globals & Dim' because there are strings in the script. Use the function rename to include these includes first."
+'   Else
+'     '=== Replace Dim Const and Globals
+'      DeObfu_ReplaceGlobals NewScript
+'      DeObfu_ReplaceDimsAndConst NewScript
+'   End If
+
+
+' --- Prepare regular expression objects & search pattern ---
+   
+   Dim Number$
+   Number = "(\d{0,4})"
+   
+   Dim Operator$
+   Operator = "([+-])"
+   
+ 
+   Dim CHR_Command$
+ ' for CHR_Commands for example "CHR(142+8082)"
+   CHR_Command = WSpace("CHR", "\(", Number, Operator, Number, "\)")
+   
+ 
+   Dim CHR_CommandElements$
+ ' One or more CHR_Commands for example "CHR(157-125) & CHR(10+101)"
+ ' used to separate & replace ChrStrings like
+ ' 'CHR(157-125)' or
+ ' 'CHR(157-125) & ""' or
+ ' 'CHR(157-125) & CHR(10+101)' or
+ ' 'CHR(157-125) & CHR(10+101) & ""
+
+   CHR_CommandElements = WSpace(CHR_Command & _
+                      "(", "&", CHR_Command, ")*" & _
+                      "(", "&", """""){0,1}")
+  
+   Dim ChrStrings As New RegExp
+   With ChrStrings
+      .IgnoreCase = True
+      .Global = False
+      .Pattern = CHR_CommandElements
+      
+   End With
+ 
+   Dim Chrs As New RegExp
+ ' RegExp for separating Chrs like "CHR( '10' '+' '101' )"
+   With Chrs
+      .IgnoreCase = True
+      .Global = True
+      .Pattern = WSpace(CHR_Command)
+   End With
+ 
+' 'Break String into lines (but retain "_ "&CRLF as one line)
+'   Dim Lines As New RegExp
+'   With Lines
+'       .IgnoreCase = True
+'       .Global = True
+'       .MultiLine = True
+'       .Pattern = WSpace(".*", "[^_]", "\n")
+'   End With
+'   Dim Lines_Match As MatchCollection
+'   Set Lines_Match = Lines.Execute(NewScript)
+'
+'
+
+
+' --- Process Script ---
+
+   Dim ChrStringNew As clsStrCat
+   Set ChrStringNew = New clsStrCat
+ 
+ ' Merge lines with _ at the end
+   NewScript = Replace(NewScript, "_" & vbCrLf, "")
+
+ ' Break into lines and process them
+   Dim ScriptLines
+   ScriptLines = Split(NewScript, vbCrLf)
+   
+   Dim Lines As Long
+   Lines = UBound(ScriptLines)
+   GUI_StatusBar_SetLines Lines
+ 
+  'Go through all Lines
+   Dim Line_idx
+   For Line_idx = 0 To Lines
+      Dim Line$
+      Line = ScriptLines(Line_idx)
+      GUI_StatusBar_SetLines Line_idx
+'      GUI_Show_Text Line_idx & ": " & ScriptLines(Line_idx)
+      
+    
+'    If Line_idx = 13245 Then Stop
+    
+    
+    ' separate ChrString's
+      Do While True
+         Dim ChrStrings_Matches As MatchCollection
+         Set ChrStrings_Matches = ChrStrings.Execute(Line)
+    ' Exit (and process nxt line) if there are no ChrStrings
+      If ChrStrings_Matches.Count = 0 Then Exit Do
+
+        ChrStringNew.Clear
+         
+       'separate Chr's
+        Dim Chrs_Match As Match
+        For Each Chrs_Match In Chrs.Execute(ChrStrings_Matches(0))
+           
+          ' Concat Chrs to a ChrString
+            With Chrs_Match
+              
+             ' "CHR(157-125)" -> ...
+               Dim Chrs_op$, Chrs_arg1&, Chrs_arg2&
+               Chrs_arg1 = .SubMatches(0)    'Chrs_arg1 = 157
+               Chrs_op = .SubMatches(1)      'Chrs_op   = "-"
+               Chrs_arg2 = .SubMatches(2)    'Chrs_arg2 = 125
+            
+            End With
+              
+          ' calc new Char
+            Select Case Chrs_op
+            Case "+"
+               ChrStringNew.Concat (ChrW(Chrs_arg1 + Chrs_arg2))
+            Case "-"
+               ChrStringNew.Concat (ChrW(Chrs_arg1 - Chrs_arg2))
+            End Select
+           
+         Next Chrs_Match
+       
+       ' replace ChrString in line
+         ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
+
+       ' save modified Line
+         ScriptLines(Line_idx) = Line
+         
+      Loop ' next ChrString in Line
+
+      GUI_Show_Text Line_idx & ": " & ScriptLines(Line_idx)
+      DoEventsSeldom
+      
+   Next Line_idx
+
+
+  'Join lines back to a script
+   NewScript = Join(ScriptLines, vbCrLf)
+
+End Sub
+
+
+
+'Private Sub OLD_DeObfuscate_Chr_Encode()
+'
+'
+'
+'
+' ' Merge lines with _ at the end
+' '  NewScript = Replace(NewScript, vbTab, "")
+'   NewScript = Replace(NewScript, "&""""&", "&") '
+'   NewScript = Replace(NewScript, "_" & vbCrLf, "")
+'
+' ' Break into lines and process them
+'   Dim ScriptLines
+'   ScriptLines = Split(NewScript, vbCrLf)
+'
+'   Dim Line_idx
+'   For Line_idx = 0 To UBound(ScriptLines)
+'    Dim Line$
+'    Line = ScriptLines(Line_idx)
+'
+'' 'dbg
+''  If Line_idx = 33900 Then Stop
+'
+'     'Seperated ChrStrings of each line
+'      Dim ChrStrings
+'      ChrStrings = Split(Line, "&""""")
+'
+'
+'     'If contains ChrStrings...
+'      If UBound(ChrStrings) > 0 Then
+'
+'         Dim ChrString_idx&
+'         For ChrString_idx = 0 To UBound(ChrStrings)
+'          Dim ChrString$
+'          ChrString = ChrStrings(ChrString_idx)
+'
+'            Dim EncodedChars
+'            EncodedChars = Split(ChrString, "CHR(")
+'
+'           'If contains chr's...
+'            If UBound(EncodedChars) > 0 Then
+'              '... simplify them to a String
+'               Dim CHR_PreData$
+'               CHR_PreData = EncodedChars(0)
+'               EncodedChars(0) = ""
+'
+'               Dim Clean_ChrString$
+'               Clean_ChrString = Join(EncodedChars, "CHR(")
+'
+'               On Error Resume Next
+'               Dim Clean_String$
+'               Clean_String = Eval(Clean_ChrString)
+'               If Err = 0 Then
+'                  ChrStrings(ChrString_idx) = CHR_PreData & Quote(Clean_String)
+'               Else
+'                  Log "Problem on Line: " & Line_idx & " (" & Err.Description & ") - Line skipped."
+'               End If
+'            End If
+'
+'         Next
+'        'Rejoin Line
+'         ScriptLines(Line_idx) = Join(ChrStrings, " ")
+'      End If
+'   Next
+'
+'   NewScript = Join(ScriptLines, vbCrLf)
+'
+'
+'End Sub
+
 
 Private Sub DeObfuscate_Encodeit()
 
@@ -115,7 +377,7 @@ Private Sub DeObfuscate_Encodeit()
    
    ReDim Preserve globs(j - i - 1)
    NewScript = Join(globs, "Global Const ")
-   FrmMain.Txt_Script = NewScript
+   GUI_Show_Text NewScript
    
    Log "Search'n'replace strings: "
    
@@ -131,7 +393,7 @@ Private Sub DeObfuscate_Encodeit()
 
    Next
    
-   FrmMain.Txt_Script = NewScript
+   GUI_Show_Text NewScript
    
    Log "Processing function names and arguments:"
    
@@ -185,7 +447,7 @@ Private Sub DeObfuscate_Encodeit()
 End Sub
 
 
-Public Function DetectScriptObfuscated() As Integer
+Public Function DetectScriptObfuscated() As Long
 '   FileName = "I:\!Cracks & Projects\AutoIt3\Obfuscator\smarty_Obfuscated.au3"
 Log "Trying to DeObfuscate : " & FileName
    
@@ -213,9 +475,20 @@ Log "Trying to DeObfuscate : " & FileName
       DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
    ElseIf NewScript Like "*""4074656D70646972""*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
+
+   ElseIf NewScript Like "*4054656D70446972*" Then
+      DetectScriptObfuscated = DE_OBFUSC_VANZANDE_VER24
+
+
+   'Obfuscator v1.0.24.23  ( find 'func A1D00103002')
+   ElseIf NewScript Like "*A1D00103002*" Then
+      DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
       
-   ElseIf NewScript Like "*Int(99/3+15*100/4-13^2+81/3-17-245+99/3+15*100/4-13^2+81/3-17)*" Then
+   ElseIf NewScript Like "*Int(99/3+15[*]100/4-13^2+81/3-17-245+99/3+15[*]100/4-13^2+81/3-17)*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_ENCODEIT
+      
+   ElseIf NewScript Like "*Chr(##?[-+]?##*" Then
+      DetectScriptObfuscated = DE_OBFUSC_TYPE_CHR_ENCODE
       
    Else
       DetectScriptObfuscated = DE_OBFUSC_TYPE_NOT_OBFUSC
@@ -234,7 +507,11 @@ Public Sub DeObfuscate()
          File.CloseFile
          Err.Raise ERR_NO_OBFUSCATE_AUT, , "Script is NOT obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]', v1.0.14[June 16, 2007] or 'EncodeIt 2.0'"
          Exit Sub
-         
+
+      Case DE_OBFUSC_VANZANDE_VER24
+         Log "Deobfuscating van Zande 1.0.24.22..."
+         DeObfuscate_VanZande1_0_24
+      
       Case DE_OBFUSC_TYPE_VANZANDE
          If InStr(1, NewScript, "lobal $Os") Then
             Log "Deobfuscating van Zande 1.0.15..."
@@ -252,15 +529,57 @@ Public Sub DeObfuscate()
       Case DE_OBFUSC_TYPE_ENCODEIT
          Log "Deobfuscating Encodeit 2.0..."
          DeObfuscate_Encodeit
-   
+         
+      Case DE_OBFUSC_TYPE_CHR_ENCODE
+         Log "Deobfuscating Chr_Encode..."
+         DeObfuscate_Chr_Encode
    End Select
    
    SaveScriptData NewScript
    Log "Deobfucation succeed."
 End Sub
 
+Function StringToHexString$(Txt_String)
+   Dim tmpBuff As New StringReader
+   tmpBuff = Txt_String
+   StringToHexString = ValuesToHexString(tmpBuff, "")
+End Function
 
-Private Sub DeObfuscate_VanZande1_0_15()
+Private Sub DeObfuscate_VanZande1_0_24()
+' In v1.0.24.23 Seperator is wrapped up into "Execute(Binarytostring('0x"- 3 times
+' Like this:
+'FileInstall('test_org.au3.tbl',$AF123123,1)
+'Global $Os = Execute(Binarytostring('0x457865637574652842696E61....
+'                                       Execute(Binarytostring('0x457865637574652842696E6...
+'                                                                 Execute(Binarytostring('0x537472696E6753706C6974...
+'                                                                                           StringSplit(FileRead($AF123123...
+   
+   Dim tmp2$
+   tmp2 = NewScript
+   Do
+      Dim tmp$
+      tmp = strCrop1(tmp2, _
+                  StringToHexString("Execute(Binarytostring('0x"), _
+                  StringToHexString("'))"))
+      
+   If tmp = "" Then Exit Do
+      tmp2 = HexStringToString(tmp)
+   Loop While True
+   
+     
+   'VanZande1_0_24
+   Dim TBLStringSeperator$
+   
+   '0x537472696E6753706C69742846696C655265616428244146313233313233292C27 | 69354F | 272C3129
+   '                                   StringSplit(FileRead($AF123123),' | i5O    | ',1)
+   TBLStringSeperator = HexStringToString(strCrop1(tmp2, StringToHexString("StringSplit(FileRead($AF123123),'"), StringToHexString("',1)"), "4F"))
+   Log "TBL seperator string: " & TBLStringSeperator
+   DeObfuscate_VanZande1_0_15 TBLStringSeperator
+
+End Sub
+
+
+Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
 
 
  ' Merge lines with _ at the end + Add vbCrLf after last EndFunc
@@ -281,10 +600,17 @@ Private Sub DeObfuscate_VanZande1_0_15()
 
 
 '=== Replace Dim Const and Globals
+BenchStart
+   DeObfu_ReplaceGlobals NewScript
+BenchEnd
+' ReplaceDoMulti 49297 ;51078
+' ReplaceDo 23188
+' Empty 9719  9625  9641
+
    DeObfu_ReplaceDimsAndConst NewScript
-'   DeObfu_ReplaceGlobals NewScript
+
    
-   FrmMain.Txt_Script = NewScript
+   GUI_Show_Text NewScript
 
    Log "Okay. Obfucated script loaded and displayed."
    
@@ -323,23 +649,29 @@ Private Sub DeObfuscate_VanZande1_0_15()
     StringTBLFile.Create StringTBLFileName.FileName
     
    'Read Stringtable
-    Dim StringTBL As New Collection
-    Dim Line
-    StringTBLFile.Position = 0
-    For Each Line In Split(StringTBLFile.FixedString(-1), "O")
-       StringTBL.Add HexStringToString(Line)
-    Next
-    StringTBLFile.CloseFile
+    Dim StringTBL
+    ReDim StringTBL(1 To 1)
+    
+      Dim Line
+      StringTBLFile.Position = 0
+      For Each Line In Split(StringTBLFile.FixedString(-1), TBLStringSeperator)
+         StringTBL(UBound(StringTBL)) = HexStringToString(Line)
+         ReDim Preserve StringTBL(1 To UBound(StringTBL) + 1)
+      Next
+      StringTBLFile.CloseFile
+      ReDim Preserve StringTBL(1 To UBound(StringTBL) - 1)
+
+
    
    
-Log StringTBL.Count & " strings found."
+Log UBound(StringTBL) & " strings found."
  
   
   
   
 Log "Restoring StringNames in ..."
   Dim LocalStringNames
-  ReDim LocalStringNames(StringTBL.Count)
+  ReDim LocalStringNames(UBound(StringTBL))
   
   ' get local stringvars like
   'global $SA220010601E=A490000263F($Os[0x1]),$SA3A00204A08=A490000263F($Os[0x2]),$SA200030463A=A490000263F($Os[0x3])
@@ -363,7 +695,7 @@ BenchStart
    ScriptFunction = NewScript2(iter)
       
  ' Show ScriptFunction Before
-   FrmMain.Txt_Script = ScriptFunction
+   GUI_Show_Text ScriptFunction
       
    
     ' Get Current FunctionName
@@ -393,9 +725,10 @@ BenchStart
            '... apply String Restore
             Dim index
             For Each index In MainIndexes
-              DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), StringTBL(index)
+              DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), CStr(StringTBL(index))
             Next
          End If
+'         GUI_Show_Text ScriptFunction
 
          
          
@@ -485,7 +818,7 @@ BenchStart
            'Replace Strings
           ' In ScriptFunction code Replace all "$SA3160B01D3E" with for exsample "Wrong Name Entered!"
 '            Debug.Print "Number(" & LocalStringNames(index) & ")", StringTBL(index)
-            DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), StringTBL(index)
+            DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), CStr(StringTBL(index))
 
               
          Next
@@ -497,7 +830,7 @@ BenchStart
       Stat_NumAtAll = Stat_NumAtAll + Stat_NumLocal
     
    ' Show ScriptFunction after
-     FrmMain.Txt_Script = ScriptFunction
+     GUI_Show_Text ScriptFunction
 
     
     
@@ -510,7 +843,7 @@ BenchStart
    Next
   
 Log "Strings at all: " & Stat_NumAtAll
-Log "strings in Tbl: " & StringTBL.Count
+Log "strings in Tbl: " & UBound(StringTBL)
   
 ' Cut of rest after FnNameLoadTBL
   ReDim Preserve NewScript2(i - 1)
@@ -536,7 +869,7 @@ Log "strings in Tbl: " & StringTBL.Count
   'Used String
 '  Dim i&
    Log "UnAssigned/Unused strings [Index, Value]: "
-   For i = 1 To StringTBL.Count
+   For i = LBound(StringTBL) To UBound(StringTBL)
       If LocalStringNames(i) = "" Then
          Log "  " & H16(i) & " " & StringTBL(i)
       End If
@@ -546,7 +879,7 @@ Log "strings in Tbl: " & StringTBL.Count
   
   
  ' Clean up - delete *.tbl file
-   If FrmMain.Chk_TmpFile.Value = vbUnchecked Then
+   If FrmMain.Chk_TmpFile.value = vbUnchecked Then
 '      log "Deleting: " & StringTBLFileName.FileName
       FileDelete StringTBLFileName.FileName
    End If
@@ -636,7 +969,7 @@ Private Sub z_DeObfu_ReplaceX(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional Ig
       If LocalDefCounter > 0 Then
          Dim LocalDefLine$
          LocalDefLine = Split(LocalDefCommaSep, vbCrLf)(0)
-         If Not (LocalDefLine Like "*" & IgnoreLinesWith & "*") Then
+         If (LocalDefLine Like "*" & IgnoreLinesWith & "*") = False Then
          
            
            'crop off functions args (Arg1,arg2,arg3...) that also contains ','
@@ -668,7 +1001,7 @@ Private Sub z_DeObfu_ReplaceX(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional Ig
                
              ' Replace current with new name
                ReplaceDo CodeSnipped, LocalDefPureName, LocalNameNew
-               
+               'ReplaceDoMulti CodeSnipped, LocalDefPureName, LocalNameNew, vbTextCompare
                DoEventsSeldom
                
                Inc LocalNameCounter
@@ -683,17 +1016,59 @@ Private Sub z_DeObfu_ReplaceX(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional Ig
 
 End Sub
 
+
+
+
 Private Sub DeObfu_ReplaceGlobals(ByRef CodeSnipped$, Optional IgnoreLinesWith)
 Log "Renaming Globals..."
-   z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
-End Sub
-Private Sub DeObfu_ReplaceDimsAndConst(ByRef CodeSnipped$)
-Log "Renaming Dims..."
-   z_DeObfu_ReplaceX CodeSnipped, "Dim", "gDim"
-Log "Renaming Consts..."
-   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Const", "gConst"
+   'z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
+'Global Const $A4A14104939 = $A2014201D1E
+
+'Global $A4201D12945 =
+'http://msdn.microsoft.com/en-us/library/1400241x.aspx
+  Dim ObfuName$
+  ObfuName = "[0123456789ABCDEF]{11}"
+  Dim GlobalVar As New RegExp
+  With GlobalVar
+      .IgnoreCase = True
+      .Global = False
+      '.Pattern = WSpace("Global $" & ObfuName, "=")
+      .Pattern = ObfuName
+      
+  End With
+ 
+
+ 'separate Chr's
+  Dim GlobalVar_Match As Match
+  For Each GlobalVar_Match In GlobalVar.Execute(NewScript)
+     
+    ' Concat Chrs to a ChrString
+      With GlobalVar_Match
+        Dim tmp
+         tmp = .SubMatches(0)    'Chrs_arg1 = 157
+      End With
+        
+   Next GlobalVar_Match
+ 
+ ' replace ChrString in line
+'   ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
+
+ ' save modified Line
+ '  ScriptLines(Line_idx) = Line
    
-   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Global Const ", "glConst"
+'Loop ' next ChrString in Line
+
+
+
+
+End Sub
+Private Sub DeObfu_ReplaceDimsAndConst(ByRef CodeSnipped$, Optional IgnoreLinesWith)
+Log "Renaming Dims..."
+   z_DeObfu_ReplaceX CodeSnipped, "Dim", "gDim", IgnoreLinesWith
+Log "Renaming Consts..."
+   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Const", "gConst", IgnoreLinesWith
+   
+   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Global Const ", "glConst", IgnoreLinesWith
    
 End Sub
 
@@ -709,8 +1084,6 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr$, ByRef NewStr$)
       ReplaceDo Data, "Execute(" & ReplaceStr & ")", NewStr
    ReplaceDo Data, "Shell_xecute", "ShellExecute"
       ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr), , , vbTextCompare
-      
-'      ReplaceDo Data, "NUMBER(" & ReplaceStr & ")", FormatNumber(NewStr)
       ReplaceDo Data, ReplaceStr, """" & Replace(NewStr, """", """""") & """"
 End Sub
 
@@ -724,7 +1097,7 @@ Private Sub DeObfuscate_VanZande1_0_14()
 
 
 
-   FrmMain.Txt_Script = NewScript
+   GUI_Show_Text NewScript
 
    Log "Okay. Obfucated script loaded and displayed."
   
@@ -948,7 +1321,7 @@ Log "Restoring StringNames in ..."
     ' Save New Function
       NewScript2(i) = ScriptFunction
    
-      FrmMain.Txt_Script = ScriptFunction
+      GUI_Show_Text ScriptFunction
    
      
    Inc i

@@ -1,5 +1,6 @@
 Attribute VB_Name = "DeTokeniser"
 Option Explicit
+Const AUTOIT_SourceCodeLine_MAXLEN& = 4096
 
 Const whiteSpaceTerminal$ = " "
 Const ExcludePreWhiteSpaceTerminal$ = "(["
@@ -8,13 +9,12 @@ Const ExcludePostWhiteSpaceTerminal$ = ")]."
 Const TokenFile_RequiredInputExtensions = ".tok .mem"
 
 Dim Atom$, SourceCodeLine$
-Dim bDontAddWhiteSpace As Boolean
+Dim bAddWhiteSpace As Boolean
 
 Sub DeToken()
-
+   BenchStart
    
-   
-   With file
+   With File
     
       Log "Trying to DeTokenise: " & FileName.FileName
       
@@ -30,10 +30,9 @@ Sub DeToken()
 '      End If
       
       .Create FileName.FileName, False, False, True
-      .Position = 0
       
       
-      On Error GoTo 0
+   On Error GoTo DeToken_Err
       .Position = 0
       
       Dim Lines&
@@ -69,16 +68,18 @@ Sub DeToken()
       Dim RawString As StringReader: Set RawString = New StringReader
       Dim DecodeString As StringReader: Set DecodeString = New StringReader
 
+      SourceCodeLine = ""
       Do
    
+         Atom = ""
          
          If (SourceCodeLineCount > Lines) Then
             Exit Do
          End If
          
-         bDontAddWhiteSpace = False
          
-         
+       ' Default
+         bAddWhiteSpace = False
          
        ' Read Token
          Cmd = .ByteValue
@@ -86,11 +87,17 @@ Sub DeToken()
          
        ' Log it ''" & Chr(Cmd) & "'
          FL_verbose "Token: " & H8(Cmd) & "      (Line: " & SourceCodeLineCount & "  TokenCount: " & TokenCount & ")"
+'         If RangeCheck(SourceCodeLineCount, 8716, 8714) Then
+''            Stop
+'            If FrmMain.Chk_verbose <> vbChecked Then FrmMain.Chk_verbose = vbChecked
+'         Else
+'           If FrmMain.Chk_verbose <> vbUnchecked Then FrmMain.Chk_verbose = vbUnchecked
+'         End If
          
-         
-       ' Debug.Assert SourceCodeLineCount <> 447
          
          Select Case Cmd
+         
+'------- Numbers -----------
          Case &H0 To &HF
             '&H5
             Dim int32$
@@ -125,8 +132,9 @@ Sub DeToken()
          
             Debug.Assert Cmd = &H20
          
+
+'------- Strings -----------
          Case &H30 To &H3F
-            
             
            'Get StrLength and load it
             size = .longValue
@@ -147,7 +155,7 @@ Sub DeToken()
                tmpBuff(pos + 1) = tmpBuff(pos + 1) Xor XorKey_h
 '               DecodeString = tmpBuff
                
-               If 0 = (pos Mod &H8000) Then DoEvents
+               'If 0 = (pos Mod &H8000) Then DoEvents
             Next
             
             DecodeString = tmpBuff
@@ -160,12 +168,15 @@ Sub DeToken()
 '               If Not (RawString.EOS) Then Debug.Assert RawString.int8 = 0
 '            Loop
             
+            
+'------- Commands -----------
             Select Case Cmd
             
             Case &H30 'BlockElement (FUNC, IF...) and the Rest of 42 Elements: "AND OR NOT IF THEN ELSE ELSEIF ENDIF WHILE WEND DO UNTIL FOR NEXT TO STEP IN EXITLOOP CONTINUELOOP SELECT CASE ENDSELECT SWITCH ENDSWITCH CONTINUECASE DIM REDIM LOCAL GLOBAL CONST FUNC ENDFUNC RETURN EXIT BYREF WITH ENDWITH TRUE FALSE DEFAULT ENUM NULL"
                FL_verbose """" & DecodeString.Data & """   Type: BlockElement"
                
                Atom = DecodeString
+               bAddWhiteSpace = True
               
               'LineBreak after and before 'Functions'
                If Atom = "ENDFUNC" Then
@@ -197,27 +208,12 @@ Sub DeToken()
             
             Case &H36 'UserString
                
-              'Handle UserString with Quotes...
-               Dim HasDoubleQuote As Boolean, HasSingleQuote As Boolean
-               HasDoubleQuote = InStr(DecodeString.Data, """")
-               HasSingleQuote = InStr(DecodeString.Data, "'")
-               If HasDoubleQuote Then
-                  If (HasSingleQuote) Then
-                   ' Scenario3: " This is a 'Example' on correct "Quoting" String "
-                     Atom = """" & Replace(DecodeString.Data, """", """""") & """"
-                  Else
-                   ' Scenario2: " This is a "Example". "
-                     Atom = "'" & DecodeString & "'"
-                  End If
-               Else
-                ' ' Scenario1: " ExampleString "
-                  Atom = """" & DecodeString & """"
-               End If
-               
+               Atom = MakeAutoItString(DecodeString.Data)
                FL_verbose """" & DecodeString.Data & """   Type: UserString"
             
             Case &H37 '# PreProcessor
                Atom = DecodeString
+               bAddWhiteSpace = True
                FL_verbose """" & DecodeString.Data & """   Type: PreProcessor"
             
             
@@ -228,11 +224,11 @@ Sub DeToken()
             
  '           log String(40, "_")
          
+'------- Operators -----------
          Case &H40 To &H56
 '            Atom = Choose((Cmd - &H40 + 1), ",", "=", ">", "<", "<>", ">=", "<=", "(", ")", "+", "-", "/", "", "&", "[", "]", "==", "^", "+=", "-=", "/=", "*=", "&=")
          '                     Au3Manual AcciChar
             
-            bDontAddWhiteSpace = True
             Select Case Cmd
                Case &H40: Atom = ","  '        2C
                Case &H41: Atom = "="  ' 1  13  3D
@@ -243,11 +239,11 @@ Sub DeToken()
                Case &H46: Atom = "<=" ' 19     3C
                Case &H47: Atom = "("  '        28
                Case &H48: Atom = ")"  '        29
-               Case &H49: Atom = "+": bDontAddWhiteSpace = False ' 7      2B
-               Case &H4A: Atom = "-": bDontAddWhiteSpace = False ' 8      2D
+               Case &H49: Atom = "+": ' 7      2B
+               Case &H4A: Atom = "-": ' 8      2D
                Case &H4B: Atom = "/"  ' 10     2F
-               Case &H4C: Atom = "*": bDontAddWhiteSpace = False ' 9      2A
-               Case &H4D: Atom = "&" ' 11     26
+               Case &H4C: Atom = "*": ' 9      2A
+               Case &H4D: Atom = "&"  ' 11     26
                Case &H4E: Atom = "["  '        5B
                Case &H4F: Atom = "]"  '        5D
                Case &H50: Atom = "==" ' 14     3D
@@ -258,11 +254,14 @@ Sub DeToken()
                Case &H55: Atom = "*=" '4       2A
                Case &H56: Atom = "&=" '6       26
             End Select
-            FL_verbose """" & Atom & """   Type: operator" '   Don'tAddWhiteSpace=" & bDontAddWhiteSpace
+            FL_verbose """" & Atom & """   Type: operator" '   AddWhiteSpace=" & bAddWhiteSpace
             
+'------- EOL -----------
          Case &H7F
             'Execute
             
+            
+            SourceCodeLine = RTrim$(SourceCodeLine)
             
             LogSourceCodeLine SourceCodeLine
             
@@ -270,7 +269,16 @@ Sub DeToken()
             log_verbose String(80, "_")
             log_verbose ""
  
-            
+          ' Test Length
+            Dim SourceCodeLine_Len&
+            SourceCodeLine_Len = Len(SourceCodeLine)
+            If SourceCodeLine_Len >= AUTOIT_SourceCodeLine_MAXLEN Then
+               Log "WARNING: SourceCodeLine: " & SourceCodeLineCount & " is " & _
+               SourceCodeLine_Len - AUTOIT_SourceCodeLine_MAXLEN & " chars longer than " & _
+               AUTOIT_SourceCodeLine_MAXLEN & " - Please remove some spaces manually to make it shorter."
+            End If
+          
+          
           ' Add SourceCodeLine to SourceCode
             SourceCode(SourceCodeLineCount) = SourceCodeLine
             Inc SourceCodeLineCount
@@ -290,19 +298,46 @@ Sub DeToken()
          
          'Debug.Assert SourceCodeLineCount < 1021
          
-         If bDontAddWhiteSpace Then
+         If bAddWhiteSpace Then
            'Add to SourceLine
-            SourceCodeLine = SourceCodeLine & Atom
+            'SourceCodeLine = SourceCodeLine & Atom & AddWhiteSpace
+            'SourceCodeLine = SourceCodeLine & Atom & whiteSpaceTerminal
+'            If SourceCodeLine = "" Then
+'               SourceCodeLine = Atom & whiteSpaceTerminal
+'            Else
+               SourceCodeLine = SourceCodeLine & whiteSpaceTerminal & Atom & whiteSpaceTerminal
+'            End If
+            
          Else
            'Add to SourceLine
-            SourceCodeLine = SourceCodeLine & AddWhiteSpace & Atom
+            SourceCodeLine = SourceCodeLine & Atom
          End If
          
-         Atom = ""
-         
+         DoEventsVerySeldom
+
       Loop Until .EOF
+    
+Err.Clear
+DeToken_Err:
+Select Case Err
+   Case 0
+   Case Else
+     Dim ErrText$
+     ErrText = "ERROR: " & Err.Description & vbCrLf & _
+      "FileOffset: " & H32(.Position) & vbCrLf & _
+      "when detokising script line: " & SourceCodeLineCount & vbCrLf & SourceCodeLine
+     Log ErrText
+     MsgBox ErrText, vbCritical, "Unexpected Error during detokenising"
+     
+     Resume DeToken_Finally
+End Select
+DeToken_Finally:
    .CloseFile
   End With
+  
+BenchEnd
+  
+  
   
   If FrmMain.Chk_TmpFile = vbUnchecked Then
      Log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
@@ -315,12 +350,12 @@ Sub DeToken()
 '   If bUnicodeEnable Then
       Dim ScriptData$
       ScriptData = Join(SourceCode, vbCrLf)
-'
+
 '      Dim FileName_UTF16 As New ClsFilename
 '      FileName_UTF16.FileName = FileName.FileName
 '
 '      FileName_UTF16.Name = FileName.Name & "_UTF16"
-'      FrmMain.log "Saving UTF16-Script to: " & FileName_UTF16.FileName
+'      FrmMain.Log "Saving UTF16-Script to: " & FileName_UTF16.FileName
 '
 '      File.Create FileName_UTF16.FileName, True, False, False
 '      File.Position = 0
@@ -358,6 +393,27 @@ Private Sub LogSourceCodeLine(TextLine$)
       End With
    End If
 End Sub
+'Handle UserString with Quotes...
+Function MakeAutoItString(RawString$)
+             
+   ' HasDoubleQuote ?
+     If InStr(RawString, """") <> 0 Then
+        
+      ' HasSingleQuote ?
+        If InStr(RawString, "'") <> 0 Then
+         ' Scenario3: " This is a 'Example' on correct "Quoting" String "
+           MakeAutoItString = """" & Replace(RawString, """", """""") & """"
+        Else
+         ' Scenario2: " This is a "Example". "
+           MakeAutoItString = "'" & RawString & "'"
+        End If
+     Else
+      ' ' Scenario1: " ExampleString "
+        MakeAutoItString = """" & RawString & """"
+     End If
+     
+
+End Function
 
 ' Add WhiteSpace Seperator to SourceCodeLine
 Function AddWhiteSpace$()
