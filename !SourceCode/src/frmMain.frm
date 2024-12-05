@@ -1,26 +1,26 @@
 VERSION 5.00
 Begin VB.Form FrmMain 
    Caption         =   "myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler<"
-   ClientHeight    =   9588
-   ClientLeft      =   2676
-   ClientTop       =   1008
+   ClientHeight    =   9585
+   ClientLeft      =   2670
+   ClientTop       =   1005
    ClientWidth     =   9300
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
-   OLEDropMode     =   1  'Manuell
-   ScaleHeight     =   9588
+   OLEDropMode     =   1  'Manual
+   ScaleHeight     =   9585
    ScaleWidth      =   9300
    Begin VB.ListBox List_Positions 
       BeginProperty Font 
          Name            =   "Consolas"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   0
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   1848
+      Height          =   1680
       Left            =   3480
       TabIndex        =   14
       ToolTipText     =   "Right click for close"
@@ -29,7 +29,7 @@ Begin VB.Form FrmMain
       Width           =   1215
    End
    Begin VB.CommandButton Cmd_Skip 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Cancel          =   -1  'True
       Caption         =   "Skip >>>"
       Height          =   260
@@ -53,8 +53,8 @@ Begin VB.Form FrmMain
       Top             =   8520
       Width           =   9135
       Begin VB.TextBox txt_OffAdjust 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3360
          TabIndex        =   16
@@ -74,8 +74,8 @@ Begin VB.Form FrmMain
          Width           =   375
       End
       Begin VB.TextBox Txt_Scriptstart 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3360
          TabIndex        =   11
@@ -153,10 +153,10 @@ Begin VB.Form FrmMain
       Width           =   855
    End
    Begin VB.ListBox ListLog 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       BeginProperty Font 
          Name            =   "Consolas"
-         Size            =   7.8
+         Size            =   7.5
          Charset         =   0
          Weight          =   400
          Underline       =   0   'False
@@ -165,30 +165,30 @@ Begin VB.Form FrmMain
       EndProperty
       Height          =   1644
       Left            =   120
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   0
       ToolTipText     =   "Double click to see more ! Single Click an entry that starts with an offset jump to it in Winhex."
       Top             =   6615
       Width           =   9135
    End
    Begin VB.ListBox List_Source 
-      Appearance      =   0  '2D
-      Height          =   5592
+      Appearance      =   0  'Flat
+      Height          =   5490
       ItemData        =   "frmMain.frx":63B3
       Left            =   120
       List            =   "frmMain.frx":63B5
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   4
       Top             =   600
       Visible         =   0   'False
       Width           =   9135
    End
    Begin VB.TextBox Txt_Script 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   5655
       Left            =   120
       MultiLine       =   -1  'True
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   2
       Top             =   600
       Width           =   9135
@@ -198,7 +198,7 @@ Begin VB.Form FrmMain
       ItemData        =   "frmMain.frx":63B7
       Left            =   120
       List            =   "frmMain.frx":63B9
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   10
       Text            =   "Drag the compiled AutoItExe / AutoHotKeyExe or obfucated script in here, or enter/paste path+filename."
       Top             =   120
@@ -206,7 +206,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.Shape Sh_ProgressBar 
       FillColor       =   &H00FF0000&
-      FillStyle       =   0  'Ausgefüllt
+      FillStyle       =   0  'Solid
       Height          =   135
       Index           =   0
       Left            =   120
@@ -216,7 +216,7 @@ Begin VB.Form FrmMain
    End
    Begin VB.Shape Sh_ProgressBar 
       FillColor       =   &H00FFC0C0&
-      FillStyle       =   0  'Ausgefüllt
+      FillStyle       =   0  'Solid
       Height          =   135
       Index           =   1
       Left            =   120
@@ -562,6 +562,7 @@ End Sub
 
 
 Private Sub cmd_options_Click()
+'   Unload Frm_Options
    Frm_Options.Show
 End Sub
 
@@ -873,10 +874,10 @@ Private Sub ListLog_Click()
    With ListLog
       If .Text Like "???????? -> *" Then
          Debug.Print .Text
-         Dim offset$
-         offset = Left(.Text, 8)
+         Dim Offset$
+         Offset = Left(.Text, 8)
          WH_Open
-         WH_Goto HexToInt(offset)
+         WH_Goto HexToInt(Offset)
       End If
    End With
 End Sub

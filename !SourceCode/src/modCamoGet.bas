@@ -1,10 +1,15 @@
 Attribute VB_Name = "GetCamo"
 Option Explicit
 
+Dim CamoGetDoDebug As Boolean
+Dim CamoPattern As New clsStrCat
+Dim myRegExp  As New RegExp
+Dim filedata As New StringReader
+Dim pattern_DebugInfo$
 
 
-
-Private Function z_szToGREPHex(IsUnicode As Boolean, ParamArray Args())
+'Converts a string to Hex reg expression
+Private Function z_szToGREPHex(isUniCode As Boolean, ParamArray Args())
    
    Dim Texts
    If UBound(Args) = 0 Then
@@ -21,12 +26,12 @@ Private Function z_szToGREPHex(IsUnicode As Boolean, ParamArray Args())
    
    Dim Text
    For Each Text In Texts
-      Data = Text & IIf(IsUnicode, vbNullChar, "")
+      Data = Text & IIf(isUniCode, vbNullChar, "")
    
       Dim i&
-      For i = LBound(Data) To UBound(Data) Step IIf(IsUnicode, 1, 2)
+      For i = LBound(Data) To UBound(Data) Step IIf(isUniCode, 1, 2)
          ' ... due to unsafe Unicode convert
-         If Not (IsUnicode) Then Debug.Assert Data(i + 1) = 0
+         If Not (isUniCode) Then Debug.Assert Data(i + 1) = 0
          ret.Concat seperator & H8(Data(i))
       Next
    Next
@@ -68,29 +73,120 @@ End Function
 'End Function
 
 
+Sub pattern_New()
+   CamoPattern.Clear
+End Sub
+
+
+Sub pattern_SimpleAdd(SearchText As String)
+   CamoPattern.Concat SearchText
+   
+   CamoGet_DebugCheck
+End Sub
+
+Sub pattern_AddNullBytesPadding()
+   pattern_Add vbNullChar, "*", False
+End Sub
+
+
+
+Sub pattern_Add(SearchText As String, Optional quantifier = "", Optional isUniCode = True)
+   Dim RE As String
+   If isUniCode Then
+      RE = szToUnicodeGREPHex(SearchText)
+   Else
+      RE = sToGREPHex(SearchText)
+   End If
+   
+   pattern_SimpleAdd RE_Group_NonCaptured(RE) + quantifier
+   
+   
+   CamoGet_DebugCheck
+End Sub
+
+
+Sub pattern_Getter(HowManyChars&)
+   pattern_SimpleAdd RE_Group(RE_AnyCharRepeat(HowManyChars, HowManyChars))
+End Sub
+
+
+Function pattern_GetMatches(CamoPattern) As Match
+
+   myRegExp.Pattern = CamoPattern
+   
+   Dim matches As MatchCollection
+   Set matches = myRegExp.execute(filedata.Data)
+   
+   If matches.Count > 1 Then
+      Log pattern_DebugInfo & " - is ambigious it has " & matches.Count & " matches"
+   End If
+   
+   If matches.Count >= 1 Then
+      Set pattern_GetMatches = matches(0)
+   Else
+      log_verbose pattern_DebugInfo & " - no match found."
+   End If
+   
+End Function
+
+
+
+
+Function SubMatchOffset(Match As Match, SubMatchIndex&) As Long
+   With Match
+      Dim Offset&
+      Offset = InStr(.value, .SubMatches(SubMatchIndex))
+      If RangeCheck(Offset, .Length) Then
+         SubMatchOffset = Offset + .FirstIndex - 1
+      Else
+        'Outside range - normally this should not happen
+         Stop
+      End If
+
+   End With
+
+End Function
+Sub CamoGet_DebugCheck()
+   If CamoGetDoDebug Then
+      myRegExp.Pattern = CamoPattern
+      Dim matches  As MatchCollection
+      Set matches = myRegExp.execute(filedata.Data)
+      If matches.Count = 0 Then
+            Debug.Print "CamoGet: Pattern'" + pattern_DebugInfo + "' (" & Len(myRegExp.Pattern) & ") failed."
+            Debug.Print myRegExp.Pattern
+            Stop
+            'CamoPattern.Clear '!!! just for convient debugging
+      End If
+   End If
+End Sub
+
+
 
 Public Sub CamoGet()
 
 
- '  Dim FileName$
-  ' FileName = "e:\Ablage\4\_dump.exe"
+   CamoGetDoDebug = False 'True
+
+   'Dim FileName$
+   'Frm_Options.Txt_GetCamoFileName = "C:\Tools\MATE\tes\Unc3nZureD\DecompileME.exe_0x401000-0xbc000.bin"
    
    log_verbose "GetCamo's: LoadingFile: " & Frm_Options.Txt_GetCamoFileName
    
-   Dim filedata As New StringReader
+
    filedata = FileLoad(Frm_Options.Txt_GetCamoFileName)
     
-    
-   On Error Resume Next
+   
+   'If Not CamoGetDoDebug Then _
+   'On Error Resume Next
 
 
 ' .rdata
-'  000056B2                                          25 00 30 00  32 00               % 0 2
-'  000056C4   64 00 00 00  72 00 62 00  00 00 00 00  77 00 2B 00  62 00   d   r b     w + b
-'  000056D6   00 00 45 41  30 36 00 00  00 00 25 30  32 58 00 00  00 00     EA06    %02X
-'  000056E8   41 55 33 21  00 00 00 00  61 00 75 00  74 00 00 00  2A 00   AU3!    a u t   *
-'  000056FA   00 00 77 00  62 00 00 00  00 00 46 49  4C 45 00 00  00 00     w b     FILE
-'  0000570C   41 00 42 00  53 00 00 00                                    A B S
+'                                            25 00 30 00  32 00               % 0 2
+'     64 00 00 00  72 00 62 00  00 00 00 00  77 00 2B 00  62 00   d   r b     w + b
+'     00 00 45 41  30 36 00 00  00 00 25 30  32 58 00 00  00 00     EA06    %02X
+'     41 55 33 21  00 00 00 00  61 00 75 00  74 00 00 00  2A 00   AU3!    a u t   *
+'     00 00 77 00  62 00 00 00  00 00 46 49  4C 45 00 00  00 00     w b     FILE
+'     41 00 42 00  53 00 00 00                                    A B S
 
 'Newer Version
 '000B22E0                            30 00 32 00 64 00 00 00           0 2 d
@@ -99,192 +195,129 @@ Public Sub CamoGet()
 '000B2310   61 00 75 00 74 00 00 00  77 00 62 00 00 00 00 00   a u t   w b
 '000B2320   46 49 4C 45 00 00 00 00  57 6F 77 36 34 52 65 76   FILE    Wow64Rev
 '
-   
-Dim Pattern As New clsStrCat
-
-  Pattern.Clear
-  
-  Pattern.Concat szToUnicodeGREPHex( _
-                  "%02d")
-                  
-  Pattern.Concat RE_Group_NonCaptured( _
-         szToUnicodeGREPHex( _
-                  "rb", _
-                  "", _
-                  "w+b" _
-                  ) _
-               )
-   Pattern.Concat "?"
-                  
-   '#1 AU3_SubType
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
-                  'sToGREPHex( _
-                  "EA06")
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar)
-               
-   Pattern.Concat sToGREPHex( _
-                  "%02X")
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar)
-
-   '#2 AU3_Type
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
-                  'szToGREPHex( _
-                  "AU3!")
-
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar, _
-                  "aut" _
-                  )
-   Pattern.Concat RE_Group_NonCaptured(szToUnicodeGREPHex( _
-                  "*" _
-                  ))
-   Pattern.Concat "?"
-                  
-   Pattern.Concat szToUnicodeGREPHex( _
-                  "wb" _
-                  )
-
-   
-   Pattern.Concat sToGREPHex( _
-                  vbNullChar, _
-                  vbNullChar)
-   '#3 AU3_ResTypeFile
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
-                  'szToGREPHex( _
-                  "FILE")
-
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar)
-
-  '("Wow64DisableWow64FsRedirection  Wow64RevertWow64FsRedirection")?
-  ' Pattern.Concat szToUnicodeGREPHex("ABS")
-
-  
-  
+'3.3.8.1
+'00000000   00 00 00 72 00 62 00 00      r b
+'00000008   00 00 00 77 00 2B 00 62      w + b
+'00000010   00 00 00 45 41 30 36 00      EA06
+'00000018   00 00 00 25 30 32 58 00      %02X
+'00000020   00 00 00 41 55 33 21 00      AU3!
+'00000028   00 00 00 61 00 75 00 74      a u t
+'00000030   00 00 00 2A 00 00 00 77      *   w
+'00000038   00 62 00 00 00 00 00 46    b     F
+'00000040   49 4C 45 00 00 00 00 41   ILE    A
+'00000048   00 42 00 53 00 00 00 63    B S   c
+'00000050   00 6C 00 6F 00 73 00 65    l o s e
+' See MATE/Doc/regexp.htm
     
-   Dim myRegExp  As New RegExp
+    
+
+   
+
    myRegExp.IgnoreCase = False
    myRegExp.Global = False
    myRegExp.MultiLine = True
-   
-   myRegExp.Pattern = Pattern
    Dim Match  As Match
-   Set Match = myRegExp.execute(filedata.Data)(0)
    
-   If Err = 0 Then
-      
-      
-      Dim mymatch As SubMatches
-      Set mymatch = Match.SubMatches
-      
-      Debug.Assert mymatch.Count = 3
-      
+   pattern_New
+   
+   pattern_DebugInfo = ".text#2 AU3! for validation"
+   
+   '  8D8C24 A4000000        LEA     ECX, [ESP+A4]
+   '  E8 C27DFFFF            CALL    004046CE
+   '  817C24 60 41553321     CMP     [DWORD ESP+60], 21335541
+   '  0F84 AF670600          JE      004730C9
+   ' pattern_SimpleAdd "\xE8...\xFF"
+   pattern_SimpleAdd "\x81\x7C\x24."
+   pattern_Getter 4
+   pattern_SimpleAdd "\x0F"
+   
+   Set Match = pattern_GetMatches(CamoPattern)
+   If Not Match Is Nothing Then
+      Dim AU3_SubTypeText$
+      AU3_SubTypeText = Match.SubMatches(0)
       
       Dim AU3_SubType$
-      AU3_SubType = mymatch.item(0)
+      If AU3_SubTypeText <> AU3_SubType Then
+         Log "GetCamo ERROR: AU3_SubType that I got from .text is different from the on in the .data section."
+         Log "AU3_SubType_Text: " & ToHexStr(AU3_SubTypeText) & " <> AU3_SubType_data: " & ToHexStr(AU3_SubType)
+      Else
+         log_verbose ("Alternative AU3_SubType in .text matches with the one in .data")
+      End If
+      
+   End If
+
+
+
+   pattern_New
+   
+  '#1 AU3_SubType
+   pattern_DebugInfo = ".rdata#1 EA06"
+   
+   pattern_Add "%02d", "?"
+   pattern_Add "rb", "?"
+   pattern_Add ""
+   pattern_Add "w+b"
+                  
+   pattern_Getter 4
+   pattern_AddNullBytesPadding
+                  
+  '#2 AU3_Type ("AU3!")
+   pattern_DebugInfo = ".rdata#2 AU3!"
+   
+   pattern_Add "%02X", "?", False
+   pattern_AddNullBytesPadding
+   pattern_Getter 4
+   pattern_AddNullBytesPadding
+
+  '#3 AU3_ResTypeFile
+   pattern_DebugInfo = ".rdata#3 FILE"
+   pattern_Add "aut"
+   pattern_Add "*", "?"
+   pattern_Add "wb"
+   pattern_AddNullBytesPadding
+   pattern_Getter 4
+   
+ ' Do #1 EA06 , #2 AU3! and #3 FILE
+   Set Match = pattern_GetMatches(CamoPattern)
+   
+   If Not Match Is Nothing Then
+       
+      Dim mymatch As SubMatches
+      'Set mymatch = Match.SubMatches
+      
+      
+      'Dim AU3_SubType$
+      AU3_SubType = Match.SubMatches(0)
          
       Dim AU3_Type$
-      AU3_Type = mymatch.item(1)
+      AU3_Type = Match.SubMatches(1)
       
       Dim AU3_ResTypeFile$
-      AU3_ResTypeFile = mymatch.item(2)
+      AU3_ResTypeFile = Match.SubMatches(2)
       
-   Else
-         '  8D8C24 A4000000        LEA     ECX, [ESP+A4]
-         '  E8 C27DFFFF            CALL    004046CE
-         '  817C24 60 41553321     CMP     [DWORD ESP+60], 21335541
-         '  0F84 AF670600          JE      004730C9
-
-      Err.Clear
-      
-      
-      
-  Pattern.Clear
-  
-  Pattern.Concat szToUnicodeGREPHex( _
-                  "%02d")
-                  
-  Pattern.Concat RE_Group_NonCaptured( _
-         szToUnicodeGREPHex( _
-                  "Default", _
-                  "w+b" _
-                  ) _
-               )
-   Pattern.Concat "?"
-                  
-   '#1 AU3_SubType
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
-                  'sToGREPHex( _
-                  "EA06")
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar)
-               
-
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar, _
-                  "aut" _
-                  )
-                  
-   Pattern.Concat szToUnicodeGREPHex( _
-                  "wb" _
-                  )
-
-   
-   Pattern.Concat sToGREPHex( _
-                  vbNullChar, _
-                  vbNullChar)
-   '#3 AU3_ResTypeFile
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
-                  'szToGREPHex( _
-                  "FILE")
-
-   Pattern.Concat szToUnicodeGREPHex( _
-                  vbNullChar)
-
-  '("Wow64DisableWow64FsRedirection  Wow64RevertWow64FsRedirection")?
-  ' Pattern.Concat szToUnicodeGREPHex("ABS")
-
-   myRegExp.Pattern = Pattern
-   Set Match = myRegExp.execute(filedata.Data)(0)
-      
-        
-      AU3_Type = mymatch.item(0)
-      AU3_ResTypeFile = mymatch.item(1)
-            
-      
-      
-      Pattern.Clear
-'      Pattern.Concat "\xE8...\xFF"
-      Pattern.Concat "\x81\x7C\x24."
-      Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
- '     Pattern.Concat "\x0F"
-      myRegExp.Pattern = Pattern
-      
-      Set Match = myRegExp.execute(filedata.Data)(0)
-
-      Set mymatch = Match.SubMatches
-
-
-      AU3_SubType = mymatch.item(0)
-
 
    End If
    
-   With Frm_Options
-      .Txt_AU3_SubType_hex = ToHexStr(AU3_SubType)
-      log_verbose H32(Match.FirstIndex) & " ->  Found  AU3_SubType: " & .txt_AU3_SubType
+   '  alternative AU3_SubType is also present in .text section
+   '  use it to validate ...
+   
+   
+      With Frm_Options
+         .Txt_AU3_SubType_hex = ToHexStr(AU3_SubType)
+         log_verbose H32(SubMatchOffset(Match, 0)) & " ->  Found  AU3_SubType: " & .txt_AU3_SubType
+         
+         .txt_AU3_Type_hex = ToHexStr(AU3_Type)
+         log_verbose H32(SubMatchOffset(Match, 1)) & " ->  Found  AU3_Type : " & .txt_AU3_Type
+         
+         .txt_AU3_ResTypeFile_hex = ToHexStr(AU3_ResTypeFile)
+         log_verbose H32(SubMatchOffset(Match, 2)) & " ->  Found  AU3_ResTypeFile :" & .txt_AU3_ResTypeFile
       
-      .txt_AU3_Type_hex = ToHexStr(AU3_Type)
-      log_verbose "Found  AU3_Type : " & .txt_AU3_Type
-      
-      .txt_AU3_ResTypeFile_hex = ToHexStr(AU3_ResTypeFile)
-      log_verbose "Found  AU3_ResTypeFile :" & .txt_AU3_ResTypeFile
-   
-   End With
+      End With
    
    
+   
+'_____________________________________________________________________________
+
 '.data
 '00002088   37 BE 0B B4 A1 8E 0C C3   7¾ ´¡Ž Ã
 '00002090   1B DF 05 5A 8D EF 02 2D    ß Z ï -
@@ -322,28 +355,28 @@ Dim Pattern As New clsStrCat
 '00002238   3C 57 49 00 0C 00 00 00   <WI
 '00002240   99 4C 53 0A 86 D6 48 7D   ™LS †ÖH}
 '00002248   A3 48 4B BE 98 6C 4A A9   £HK¾˜lJ©
-'00002250   80 00 00 00 00 00 00 00   €
+'00002250   80 00 00 00 00 00 00 00   €           <= 80-Bytes long  NullByteArray
 '00002258   00 00 00 00 00 00 00 00
-   Pattern.Clear
- 
- 
+   pattern_New
+   pattern_DebugInfo = ".data#4 £HK..."
+   
  ' myRegExp has a stupid bug - it doesn't matches \x00 !!!
  ' ^-so I used '.' instead
-   Pattern.Concat ("\x01...\x02...\x03...\x03...........\x07") '\xBE '\x8E
+   pattern_SimpleAdd ("\x01...\x02...\x03...\x03...........\x07") '\xBE '\x8E
  
-'   Pattern.Concat ("\x37.\x0B\xB4\xA1.\x0C\xC3\x1B\xDF\x05\x5A\x8D\xEF\x02\x2D") '\xBE '\x8E
- '  Pattern.Concat RE_Group_NonCaptured(RE_AnyCharRepeat(429, 429))  '("\x99\x4C\x53\x0A\x86\xD6\x48\x7D")
+'   pattern_SimpleAdd ("\x37.\x0B\xB4\xA1.\x0C\xC3\x1B\xDF\x05\x5A\x8D\xEF\x02\x2D") '\xBE '\x8E
+ '  pattern_SimpleAdd RE_Group_NonCaptured(RE_AnyCharRepeat(429, 429))  '("\x99\x4C\x53\x0A\x86\xD6\x48\x7D")
  
-   myRegExp.Pattern = Pattern
-   Set Match = Nothing
-   Set Match = myRegExp.execute(filedata.Data)(0)
-   If (Match Is Nothing) = False Then
+   Set Match = pattern_GetMatches(CamoPattern)
+   
+   If Not Match Is Nothing Then
       filedata.Position = Match.FirstIndex
-      log_verbose H32(filedata.Position) & " ->  Found  AU3_Signature: " ' & .txt_AU3Sig
+      log_verbose H32(filedata.Position) & " ->  AU3_Signature seek backwards position..." ' & .txt_AU3Sig
 
       
       Dim AU3Sig_Hex$
       
+    ' Now find begin of 80-Bytes long  NullByteArray...
       filedata.bSearchBackward = True
       filedata.FindByte &H80
 '      If filedata.FindString(Chr(&HE) & String(&H44, vbNullChar) & Chr(&HF) & String(3, vbNullChar)) Then
@@ -357,11 +390,11 @@ Dim Pattern As New clsStrCat
          
          
    '    ' Subpattern
-   '      Pattern.Clear
-   '      Pattern.Concat ("\x01..." & _
+   '      pattern_New
+   '      pattern_SimpleAdd ("\x01..." & _
    '                      "\x02..." & _
    '                      "\x03...")
-   '      myRegExp.Pattern = Pattern
+   '      myRegExp.Pattern = CamoPattern
    '
    '
    '
@@ -382,17 +415,7 @@ Dim Pattern As New clsStrCat
        ' Seek to au3sig start
          filedata.Move -1 - 2 * 8
           
-         
-      '   Pattern.Clear
-      '   Pattern.Concat RE_Group(RE_AnyCharRepeat(8, 8)) '("\x99\x4C\x53\x0A\x86\xD6\x48\x7D")
-      '   Pattern.Concat RE_Group(RE_AnyCharRepeat(8, 8)) ' ("\xA3\x48\x4B\xBE\x98\x6C\x4A\xA9")
-      ''   Pattern.Concat "[^\x00]\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
-      '
-      '   myRegExp.Pattern = Pattern
-      '   Set mymatch = myRegExp.Execute(filedata.FixedString(-1)).item(0).SubMatches
-      '
-      '
-      '
+       ' Read AU3_Signature
          Dim hex1 As New StringReader
          hex1.Data = filedata.FixedString(8)
          
@@ -400,168 +423,156 @@ Dim Pattern As New clsStrCat
          hex2.Data = filedata.FixedString(8)
          
          AU3Sig_Hex = ValuesToHexString(hex2) & ValuesToHexString(hex1)
+         AU3Sig_Hex = RTrim(AU3Sig_Hex)
          
-         With Frm_Options
          
-            .txt_AU3Sig_Hex = RTrim(AU3Sig_Hex)
-            log_verbose H32(filedata.Position - 16) & " ->  Found  AU3_Signature: " & .txt_AU3Sig
-      
-            .Chk_NormalSigScan.value = vbChecked
-         End With
+         Frm_Options.txt_AU3Sig_Hex = AU3Sig_Hex
+         
+         log_verbose H32(filedata.Position - 16) & " ->  Found  AU3_Signature: " & AU3Sig_Hex
+         
+         Frm_Options.Chk_NormalSigScan.value = vbChecked
+         
       Else
-         With Frm_Options
-            log_verbose "Find AU3_Signature failed!"
-            
-            .Chk_NormalSigScan.value = vbUnchecked
-         End With
+         log_verbose "Find AU3_Signature failed!"
+      
+         Frm_Options.Chk_NormalSigScan.value = vbUnchecked
 
       End If
       
       
    End If
 '---------------------------------------------------
-   Pattern.Clear
-'18EE
-   Pattern.Concat "\xE8...\xFF"
-   Pattern.Concat (".\xC4.")        ' \x83ADD     ESP, 10
-   Pattern.Concat ("\x68")                ' PUSH
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\x11\x2B\x04\x7F")    '        18EE
-   Pattern.Concat ("\x6A\x04")            ' PUSH    4
-   Pattern.Concat ("\x8D") '\x54\x24")        '8D55 F4         LEA     EDX, [EBP-C]
-   '004572CE    52              PUSH    EDX
 
-   myRegExp.Pattern = Pattern
-   Set mymatch = Nothing
-   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
+ ' 18EE
+   pattern_New
+   pattern_DebugInfo = ".text#1 0x18EE FILE_DecryptionKey..."
+
    
-   Dim tmpstr As New StringReader
-   tmpstr.Data = mymatch.item(0)
+   pattern_SimpleAdd "\xE8...\xFF"
+   pattern_SimpleAdd (".\xC4.")      ' \x83    ADD     ESP, 10
+   pattern_SimpleAdd ("\x68")                ' PUSH
+   pattern_Getter 4  '("\x11\x2B\x04\x7F")   '        18EE
+   pattern_SimpleAdd ("\x6A\x04")            ' PUSH    4
+   pattern_SimpleAdd ("\x8D")                ' LEA     EDX, [EBP-C]  '\x8D\x54\x24 or  8D55 F4
+                                          '52  PUSH    EDX
 
-   With Frm_Options
-      .txt_FILE_DecryptionKey = H32(tmpstr.int32)
-       log_verbose H32(mymatch.Count) & " ->  Found  AU3_ResourceTypeFILE: " & .txt_FILE_DecryptionKey
+   Set Match = pattern_GetMatches(CamoPattern)
+   
+   If Not Match Is Nothing Then
+   
+      Dim tmpstr As New StringReader
+      tmpstr.Data = Match.SubMatches(0)
+   
+      Frm_Options.txt_FILE_DecryptionKey = H32(tmpstr.int32)
+      log_verbose H32(SubMatchOffset(Match, 0)) & " ->  Found  AU3_ResourceTypeFILE: " & Frm_Options.txt_FILE_DecryptionKey
 
-   End With
+   End If
+    
+'---------------------------------------------------
+   pattern_New
+   pattern_DebugInfo = ".text#11 0x99F2 FileInst_LenNew..."
+
+   pattern_SimpleAdd "\xE8...\xFF"
+   pattern_SimpleAdd (".\xC4.")  ' \x83ADD     ESP, 10
+   pattern_SimpleAdd ("\x68")                ' PUSH 99f2
+   pattern_Getter 4                              '0x99f2
+   pattern_SimpleAdd ("\x6A\x10")            ' PUSH    10
+   pattern_SimpleAdd ("\x8D")                ' LEA     EDX, [EBP-C]    '\x54\x24")        '8D55 F4
+                                        '  52  PUSH    EDX
+
+   Set Match = pattern_GetMatches(CamoPattern)
+   If Not Match Is Nothing Then
+   
+      tmpstr = Match.SubMatches(0)
+      Frm_Options.txtXORKey_MD5PassphraseHashText_DataNew = H32(tmpstr.int32)
+   End If
+ 
+ 
  
 '---------------------------------------------------
-   Pattern.Clear
-'99F2
-   Pattern.Concat "\xE8...\xFF"
-   Pattern.Concat (".\xC4.")        ' \x83ADD     ESP, 10
-   Pattern.Concat ("\x68")                ' PUSH 99f2
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4))
-   Pattern.Concat ("\x6A\x10")            ' PUSH    10
-   Pattern.Concat ("\x8D") '\x54\x24")        '8D55 F4         LEA     EDX, [EBP-C]
-   '004572CE    52              PUSH    EDX
-
-   myRegExp.Pattern = Pattern
-   Set mymatch = Nothing
-   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
-   
-   tmpstr = mymatch.item(0)
-
-   With Frm_Options
-      .txtXORKey_MD5PassphraseHashText_DataNew = H32(tmpstr.int32)
-   End With
+   pattern_New
+   pattern_DebugInfo = ".text#2 0xB33F FileInst_DataNew..."
  
- 
- 
-'---------------------------------------------------
-   Pattern.Clear
- 
-  ' Pattern.Concat ("\x8B\x06")             ' MOV     EAX, [ESI]
-   Pattern.Concat ("\x50")                  ' PUSH    EAX
-   Pattern.Concat ("\x81\xF7")              ' XOR     EDI,
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\xBC\xAD\x00\x00") '0ADBC
-   Pattern.Concat ("\x8D\x1C\x3F")          ' LEA     EBX, [EDI+EDI]
-   Pattern.Concat ("\x53")                  ' PUSH    EBX
-     Pattern.Concat ("\x8D") '\x4C\x24\x38")    ' LEA     ECX, [ESP+38]
-           '00457313    8D  8D  E0FDFFFF   LEA     ECX, [EBP-220]
-   Pattern.Concat RE_AnyCharRepeat(3, 5)
+  ' pattern_SimpleAdd ("\x8B\x06")             ' MOV     EAX, [ESI]
+   pattern_SimpleAdd ("\x50")                  ' PUSH    EAX
+   pattern_SimpleAdd ("\x81\xF7")              ' XOR     EDI,
+   pattern_Getter 4       '("\xBC\xAD\x00\x00")             '0ADBC
+   pattern_SimpleAdd ("\x8D\x1C\x3F")          ' LEA     EBX, [EDI+EDI]
+   pattern_SimpleAdd ("\x53")                  ' PUSH    EBX
+   pattern_SimpleAdd ("\x8D") '\x4C\x24\x38"   ' LEA     ECX, [ESP+38]
+                 '00457313    8D  8D  E0FDFFFF   LEA     ECX, [EBP-220]
+   pattern_SimpleAdd RE_AnyCharRepeat(3, 5)
   
-     Pattern.Concat ("\x6A\x01")            ' PUSH    1
-     Pattern.Concat ("\x51")                ' PUSH    ECX
-     Pattern.Concat ("\xE8...\xFF")         ' CALL    004151B0FC\xFF")     '  CALL    004151B0
-     Pattern.Concat (".\xC4.")              ' \x83 ADD     ESP, 20
-     Pattern.Concat ("\x81\xC7")            '  ADD     EDI,
-   Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\x3F\xB3\x00\x00") '0B33F
-     Pattern.Concat ("\x57")                '  PUSH    EDI
-     Pattern.Concat ("\x53")                '  PUSH    EBX
-     Pattern.Concat ("\x8D") '\x54\x24.")       '  LEA     EDX, [ESP+28]
- '    Pattern.Concat ("\x52")                '  PUSH    EDX
-   myRegExp.Pattern = Pattern
+   pattern_SimpleAdd ("\x6A\x01")            ' PUSH    1
+   pattern_SimpleAdd ("\x51")                ' PUSH    ECX
+   pattern_SimpleAdd ("\xE8...\xFF")         ' CALL    004151B0FC   \xFF")     '  CALL    004151B0
+   pattern_SimpleAdd (".\xC4.")         ' \x83 ADD     ESP, 20
+   pattern_SimpleAdd ("\x81\xC7")            '  ADD     EDI,
+   pattern_Getter 4                 '("\x3F\xB3\x00\x00") '0B33F
+   pattern_SimpleAdd ("\x57")                '  PUSH    EDI
+   pattern_SimpleAdd ("\x53")                '  PUSH    EBX
+   pattern_SimpleAdd ("\x8D...") '\x54\x24." '  LEA     EDX, [ESP+28]
+'  pattern_SimpleAdd ("\x52")                '  PUSH    EDX
+   myRegExp.Pattern = CamoPattern
    
-   Set mymatch = Nothing
-   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
-   
-   
-   With Frm_Options
-       tmpstr = mymatch.item(0)
-      .txtSrcFile_FileInst_LenNew = H32(tmpstr.int32)
+   Set Match = pattern_GetMatches(CamoPattern)
+   If Not Match Is Nothing Then
       
-       tmpstr = mymatch.item(1)
-      .txtSrcFile_FileInst_DataNew = H32(tmpstr.int32)
-
+      tmpstr = Match.SubMatches(0)
+      Frm_Options.txtSrcFile_FileInst_LenNew = H32(tmpstr.int32)
       
-   End With
- 
+      tmpstr = Match.SubMatches(1)
+      Frm_Options.txtSrcFile_FileInst_DataNew = H32(tmpstr.int32)
+      
+       log_verbose H32(SubMatchOffset(Match, 0)) & " ->  Found  FileInst_New Data&Len"
+   End If
  
 '---------------------------------------------------
-   Pattern.Clear
+   pattern_New
+   pattern_DebugInfo = ".text#3 0xF479 CompiledPathName..."
  
- 
-                                 '8B7C24 28       MOV     EDI, [ESP+28]
-'       Pattern.Concat ("\x8B\x16")             ' MOV     EDX, [ESI]
-       Pattern.Concat ("\x52")                 ' PUSH    EDX
-       Pattern.Concat ("\x81\xF7")             ' XOR     EDI,
-       Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\x20\xF8\x00\x00")  0F820
-       Pattern.Concat ("\x8D\x1C\x3F")         ' LEA     EBX, [EDI+EDI]
-       Pattern.Concat ("\x53")                 ' PUSH    EBX
-       Pattern.Concat ("\x8D") '\x44\x24.")      ' LEA     EAX, [ESP+40]
-       Pattern.Concat RE_AnyCharRepeat(3, 5)
-       Pattern.Concat ("\x6A\x01")              ' PUSH    1
-       Pattern.Concat ("\x50")                  ' PUSH    EAX
-       Pattern.Concat ("\xE8...\xFF")  ' CALL    004151B0
-       Pattern.Concat (".\xC4.")          '\x83 ADD     ESP, 28
-       Pattern.Concat ("\x81\xC7")              '  ADD     EDI,
-       Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\x79\xF4\x00\x00")            '0F479
-       Pattern.Concat ("\x57")                  ' PUSH    EDI
+                                   '8B7C24 28       MOV     EDI, [ESP+28]
+      'pattern_SimpleAdd ("\x8B\x16")             ' MOV     EDX, [ESI]
+       pattern_SimpleAdd ("\x52")                 ' PUSH    EDX
+       pattern_SimpleAdd ("\x81\xF7")             ' XOR     EDI,
+       pattern_Getter 4                  '("\x20\xF8\x00\x00")  0F820
+       pattern_SimpleAdd ("\x8D\x1C\x3F")         ' LEA     EBX, [EDI+EDI]
+       pattern_SimpleAdd ("\x53")                 ' PUSH    EBX
+       pattern_SimpleAdd ("\x8D") '\x44\x24.")    ' LEA     EAX, [ESP+40]
+       pattern_SimpleAdd RE_AnyCharRepeat(3, 5)
+       pattern_SimpleAdd ("\x6A\x01")             ' PUSH    1
+       pattern_SimpleAdd ("\x50")                 ' PUSH    EAX
+       pattern_SimpleAdd ("\xE8...\xFF")          ' CALL    004151B0
+       pattern_SimpleAdd (".\xC4.")           '\x83 ADD     ESP, 28
+       pattern_SimpleAdd ("\x81\xC7")            '  ADD     EDI,
+       pattern_Getter 4        '("\x79\xF4\x00\x00")             0F479
+       pattern_SimpleAdd ("\x57")                  ' PUSH    EDI
    
-   myRegExp.Pattern = Pattern
-   Set mymatch = Nothing
-   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
-   
+   Set Match = pattern_GetMatches(CamoPattern)
+   If Not Match Is Nothing Then
 
-   
-   With Frm_Options
-      tmpstr = mymatch.item(0)
-      .txtCompiledPathName_LenNew = H32(tmpstr.int32)
+      tmpstr = Match.SubMatches(0)
+      Frm_Options.txtCompiledPathName_LenNew = H32(tmpstr.int32)
       
-      tmpstr = mymatch.item(1)
-      .txtCompiledPathName_DataNew = H32(tmpstr.int32)
-   End With
+      tmpstr = Match.SubMatches(1)
+      Frm_Options.txtCompiledPathName_DataNew = H32(tmpstr.int32)
+      
+      filedata.Position = SubMatchOffset(Match, 0)
+      log_verbose H32(filedata.Position) & " ->  Found  CompiledPathName Data&Len"
+   End If
  
 '---------------------------------------------------
-'   Pattern.Clear
+'       pattern_SimpleAdd ("\xE8...\xFF")            'E8 11DDFBFF     CALL    0041527B
+'       pattern_SimpleAdd ("\x8B.\x08")            '\x8B\x46\x08 MOV     EAX, [ESI+8]
+'                   '                 8B4E 08         MOV     ECX, [ESI+8]
 '
-'
-'
-'       Pattern.Concat ("\xE8...\xFF")            'E8 11DDFBFF     CALL    0041527B
-'
-'       Pattern.Concat ("\x8B.\x08")            '\x8B\x46\x08 MOV     EAX, [ESI+8]
-'        '                 8B4E 08         MOV     ECX, [ESI+8]
-'
-'       Pattern.Concat (".\xC4\x10")            '\x83 ADD     ESP, 10
-'       Pattern.Concat RE_AnyCharRepeat(1, 2) ' ("\x05") ADD     EAX,   | 81C1 77240000   ADD     ECX, 2477
-'       Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\x77\x24\x00\x00") ' 2477
-'       Pattern.Concat (".") ' ("\x50")                    'PUSH    EAX
-'       Pattern.Concat ("\x57")                    'PUSH    EDI
-'       Pattern.Concat (".") '\x55")                    'PUSH    EBP
-'       Pattern.Concat ("\xE8...\xFF")
-   
-   
-'   Pattern.Clear
-
+'       pattern_SimpleAdd (".\xC4\x10")         '\x83 ADD     ESP, 10
+'       pattern_SimpleAdd RE_AnyCharRepeat(1, 2) ' ("\x05") ADD     EAX,   | 81C1 77240000   ADD     ECX, 2477
+'       pattern_Getter                             '("\x77\x24\x00\x00") ' 2477
+'       pattern_SimpleAdd (".") ' ("\x50")            'PUSH    EAX
+'       pattern_SimpleAdd ("\x57")                    'PUSH    EDI
+'       pattern_SimpleAdd (".") '\x55")               'PUSH    EBP
+'       pattern_SimpleAdd ("\xE8...\xFF")
 
 '004578A3    C2 0C00         RETN    0C
 '004578A6    8B56 08         MOV     EDX, [ESI+8]
@@ -573,28 +584,32 @@ Dim Pattern As New clsStrCat
 '
 
 '2477
-   Pattern.Clear
-
-       Pattern.Concat ("\xC2..")                  'C2 0C00         RETN    0C
-
-       Pattern.Concat ("‹.\x08")                 ' /x8b -> ‹   8B56 08         MOV     EDX, [ESI+8]
-       Pattern.Concat RE_AnyCharRepeat(1, 2)     '  05   77240000  ADD     EAX, 2477 |
-                                                '   81C1 77240000  ADD     ECX, 2477
-       Pattern.Concat RE_Group(RE_AnyCharRepeat(4, 4)) '("\x77\x24\x00\x00") ' 2477
-       Pattern.Concat "."                        ' ("\x50")                     'PUSH    EAX | 51              PUSH    ECX
-       Pattern.Concat "\x8D" & RE_AnyCharRepeat(5, 6) '  8D8D E0FDFFFF   LEA     ECX, [EBP-220]
-       Pattern.Concat "."                       '  "\x50"       '50              PUSH    EAX | EDX
-       Pattern.Concat "\xE8...\xFF"
-       Pattern.Concat "\x33\xC0"
+   pattern_New
+   pattern_DebugInfo = ".text#7 0x2477 DecryptionKey_New..."
    
-   myRegExp.Pattern = Pattern
-   Set mymatch = Nothing
-   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
+       pattern_SimpleAdd ("\xC2..")                'C2 0C00         RETN    0C
+                        ' "‹... =>  "\x8b...
+       pattern_SimpleAdd ("‹.\x08")                '8B56 08         MOV     EDX, [ESI+8]
+       pattern_SimpleAdd RE_AnyCharRepeat(1, 2)   '  05   77240000  ADD     EAX, 2477 |
+                                                 '   81C1 77240000  ADD     ECX, 2477
+       pattern_Getter 4 '("\x77\x24\x00\x00") ' 2477
+       pattern_SimpleAdd "."                        ' ("\x50")                     'PUSH    EAX | 51              PUSH    ECX
+       pattern_SimpleAdd "\x8D" & RE_AnyCharRepeat(5, 6) '  8D8D E0FDFFFF   LEA     ECX, [EBP-220]
+       pattern_SimpleAdd "."                       '  "\x50"       '50              PUSH    EAX | EDX
+       pattern_SimpleAdd "\xE8...\xFF"
+       pattern_SimpleAdd "\x33\xC0"
    
-   With Frm_Options
-      tmpstr = mymatch.item(0)
-      .txtData_DecryptionKey_New = H32(tmpstr.int32)
-   End With
+   Set Match = pattern_GetMatches(CamoPattern)
+   If Not Match Is Nothing Then
+      
+      tmpstr = Match.SubMatches(0)
+      Frm_Options.txtData_DecryptionKey_New = H32(tmpstr.int32)
+      
+      filedata.Position = SubMatchOffset(Match, 0)
+      log_verbose H32(filedata.Position) & " ->  Found  DecryptionKey: "
+      
+      
+   End If
   
   
 '---------------------------------------------------------
@@ -605,25 +620,27 @@ Dim Pattern As New clsStrCat
 '0040285B    E9 A1020000     JMP     00402B01
 '80 34 08 2F 41 3B 4D 10 75 F6 E9 A1 02 00 00
 
-'
-
-'2477
-   Pattern.Clear
-
-       Pattern.Concat (".\x34\x08" & RE_Group(RE_AnyChar))                  '803408 2F       XOR     [BYTE EAX+ECX], 2F
-       Pattern.Concat ("\x41\x3B\x4D\x10\x75") '\xF6\xE9\xA1\x02\x00\x00")
+   pattern_New
+   pattern_DebugInfo = ".text#8 0x2F optional extra XORCryptkey..."
+   
+   pattern_SimpleAdd (".\x34\x08" & RE_Group(RE_AnyChar))                  '803408 2F       XOR     [BYTE EAX+ECX], 2F
+   pattern_SimpleAdd ("\x41\x3B\x4D\x10\x75") '\xF6\xE9\xA1\x02\x00\x00")
        
        
        
-   myRegExp.Pattern = Pattern
-   Set mymatch = Nothing
-   Set mymatch = myRegExp.execute(filedata.Data).item(0).SubMatches
+   Set Match = pattern_GetMatches(CamoPattern)
    
    Dim XORCryptkey&
-   XORCryptkey = Asc(mymatch.item(0))
+   If Not Match Is Nothing Then XORCryptkey = Asc(Match.SubMatches(0))
    If XORCryptkey Then
-      Log "XORCryptkey: " & H8x(XORCryptkey) _
-          & "    as char '" & mymatch.item(0) & "'"
+      
+      XORCryptkey = Asc(Match.SubMatches(0))
+   
+   
+      filedata.Position = Match.FirstIndex
+      Log H32(filedata.Position) & " ->  " & _
+          "XORCryptkey: " & H8x(XORCryptkey) _
+          & "    as char '" & Match.SubMatches(0) & "'"
       Log "Custom ReadFileHook with XORCryptkey found !!!"
       
     ' Xor & save as *.a3x
@@ -641,11 +658,8 @@ Dim Pattern As New clsStrCat
 
  
 '---------------------------------------------------
-  
    
-   Pattern.Clear
- 
-   Frm_Options.CommitChanges
+  Frm_Options.CommitChanges
  
 End Sub
 

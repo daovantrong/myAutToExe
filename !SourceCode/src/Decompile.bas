@@ -1267,6 +1267,14 @@ Processing_Finished:
             bIsAHK_Script = True
          
          Else
+         
+            Dim SrcFile_FileInst_trimed$
+            SrcFile_FileInst_trimed = Trim(SrcFile_FileInst)
+            If SrcFile_FileInst_trimed <> SrcFile_FileInst Then
+               Log "WARNING: removed spaces from SrcFile_FileInst: " & Quote(SrcFile_FileInst)
+               SrcFile_FileInst = SrcFile_FileInst_trimed
+            End If
+            
             'If it's like this everything is as unusal
             ' CompiledPathName = "d:\ahk\compile_ahk\compile_ahk.exe" &
             ' SrcFile_FileInst = "Compile_AHK.exe"
@@ -1745,19 +1753,26 @@ With ScriptData
       Log "Expanding script data to """ & OutFileName.NameWithExt & """ at " & OutFileName.Path
          
        ' Run "LZSS.exe -d *.debug *.au3" to extract the script (...and wait for its execution to finish)
-         Dim LZSS_Output$, ExitCode&
-         LZSS_Output = Console.ShellExConsole( _
-                  App.Path & "\" & "data\LZSS.exe", _
-                  "-d " & Quote(.FileName) & " " & Quote(OutFileName.FileName), _
-                  ExitCode)
-      
-         If ExitCode <> 0 Then Log LZSS_Output, "LZSS_Output: "
+'         Dim bDontWaitForExtraction As Boolean
+'         bDontWaitForExtraction = True
+'         If bDontWaitForExtraction Then
+'            Shell App.Path & "\" & "data\LZSS.exe" & _
+'                " -d " & Quote(.FileName) & " " & Quote(OutFileName.FileName), vbNormalFocus
+'         Else
+            Dim LZSS_Output$, ExitCode&
+            LZSS_Output = Console.ShellExConsole( _
+                     App.Path & "\" & "data\LZSS.exe", _
+                     "-d " & Quote(.FileName) & " " & Quote(OutFileName.FileName), _
+                     ExitCode)
          
-'                  ShellEx App.Path & "\" & "lzss.exe", _
-               "-d " & Quote(.FileName) & " " & Quote(OutFileName.FileName)
+            If ExitCode <> 0 Then Log LZSS_Output, "LZSS_Output: "
+'         End If
          
        ' Closes and deletes TmpFile
          .CloseFile
+         
+
+
       End With
    End With
 End Sub

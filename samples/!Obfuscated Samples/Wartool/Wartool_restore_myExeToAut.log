@@ -1,0 +1,60 @@
+
+myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler< 2.15 build(213)
+================================================================================
+///////////////////////////////////////////////////////////////////////////////
+//    S T A G E  0  -  UPX Decompress
+//
+///////////////////////////////////////////////////////////////////////////////
+//    S T A G E  1  -  AutoIT Unpack
+//
+Unpacking: C:\Tools\MATE\samples\!Obfuscated Samples\Wartool\Wartool_restore.au3
+AlternativeSigScan for 'FILE'-signature in au3-body...
+Scanning for FILE-(old)signature: FF 6D B0 CE    ÿm°Î
+...not found.
+Scanning for FILE-(new)signature: 6B 43 CA 52    kCÊR
+...not found.
+ERR: 'FILE'-signature not found. Please enter start of script manually.
+///////////////////////////////////////////////////////////////////////////////
+//    S T A G E  2  -  AutoIT DeTokise
+//
+DeTokenising: C:\Tools\MATE\samples\!Obfuscated Samples\Wartool\Wartool_restore.au3
+ERR: STOPPED!!! Required FileExtension for Tokenfiles: '.tok .mem'
+Rename this file manually to show that this should be detokenied.
+///////////////////////////////////////////////////////////////////////////////
+//    S T A G E  3  -  AutoIT DeOfuscate
+//
+Testing for TextFile...
+Done. (Textfile=True)
+DeObfuscating : C:\Tools\MATE\samples\!Obfuscated Samples\Wartool\Wartool_restore.au3
+Running 'Tidy.exe Wartool_restore.au3' to improve sourcecode readability.
+C:\Tools\MATE\data\Tidy\Tidy.exe "C:\Tools\MATE\samples\!Obfuscated Samples\Wartool\Wartool_restore.au3"
+Tidy: Tidy AutoIt3 v16.612.1119.0   Copyright (c) Jos van der Zande  June 12,2016
+Tidy: Params$	 c:\tools\mate\samples\!obfuscated samples\wartool\wartool_restore.au3 c:\tools\mate\samples\!obfuscated samples\wartool\wartool_restore.au3
+Tidy: 0.00 Initializing...
+Tidy: 0.33 Creating Tables
+Tidy: 0.33 SciTE_File$	C:\Tools\MATE\data\Tidy\..\api\au3.api Exist: 0
+Tidy: 0.33 Tidy_File$	C:\Tools\MATE\data\Tidy\au3.api Exist: 0
+Tidy: 0.33 functions_File$	C:\Tools\MATE\data\Tidy\functions.tbl Exist: 0
+Tidy: 0.33 C:\Tools\MATE\data\Tidy\..\api\au3.api Notfound!
+Tidy: -> Warning: Unable to open au3.api.  Skipping ProperCase function for KeyWords/Function/Macros
+Tidy: 0.33 Start Pre-processing File...
+Tidy: 0.73 Pre-processing record: 1001
+Tidy: 0.83 Pre-processing record: 2001
+Tidy: 1.00 Pre-processing record: 3001
+Tidy: 1.23 Pre-processing record: 4001
+Tidy: 1.48 Pre-processing record: 5001
+Tidy: 1.80 Pre-processing record: 6001
+Tidy: 2.14 Pre-processing record: 7001
+Tidy: 2.44 Pre-processing record: 8001
+Tidy: 2.52 Start Processing File...
+User skipped/canceled process Tidy terminated.
+=> Error (ExitCode: 259)
+Attention: Tidy.exe failed. Deobfucator will probably also fail because scriptfile is not in proper format.
+///////////////////////////////////////////////////////////////////////////////
+//    S T A G E  4  -  AHK / AutoIT(Old) separate includes
+//
+Seperating Includes of : C:\Tools\MATE\samples\!Obfuscated Samples\Wartool\Wartool_restore.au3
+Testing for TextFile...
+Done. (Textfile=True)
+WARNING: The '@COMPILED' was found in the script - at position: 24951 to avoid 'bad suprises' you should manually check the code at this location(and if there are more locations) before you run it.
+Saving Logdata to : C:\Tools\MATE\samples\!Obfuscated Samples\Wartool\Wartool_restore_myExeToAut.log

@@ -1,0 +1,18 @@
+This sample is packed with 
+enigma https://enigmaprotector.com/
+and uses 
+Autocamo https://autoitscript.com/forum/topic/127186-autocamo-9716b/
+
+1. To get around enigma start DecompileME.exe and dump it while it's running.
+You may use Process Hacker( https://processhacker.sourceforge.io/ )/Process detail/Tab_memory ... save to do so.
+
+2. Load the dumped DecompileME.exe_0x401000-0xbc000.bin into MATE. 
+   Click more Options/GetCamo's to get the correct vectors that Autocamo modified.
+   Now when these are set.
+   
+3. Load DecompileME.exe into MATE. Decompiling should start now.
+
+4. You may improve the sources by stripping out includes using MATE F12-function renamer.
+   The script was compiled with autoit-v3.3.8.1 so get it and point function renamer to its includes dir.
+   Well you may also use includes of the currently installed autoit (probably a newer version) 
+   or even do that process completely manually since this script is not very big.

@@ -749,19 +749,14 @@ GUIEvent_ProcessBegin 7
    With myRegExp
    
        .IgnoreCase = True
-       
-'TIDY uses these strings to recognise the obfuscator:
-' func A2C4558BC554
-' Execute(Binarytostring('0x46696C6544656C6574652824414631323331323329'))
-' Execute(Binarytostring('0x537472696E6753706C69742846696C655265616428244146313233313233292C27
-' (^ Note the unclose String("Execute(Binarytostring('0x...2C27") string is no Error)
-
-       .Pattern = RE_WSpace("Func", "A2C4558BC554")
+          
+       .Pattern = "['""]4054656D70446972['""]"
        If .Test(NewScript) Then
-          DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
+          DetectScriptObfuscated = DE_OBFUSC_VANZANDE_VER24
+          
        Else
-       
        GUIEvent_ProcessUpdate 1
+       
        .Pattern = """4074656D70646972"""
        If .Test(NewScript) Then
           DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
@@ -774,31 +769,27 @@ GUIEvent_ProcessBegin 7
           DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
       ' "@TempDir"
        Else
-       
-       
-       
-       
-       
        GUIEvent_ProcessUpdate 2
-       .Pattern = "['""]4054656D70446972['""]"
-       If .Test(NewScript) Then
-          DetectScriptObfuscated = DE_OBFUSC_VANZANDE_VER24
-      
-      
-      
-       'Obfuscator v1.0.24.23  ( find 'func A1D00103002')
-       Else
        
+      'TIDY uses these strings to recognise the obfuscator:
+      ' func A2C4558BC554
+      ' Execute(Binarytostring('0x46696C6544656C6574652824414631323331323329'))
+      ' Execute(Binarytostring('0x537472696E6753706C69742846696C655265616428244146313233313233292C27
+      ' (^ Note the unclose String("Execute(Binarytostring('0x...2C27") string is no Error)
+       .Pattern = RE_WSpace("Func", "A2C4558BC554")
+       If .Test(NewScript) Then
+          DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
+      
+
+       Else
        GUIEvent_ProcessUpdate 3
+       
+       'Obfuscator v1.0.24.23  ( find 'func A1D00103002')
        .Pattern = "A1D00103002"
        If .Test(NewScript) Then
           DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
 
        Else
-       
-      '   Endif GUIEvent_ProcessUpdate
-      
-       
        GUIEvent_ProcessUpdate 4
       'Tidy            Int(99 / 3 + 15 * 100 / 4 - 13 ^ 2 + 81 / 3 - 17 - 245 + 99 / 3 + 15 * 100 / 4 - 13 ^ 2 + 81 / 3 - 17)
       'Original        Int(99/3+15*100/4-13^2+81/3-17-245+99/3+15*100/4-13^2+81/3-17)
@@ -818,10 +809,10 @@ GUIEvent_ProcessBegin 7
           DetectScriptObfuscated = DE_OBFUSC_TYPE_ENCODEIT
           
        Else
+       GUIEvent_ProcessUpdate 5
        
        Const RE_255DigitNumber$ = "[0-2]?[0-9]?[0-9]"
-       
-       GUIEvent_ProcessUpdate 5
+
      ' Example: &CHR(7+108) ''       If NewScript Like "*Chr(##?[+-]?##*" Then
        .Pattern = RE_WSpace("&", "Chr", "\(", RE_255DigitNumber, "[+-]", RE_255DigitNumber, "\)")
        If .Test(NewScript) Then
@@ -829,9 +820,8 @@ GUIEvent_ProcessBegin 7
           DetectScriptObfuscated = DE_OBFUSC_TYPE_CHR_ENCODE
           
        Else
-       
-       
        GUIEvent_ProcessUpdate 6
+       
      ' Func A000347492GSJO46LL($A000602494AL8EKLJ)
      ' $A000602494AL8EKLJ = Call(BinaryToString("0x537472696E6752657665727365"), Call(BinaryToString("0x42696E617279546F537472696E67"), $A000602494AL8EKLJ))
      ' Return $A000602494AL8EKLJ
@@ -846,7 +836,6 @@ GUIEvent_ProcessBegin 7
           DetectScriptObfuscated = DE_OBFUSC_TYPE_WARTOOL
           
        Else
-       
        GUIEvent_ProcessUpdate 7
        
        ' Example: &CHR(101)&""
@@ -974,7 +963,7 @@ Public Sub DeObfuscate()
          
          Case DE_OBFUSC_TYPE_NOT_OBFUSC
 
-          ' Remove DeTokenise marker and run Tidy
+         ' Remove DeTokenise marker and run Tidy
            If IsTidyed = False Then
                'NewScript = Split(NewScript, DETOKENISE_MAKER)(0)
                RunTidy NewScript
@@ -985,9 +974,15 @@ Public Sub DeObfuscate()
 
 
       End Select
-         
-      Log "Deobfucation succeed."
-      SaveScriptData NewScript, True 'IsTidyed
+      If Err = 0 Then
+   
+         Log "Deobfucation succeed."
+         SaveScriptData NewScript, True 'IsTidyed
+      Else
+      
+         Exit Do
+
+      End If
       
       Inc DeobfuRounds
       
@@ -1126,7 +1121,17 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
     Dim ExtractedTBLFileName$
     ExtractedTBLFileName = strCrop(NewScript, "(", ".tbl")
     If ExtractedTBLFileName = "" Then
-       ExtractedTBLFileName = strCrop1(NewScript, "FileInstall(", ",")
+    
+     ' Get tbl file from last FileInstall( "myFile.123" )
+       Dim FILEINSTALL$
+       FILEINSTALL = "FileInstall("
+       
+       Dim PositonLast_FileInstall$
+       PositonLast_FileInstall = InStrRev(NewScript, FILEINSTALL)
+       
+       ExtractedTBLFileName = strCrop1(NewScript, FILEINSTALL, ",", , PositonLast_FileInstall)
+       
+     ' dequote filename
        ExtractedTBLFileName = Mid(ExtractedTBLFileName, 2, Len(ExtractedTBLFileName) - 2)
        StringTBLFileName.NameWithExt = ExtractedTBLFileName
     Else
@@ -1151,8 +1156,26 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
    
    Do
       If Err Then
-         StringTBLFileName.FileName = InputBox("Can't open TBL-file - " & Err.Description, "Please try to correct that path manually: ", StringTBLFileName.FileName)
-         If StringTBLFileName.FileName = "" Then Exit Do
+         StringTBLFileName.FileName = InputBox("Can't open TBL-file - " & Err.Description, "Correct this path/filename manually: ", StringTBLFileName.FileName)
+         If StringTBLFileName.FileName = "" Then
+            If vbNo = MsgBox( _
+                     "Continue without *.tbl stringfile?" & vbCrLf & _
+                     "" & vbCrLf & _
+                     "Well it is really essential and must be there." & vbCrLf & _
+                     "(Maybe it has some other name.)" & vbCrLf & _
+                     "" & vbCrLf & _
+                     "By clicking 'YES' - you may contiune without." & vbCrLf & _
+                     "But I really don't recommand you to do so." & vbCrLf & _
+                     "All source code strings will be missing." & vbCrLf & _
+                     "Instead there will be just a call to the string obfucation wrapper function." & vbCrLf, _
+ _
+                     vbYesNo + vbDefaultButton2 + vbQuestion, _
+                     "Loading StringTBLFileName canceled") Then
+               Exit Sub
+            Else
+               Exit Do
+            End If
+         End If
       End If
       
       On Error Resume Next
@@ -1175,9 +1198,12 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
       Do While True
          TBLStringSeperator = InputBox("Please enter TBLStringSeperator that is used in the *.tbl file to separate the HexStrings", "Finding TBLStringSeperator failed", TBLStringSeperator)
          Log "Finding TBLStringSeperator failed. Asked user and got: " & TBLStringSeperator
-         
+       
+       ' User hit cancel
+         If TBLStringSeperator = "" Then Exit Sub
+            
          If IsValidSeperator(TBLFileData, TBLStringSeperator) = False Then
-            If vbYes = MsgBox("The entered TBLStringSeperator still seems to be wrong. Contiune anyway?", vbYesNo + vbDefaultButton2) Then Exit Do
+            If vbYes = MsgBox("The entered TBLStringSeperator still seems to be wrong. Contiune anyway?", vbYesNo + vbDefaultButton2) Then Exit Sub
          Else
             Exit Do
          End If
@@ -1422,6 +1448,9 @@ Log "Restoring StringNames in ..."
               
             Inc GUIEvent_ProcessCounter
             GUIEvent_ProcessUpdate GUIEvent_ProcessCounter, 1
+            If Err = ERR_CANCEL_ALL Then
+               Exit Sub
+            End If
          
 
 
@@ -2580,12 +2609,12 @@ Private Function IsValidSeperator(TBLFileData As StringReader, TBLStringSeperato
      'Remove last element
       ReDim Preserve TBLSeparated(UBound(TBLSeparated) - 1)
       
-      Dim Item
-      For Each Item In TBLSeparated
+      Dim item
+      For Each item In TBLSeparated
         
        ' Len must be an even number and bigger than 2
-         isTBLStringSeperatorOk = isEven(Len(Item)) And _
-                                   (Len(Item) >= 2)
+         isTBLStringSeperatorOk = isEven(Len(item)) And _
+                                   (Len(item) >= 2)
          If isTBLStringSeperatorOk = False Then Exit For
    
       Next

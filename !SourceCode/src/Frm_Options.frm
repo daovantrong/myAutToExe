@@ -632,7 +632,7 @@ Const Setting_ExcludeFromLoadSave$ = _
    "txt_AU2_Type_Hex" & " " & _
    "Chk_NoDeTokenise" & " " & _
    ""
-
+Dim onResetOptions As Boolean
 Private Sub RegRun(verb, ExportFileName, Optional options = "")
    
    Dim Regpath$
@@ -698,14 +698,13 @@ End Sub
 
 Private Sub cmd_ResetOptions_Click()
    On Error Resume Next
+ ' Restore Defaults
 
  ' Delete Registry settings
    RegRun "DELETE", "", "/va /f"
-
-
- ' Restore Defaults
-'   Form_Load
- 
+   
+   onResetOptions = True
+   
    Unload Me
    
    Me.Show
@@ -779,7 +778,11 @@ End Sub
 
 
 Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
-   If UnloadMode = vbFormCode Then
+   'vbFormCode => Form unload but not if User clicked close on the form
+   ' UnloadMode <> vbFormCode And
+   If onResetOptions = False Then
+      onResetOptions = False
+      
       Settings_save
    End If
 End Sub

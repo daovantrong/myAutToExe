@@ -15,16 +15,19 @@ Const ExcludePostWhiteSpaceTerminal$ = ")]."
 
 Const TokenFile_RequiredInputExtensions = ".tok .mem"
 
+   
+Dim bVerbose As Boolean
+
+
 Dim bAddWhiteSpace As Boolean
 
 Sub DeToken()
    
+   bVerbose = FrmMain.Chk_verbose.value = vbGrayed
+   
    Dim dbg_CMDIndexFilter As New clsDuplicateFilter
    FrmMain.Log_Stage "AutoIT DeTokise", 2
    
-   Dim bVerbose As Boolean
-   
-   bVerbose = FrmMain.Chk_verbose.value = vbGrayed
    With File
     
       Log "DeTokenising: " & FileName.FileName
@@ -784,7 +787,9 @@ Private Sub FL_verbose(Text)
    FrmMain.FL_verbose Text
 End Sub
 Private Sub log_verbose(TextLine$)
-   FrmMain.log_verbose TextLine$
+
+ ' Attention bVerbose is currently only enable when Checkbox is in GREY state( vbGrayed )
+   If bVerbose Then FrmMain.log_verbose TextLine$
 End Sub
 
 Private Sub FL(Text)

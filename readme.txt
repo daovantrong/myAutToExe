@@ -666,6 +666,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -1601,6 +1608,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -2532,6 +2546,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -3467,6 +3488,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -4396,6 +4424,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -5331,6 +5366,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -6262,6 +6304,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -7197,6 +7246,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -8122,6 +8178,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -9057,6 +9120,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -9988,6 +10058,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -10923,6 +11000,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -11852,6 +11936,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -12787,6 +12878,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -13718,6 +13816,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -14653,6 +14758,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -15567,6 +15679,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -16502,6 +16621,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -17433,6 +17559,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -18368,6 +18501,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -19297,6 +19437,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -20232,6 +20379,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -21163,6 +21317,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -22098,6 +22259,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -23023,6 +23191,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -23958,6 +24133,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -24889,6 +25071,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -25824,6 +26013,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -26753,6 +26949,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -27688,6 +27891,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -28619,6 +28829,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
@@ -29554,6 +29771,13 @@ Version 3_3
    
 History
 =======
+21.11.2020
+    AutoCamo: Cleaned up modcamoGet.bas, fixed bugs
+    ResetOptions: fixed bug - now it works
+    DeTokeniser: verbose logging is only done when verbose checkbox is in grey-state
+    Tidy: Updated to new version
+    Bugfix: "FileWithInvalidName_xxx.yyy" if SrcFile_FileInst constains leading spaces
+    Bugfix: VanZande detection
 
 12.5.2017
 	FunctionRenamer: bugfix Renamer $abc also hit on $abce or $abcd
