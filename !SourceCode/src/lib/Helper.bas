@@ -84,7 +84,9 @@ End Function
 Public Function HexvaluesToString$(Hexvalues$)
    Dim tmpchar
    For Each tmpchar In Split(Hexvalues)
-      HexvaluesToString = HexvaluesToString & ChrB("&h" & tmpchar) & ChrB(0)
+      'HexvaluesToString = HexvaluesToString & ChrB("&h" & tmpchar) & ChrB(0)
+      'Note ChrB("&h98") & ChrB(0) is not correct translated
+      HexvaluesToString = HexvaluesToString & Chr("&h" & tmpchar)
    Next
 End Function
 
@@ -130,7 +132,7 @@ End Function
 
 Function RangeCheck(ByVal Value&, Max&, Optional Min& = 0, Optional errtext, Optional ErrSource$) As Boolean
    RangeCheck = (Min <= Value) And (Value <= Max)
-   If (RangeCheck = False) And (IsMissing(errtext) = False) Then Err.Raise vbObjectError, ErrSource, errtext
+   If (RangeCheck = False) And (IsMissing(errtext) = False) Then Err.Raise vbObjectError, ErrSource, errtext & " Value must between '" & Min & "'  and '" & Max & "' !"
 End Function
 
 Public Function H8(ByVal Value As Long)

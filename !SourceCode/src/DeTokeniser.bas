@@ -4,6 +4,9 @@ Option Explicit
 Const whiteSpaceTerminal$ = " "
 Const ExcludePreWhiteSpaceTerminal$ = "(["
 Const ExcludePostWhiteSpaceTerminal$ = ")]."
+
+Const TokenFile_RequiredInputExtensions = ".tok .mem"
+
 Dim Atom$, SourceCodeLine$
 
 Sub DeToken()
@@ -11,9 +14,17 @@ Sub DeToken()
    With File
     
       log "Trying to DeTokenise: " & FileName.FileName
-      If FrmMain.Chk_force_old_script_type.Value = vbChecked Then
-         log "STOPPED!!! Enable DeTokenise in Options to use it." & FileName.FileName
+      
+      If InStr(TokenFile_RequiredInputExtensions, FileName.Ext) = 0 Then
+         Err.Raise NO_AUT_DE_TOKEN_FILE, , "STOPPED!!! Required FileExtension for Tokenfiles: '" & TokenFile_RequiredInputExtensions & "'" & vbCrLf & _
+         "Rename this file manually to show that this should be detokenied."
       End If
+      
+      
+'      If FrmMain.chk_NoDeTokenise.Value = vbChecked Then
+'         Err.Raise NO_AUT_DE_TOKEN_FILE, , "STOPPED!!! Enable DeTokenise in Options to use it." & FileName.FileName
+'
+'      End If
       
       .Create FileName.FileName, False, False, True
       .Position = 0
@@ -56,6 +67,14 @@ Sub DeToken()
       Dim DecodeString As StringReader: Set DecodeString = New StringReader
 
       Do
+      
+      
+         If (SourceCodeLineCount > Lines) Then
+            Exit Do
+         End If
+         
+         
+         
        ' Read Token
          Cmd = .ByteValue
          Inc TokenCount
@@ -252,9 +271,11 @@ Sub DeToken()
          Case Else
             
            'Unknown Token
-           Debug.Print "Unknown Token: "; Cmd
+           log "ERROR: Unknown Token: " & Cmd & " at " & H32(.Position)
+           Exit Do
            'qw
-            Stop
+           Stop
+           
 
          End Select
          
@@ -267,7 +288,13 @@ Sub DeToken()
       Loop Until .EOF
    .CloseFile
   End With
-
+  
+  If FrmMain.Chk_TmpFile = vbUnchecked Then
+     log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
+     FileDelete (FileName)
+  End If
+  
+  FileName.Ext = ".au3"
   SaveScriptData (Join(SourceCode, vbCrLf))
    
   log "Token expansion succeed."

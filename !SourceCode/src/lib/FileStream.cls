@@ -164,11 +164,17 @@ Public Sub FindBytes(ParamArray Bytes())
    End With
 End Sub
 
-Public Function FindString&(StringToFind$)
+Public Function FindString&(StringToFind$, Optional SearchBackwards As Boolean = False)
    Dim tmp$, oldpos&
    oldpos = Position
       tmp = FixedString(-1)
-      FindString = InStr(1, tmp, StringToFind, vbBinaryCompare) - 1
+      
+      If SearchBackwards Then
+         FindString = InStrRev(tmp, StringToFind) - 1
+      Else
+         FindString = InStr(1, tmp, StringToFind, vbBinaryCompare) - 1
+      End If
+      
       If FindString = -1 Then
          Position = oldpos
          FindString = 0
