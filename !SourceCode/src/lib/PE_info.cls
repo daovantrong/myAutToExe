@@ -40,16 +40,16 @@ Public Sub Create()
      
      'to skip the Error in VB-IDE Rightclick Toggle/Break on unhandled errors
      'MZ DOS-Header->e_magic
-      If File.intValue <> &H5A4D Then Err.Raise vbObjectError Or 1, , "No ExeFile DOS-Header.e_magic<>""MZ"""
+      If File.int16 <> &H5A4D Then Err.Raise vbObjectError Or 1, , "No ExeFile DOS-Header.e_magic<>""MZ"""
 
      
      'Locate & Validate PE-header
       File.Position = &H3C '   DOS-Header->e_lfanew
-      PEStart = File.longValue
+      PEStart = File.int32
       File.Position = PEStart
       PEStart = PEStart + 1
       
-      If File.longValue <> &H4550 Then Err.Raise vbObjectError Or 2, , "No ExeFile 'PE-Header.Signature<>""PE"""
+      If File.int32 <> &H4550 Then Err.Raise vbObjectError Or 2, , "No ExeFile 'PE-Header.Signature<>""PE"""
     
     '  --- get PE_Header  ---
       Dim hFile&

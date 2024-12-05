@@ -1,5 +1,5 @@
 Type=Exe
-Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#5.5#0#C:\WINDOWS\system32\vbscript.dll\3#Microsoft VBScript Regular Expressions 5.5
+Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#5.5#0#C:\Windows\system32\vbscript.dll\3#Microsoft VBScript Regular Expressions 5.5
 Form=!SourceCode\src\FrmAbout.frm
 Form=!SourceCode\src\frmLogView.frm
 Module=ApiHelper; !SourceCode\src\lib\ApiHelper.bas
@@ -30,6 +30,9 @@ Form=!SourceCode\SRC\FrmRegExp_Renamer.frm
 Form=!SourceCode\SRC\FrmFuncRename_StringMismatch.frm
 Form=!SourceCode\SRC\Frm_SrcEdit.frm
 Class=Console; !SourceCode\SRC\lib\clsConsole.cls
+Module=DeCompilerConfig; !SourceCode\SRC\DeCompilerConfig.bas
+Form=!SourceCode\SRC\Frm_Options.frm
+Module=modWHXAPI; !SourceCode\SRC\lib\whxapi2.bas
 IconForm="FrmMain"
 Startup="FrmMain"
 HelpFile=""
@@ -40,11 +43,11 @@ Name="myAutToExe"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
-MinorVer=9
-RevisionVer=138
+MinorVer=11
+RevisionVer=182
 AutoIncrementVer=1
 ServerSupportFiles=0
-VersionComments="http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234"
+VersionComments="http://board.deioncube.in/showthread.php?tid=29"
 VersionCompanyName="CW2K@gmx.de"
 VersionFileDescription="Decompiles 'compiled' AutoIT Exe files."
 VersionProductName="myAutToExe"

@@ -132,16 +132,16 @@ Public Sub Move(Chars&)
 '   Debug.Print "Move: ", Chars
 End Sub
 
-Public Function FindByte(ByVal LongValue_To_Find$, Optional Range) As Long
-   FindByte = FindString(Left(LngtoStr(LongValue_To_Find), 1))
+Public Function FindByte(ByVal int32_To_Find$, Optional Range) As Long
+   FindByte = FindString(Left(LngtoStr(int32_To_Find), 1))
 End Function
 
-Public Function FindInt(ByVal LongValue_To_Find$, Optional Range) As Long
-   FindInt = FindString(Left(LngtoStr(LongValue_To_Find), 2))
+Public Function FindInt(ByVal int32_To_Find$, Optional Range) As Long
+   FindInt = FindString(Left(LngtoStr(int32_To_Find), 2))
 End Function
 
-Public Function FindLong(ByVal LongValue_To_Find$, Optional Range) As Long
-   FindLong = FindString(LngtoStr(LongValue_To_Find))
+Public Function FindLong(ByVal int32_To_Find$, Optional Range) As Long
+   FindLong = FindString(LngtoStr(int32_To_Find))
 End Function
 
 Public Function FindString(String_To_Find$, Optional Range)  ', Optional Alternativ_String_To_Find) As Long
@@ -198,6 +198,14 @@ End Property
 Public Property Get FixedString(Optional ByVal Length& = -1) As String
     If Length <= -1 Then Length = Len(mvardata)
     FixedString = Mid$(mvardata, mvarPosition, Length)
+   
+    ToMove = Length
+End Property
+
+Public Property Get FixedStringW(Optional ByVal Length& = -1) As String
+    Length = Length * 2
+    If Length <= -1 Then Length = Len(mvardata)
+    FixedStringW = Mid(mvardata, mvarPosition, Length)
    
     ToMove = Length
 End Property

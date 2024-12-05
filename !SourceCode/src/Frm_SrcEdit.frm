@@ -1,13 +1,17 @@
 VERSION 5.00
 Begin VB.Form Frm_SrcEdit 
-   Caption         =   "SourceEdit"
+   BorderStyle     =   5  'Änderbares Werkzeugfenster
+   Caption         =   "Token Viewer"
    ClientHeight    =   4935
    ClientLeft      =   60
-   ClientTop       =   450
+   ClientTop       =   405
    ClientWidth     =   8145
    LinkTopic       =   "Form1"
+   MaxButton       =   0   'False
+   MinButton       =   0   'False
    ScaleHeight     =   4935
    ScaleWidth      =   8145
+   ShowInTaskbar   =   0   'False
    Begin VB.HScrollBar HScroll 
       Height          =   255
       Left            =   0
@@ -24,7 +28,7 @@ Begin VB.Form Frm_SrcEdit
    End
    Begin VB.Frame Fr_Text 
       BackColor       =   &H80000009&
-      BorderStyle     =   0  'None
+      BorderStyle     =   0  'Kein
       Caption         =   "Frame1"
       Height          =   2835
       Left            =   0
@@ -32,7 +36,7 @@ Begin VB.Form Frm_SrcEdit
       Top             =   0
       Width           =   5775
       Begin VB.Label Lbl_item 
-         Appearance      =   0  'Flat
+         Appearance      =   0  '2D
          AutoSize        =   -1  'True
          BackColor       =   &H80000005&
          BackStyle       =   0  'Transparent
@@ -79,6 +83,7 @@ Dim LineHeight&
 
 Private Sub Form_Load()
 
+Me.Show
 '   Height = 0
    FormBaseHeight = 512 + HScroll.Height - 4 'Height
    
@@ -135,18 +140,31 @@ Sub Fr_Text_VScroll(Optional Percent As Double = 1)
   'Enable/Disable bars
       VScroll.Visible = True
    Else
+      Fr_Text.Top = 0
       VScroll.Visible = False
    End If
 End Sub
 
 Sub Fr_Text_HScroll(Optional Percent As Double = 1)
-   Fr_Text.Left = (Width - Fr_Text.Width - FormBaseWidth) * Percent
+   Dim LeftPos&
+   LeftPos = (Width - Fr_Text.Width - FormBaseWidth)
+   If LeftPos < 0 Then
+   
+      Fr_Text.Left = LeftPos * Percent
+      
+  'Enable/Disable bars
+      HScroll.Visible = True
+   Else
+      Fr_Text.Left = 0
+      HScroll.Visible = False
+   End If
 End Sub
 
 
 Function AddItem(Text$, _
          Optional Color&, _
          Optional TypeName$, _
+         Optional TokenInfo$, _
          Optional bLineBreak As Boolean = False _
          ) As Label
    
@@ -170,7 +188,7 @@ Function AddItem(Text$, _
       
       .Caption = Text
       
-      .ToolTipText = TypeName
+      .ToolTipText = TypeName & "[" & TokenInfo & "]"
 
       
       .Visible = True
@@ -218,6 +236,8 @@ On Error Resume Next
       .Top = Height - FormBaseHeight
    End With
    
+   Fr_Text_VScroll
+   Fr_Text_HScroll
    
  myDoEvents
 End Sub

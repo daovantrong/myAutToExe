@@ -2,6 +2,7 @@ Attribute VB_Name = "ErrorHelper"
 Option Explicit
 
 Public ErrThrow_LastDllError&
+Private Number&, Source$, Description$, HelpFile$, HelpContext&
 
 Private Declare Function FormatMessage Lib "kernel32" _
   Alias "FormatMessageA" ( _
@@ -96,6 +97,29 @@ Public Sub ErrThrow()
       On Error GoTo 0
       .Raise Number, Source, Description, HelpFile, HelpContext
       
+   End With
+End Sub
+
+
+Public Sub ErrStore()
+   With Err
+      Number = .Number
+      Source = .Source
+      Description = .Description
+      HelpFile = .HelpFile
+      HelpContext = .HelpContext
+'      ErrThrow_LastDllError = .LastDllError
+   End With
+End Sub
+
+Public Sub ErrRestore()
+   With Err
+      .Number = Number
+      .Source = Source
+      .Description = Description
+      .HelpFile = HelpFile
+      .HelpContext = HelpContext
+'      ErrThrow_LastDllError = .LastDllError
    End With
 End Sub
 

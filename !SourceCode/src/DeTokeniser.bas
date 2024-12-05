@@ -21,15 +21,15 @@ Sub DeToken()
    bVerbose = FrmMain.Chk_verbose.value = vbGrayed
    With File
     
-      Log "Trying to DeTokenise: " & FileName.FileName
+      Log "DeTokenising: " & FileName.FileName
       
       If InStr(TokenFile_RequiredInputExtensions, FileName.Ext) = 0 Then
          Err.Raise NO_AUT_DE_TOKEN_FILE, , "STOPPED!!! Required FileExtension for Tokenfiles: '" & TokenFile_RequiredInputExtensions & "'" & vbCrLf & _
          "Rename this file manually to show that this should be detokenied."
       End If
       
-      
-'      If FrmMain.chk_NoDeTokenise.Value = vbChecked Then
+            
+'      If Frm_Options.Chk_NoDeTokenise.value = vbChecked Then
 '         Err.Raise NO_AUT_DE_TOKEN_FILE, , "STOPPED!!! Enable DeTokenise in Options to use it." & FileName.FileName
 '
 '      End If
@@ -42,19 +42,27 @@ Sub DeToken()
       
       
       .Create FileName.FileName, False, False, True
-      
+      If .Length < 4 Then
+         Err.Raise NO_AUT_DE_TOKEN_FILE, , "STOPPED!!! File must be at least 4 bytes"
+      End If
+'   .CloseFile
+'   End With
+   
+'   With New StringReader
+'      .Data = FileLoad(FileName.FileName)
+   
       
    On Error GoTo DeToken_Err
       .Position = 0
       
       Dim Lines&
-      Lines = .longValue
+      Lines = .int32
       FL "Code Lines: " & Lines & "   0x" & H32(Lines)
       
     ' File shouldn't start with MZ 00 00 -> ExeFile
     ' &HDFEFFF -> Unicodemarker
       If ((Lines And 65535) = &H5A4D) Or (Lines = &HDFEFF) Then
-         Err.Raise NO_AUT_DE_TOKEN_FILE, , "That's no Au3-TokenFile."
+         Err.Raise NO_AUT_DE_TOKEN_FILE, , "That's no Au3-TokenFile. (MZ-Exe or Dll file)"
       
       ElseIf ((Lines And &H7FFFFFF) > &H3BFEFF) Then
          'It's highly unlikly that there are more that 16 Mio lines in a Sourcefile
@@ -79,8 +87,8 @@ Sub DeToken()
       
       
       
-      Dim Cmd&
-      Dim size&
+      Dim cmd&
+      Dim Size&
 
       Dim SourceCode ' As New Collection
       Dim SourceCodeLineCount&
@@ -90,7 +98,6 @@ Sub DeToken()
       Dim RawString As StringReader: Set RawString = New StringReader
       Dim DecodeString As StringReader: Set DecodeString = New StringReader
 
-'   Stop
       If bVerbose Then Frm_SrcEdit.Show
       
       Do
@@ -110,12 +117,17 @@ Sub DeToken()
        ' Default
          bAddWhiteSpace = False
          
+         Dim TokenOffset&
+         TokenOffset = .Position
+         
        ' Read Token
-         Cmd = .ByteValue
+         cmd = .int8
          Inc TokenCount
          
+         Dim TokenInfo$
+         TokenInfo = "Token: " & H8(cmd) & "      (Line: " & SourceCodeLineCount & "  TokenCount: " & TokenCount & ")"
        ' Log it ''" & Chr(Cmd) & "'
-         FL_verbose "Token: " & H8(Cmd) & "      (Line: " & SourceCodeLineCount & "  TokenCount: " & TokenCount & ")"
+         FL_verbose TokenInfo
 '         If RangeCheck(SourceCodeLineCount, 3188, 3184) Then
 '            Stop
 '            If FrmMain.Chk_verbose <> vbChecked Then FrmMain.Chk_verbose = vbChecked
@@ -125,65 +137,64 @@ Sub DeToken()
 'Debug.Assert Not (SourceCodeLine Like "*$NY*")
          
          
-         Select Case Cmd
+         Select Case cmd
          
 '------- Numbers -----------
          Case &H0 To &HF
             '&H5
             Dim int32$
-            int32 = .longValue
+            int32 = .int32
             Atom = int32
             
             TypeName = "Int32"
             FL_verbose TypeName & ": 0x" & H32(int32) & "   " & int32
             
-            Debug.Assert Cmd = 5
+          ' So far this value has always been 5
+            Debug.Assert cmd = 5
          
          Case &H10 To &H1F
             Dim Int64 As Currency
             Int64 = .int64Value
-            'int64 = H32(.longValue)
-            'int64 = H32(.longValue) & int64
+            'int64 = H32(.int32)
+            'int64 = H32(.int32) & int64
             'Replace 123,45 -> 12345
             Atom = Replace(CStr(Int64), DecimalKomma, "")
             TypeName = "Int64"
             FL_verbose TypeName & ": " & Int64
             
-            Debug.Assert Cmd = &H10
+            Debug.Assert cmd = &H10
          
          Case &H20 To &H2F
-            
            'Get DoubleValue
             Dim Double_$
             Double_ = .DoubleValue
-           
-           'Replace 123,11 -> 123.11
+            'Replace 123,11 -> 123.11
             Atom = Replace(CStr(Double_), DecimalKomma, ".")
             
             TypeName = "64Bit-float"
             FL_verbose TypeName & ": " & Double_
          
-            Debug.Assert Cmd = &H20
+            Debug.Assert cmd = &H20
          
 
 '------- Strings -----------
          Case &H30 To &H3F 'Keywords
             
            'Get StrLength and load it
-            size = .longValue
-            FL_verbose "StringSize: " & H32(size)
+            Size = .int32
+            FL_verbose "StringSize: " & H32(Size)
             
-            If size > (.Length - .Position) Then
+            If Size > (.Length - .Position) Then
                Err.Raise vbObjectError, , "Invalid string size(bigger than the file)!"
             End If
-            
-            RawString = .FixedStringW(size)
+
+            RawString = .FixedStringW(Size)
            
            'XorDecode String
             Dim pos&, XorKey_l As Byte, XorKey_h As Byte
             
-            XorKey_l = (size And &HFF)
-            XorKey_h = ((size \ &H100) And &HFF) ' 2^8 = 256
+            XorKey_l = (Size And &HFF)
+            XorKey_h = ((Size \ &H100) And &HFF) ' 2^8 = 256
             
             Dim tmpBuff() As Byte
             tmpBuff = RawString
@@ -208,7 +219,7 @@ Sub DeToken()
             
             
 '------- Commands -----------
-            Select Case Cmd
+            Select Case cmd
             
             Case &H30 'BlockElement (FUNC, IF...) and the Rest of 42 Elements: "AND OR NOT IF THEN ELSE ELSEIF ENDIF WHILE WEND DO UNTIL FOR NEXT TO STEP IN EXITLOOP CONTINUELOOP SELECT CASE ENDSELECT SWITCH ENDSWITCH CONTINUECASE DIM REDIM LOCAL GLOBAL CONST FUNC ENDFUNC RETURN EXIT BYREF WITH ENDWITH TRUE FALSE DEFAULT ENUM NULL"
                TypeName = "BlockElement"
@@ -290,7 +301,7 @@ Sub DeToken()
 '            Atom = Choose((Cmd - &H40 + 1), ",", "=", ">", "<", "<>", ">=", "<=", "(", ")", "+", "-", "/", "", "&", "[", "]", "==", "^", "+=", "-=", "/=", "*=", "&=")
          '                     Au3Manual AcciChar
             
-            Select Case Cmd
+            Select Case cmd
                Case &H40: Atom = ","  '        2C
                Case &H41: Atom = "="  ' 1  13  3D
                Case &H42: Atom = ">"  ' 16     3E
@@ -361,10 +372,11 @@ Sub DeToken()
          Case Else
             
            'Unknown Token
-            Log "ERROR: Unknown Token: " & Cmd & " at " & H32(.Position)
+            Log "Unknown Token_Command: 0x" & H8(cmd) & " @ " & H32(TokenOffset)
             If HandleTokenErr("ERROR: Unknown Token") Then
             Else
-               Exit Do
+               Err.Raise NO_AUT_DE_TOKEN_FILE, , "Unknown Token"
+               'Exit Do
             End If
            'qw
 '           Stop
@@ -375,7 +387,7 @@ Sub DeToken()
 '         Debug.Assert SourceCodeLineCount <> 851
 
          
-         If Cmd <> &H7F Then
+         If cmd <> &H7F Then
             
            
           ' Add to SourceLine
@@ -386,23 +398,24 @@ Sub DeToken()
              
              ' Add with whitespace
                ArrayAdd SourceCodeLine, Atom
-               If bVerbose Then Frm_SrcEdit.AddItem whiteSpaceTerminal & Atom, Cmd, TypeName
+               If bVerbose Then Frm_SrcEdit.AddItem whiteSpaceTerminal & Atom, cmd, TypeName, TokenInfo & " @ 0x" & H32(TokenOffset)
             Else
               'Append to Last
                
                ArrayAppendLast SourceCodeLine, Atom
-               If bVerbose Then Frm_SrcEdit.AddItem Atom, Cmd, TypeName
+               If bVerbose Then Frm_SrcEdit.AddItem Atom, cmd, TypeName, TokenInfo & " @ 0x" & H32(TokenOffset)
 
             End If
             DoEventsVerySeldom
             
-            bWasLastAnOperator = RangeCheck(Cmd, &H56, &H40)
+            bWasLastAnOperator = RangeCheck(cmd, &H56, &H40)
 '         Else
             
             
          End If
 
-      Loop Until .EOF
+      Loop Until .EOS
+    
     
     
 Err.Clear
@@ -420,7 +433,7 @@ Select Case Err
      Dim ErrText$
      ErrText = "ERROR: " & Err.Description & vbCrLf & _
       "FileOffset: " & H32(.Position) & vbCrLf & _
-      "when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & ErrSourceCodeLine
+      " when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & ErrSourceCodeLine
      Log ErrText
      MsgBox ErrText, vbCritical, "Unexpected Error during detokenising"
      
@@ -433,17 +446,20 @@ Select Case Err
      
      Resume DeToken_Finally
 End Select
-DeToken_Finally:
-   .CloseFile
-  End With
-    
-' ProgressBar Finish
-  GUIEvent_ProcessEnd
+
   
   If FrmMain.Chk_TmpFile = vbUnchecked Then
      Log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
      FileDelete (FileName)
   End If
+
+
+DeToken_Finally:
+   File.CloseFile
+  End With
+    
+' ProgressBar Finish
+  GUIEvent_ProcessEnd
   
   FileName.Ext = ".au3"
   
@@ -504,20 +520,7 @@ Private Function HandleTokenErr(ErrText$) As Boolean
 End Function
 
 Private Sub LogSourceCodeLine(TextLine$)
-   If FrmMain.Chk_verbose.value = vbChecked Then
-   
-      On Error Resume Next
-      With FrmMain.List_Source
-         .AddItem TextLine
-       
-       ' Process windows messages (=Refresh display)
-         If Rnd < 0.01 Then
-             ' Scroll to last item
-            .ListIndex = .ListCount - 1
-         End If
-         
-      End With
-   End If
+   FrmMain.LogSourceCodeLine TextLine$
 End Sub
 'Handle UserString with Quotes...
 Function MakeAutoItString$(RawString$)

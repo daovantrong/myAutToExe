@@ -4,6 +4,13 @@ Option Compare Text
 
 Dim myRegExp As New RegExp
 
+Public Const ERR_CANCEL_ALL& = vbObjectError Or &H1000
+
+Public Const ERR_SKIP& = vbObjectError Or &H2000
+
+'used to quit after doevents
+Public APP_REQUEST_UNLOAD As Boolean
+
 
 Public Cancel As Boolean
 Public CancelAll As Boolean
@@ -25,7 +32,10 @@ Public Const HKEY_USERS = &H80000003
 
 Public Const ERROR_NONE = 0
 
-Public Const LocaleID_ENG = 1031
+Public Const LocaleID_ENG = 1033 '0x409 US(Eng)
+Public Const LocaleID_GER = 1031 '0x407 German
+Public LocaleID&
+
 
 Public Const ERR_FILESTREAM = &H1000000
 Public Const ERR_OPENFILE = vbObjectError Or ERR_FILESTREAM + 1
@@ -71,12 +81,14 @@ Public Const RE_AnyCharsNL$ = "[\S\s]*?"
 Public Const RE_NewLine$ = "\r?\n"
 
 
+Dim ExcludedNames As Collection
+
 Function MulInt32&(a&, b&)
   MulInt32 = iMul(a, 0, b, 0)
 End Function
 
 Function AddInt32&(a As Double, b As Double)
-  AddInt32 = "&h" & H32(a + b)
+  AddInt32 = HexToInt(H32(a + b))
 End Function
 
 
@@ -114,30 +126,76 @@ Function KeyPressed(Key) As Boolean
    KeyPressed = GetAsyncKeyState(Key)
 End Function
 
-Public Function HexStringToString$(ByVal HexString$, Optional ByRef IsPrintable As Boolean)
-   HexStringToString = Space(Len(HexString) \ 2)
-   
-   IsPrintable = True
-   For i = 1 To Len(HexString) Step 2
-      Dim tmpChar&
-      tmpChar = "&h" & Mid$(HexString, i, 2)
-      If IsPrintable Then
-         IsPrintable = RangeCheck(tmpChar, &HFF, &H20)
-      End If
-      
-      Mid$(HexStringToString, (i \ 2) + 1) = Chr(tmpChar)
-   Next
+Public Function HexToInt&(ByVal HexString$)
+   HexToInt = "&h" & HexString
 End Function
 
+' "414243" -> "ABC"
+Public Function HexStringToString$(ByVal HexString$, Optional ByRef IsPrintable As Boolean, Optional flag = 1)
+ ' flag = 1 (default), binary data is taken to be ANSI
+ ' flag = 2, binary data is taken to be UTF16 Little Endian
+ ' flag = 3, binary data is taken to be UTF16 Big Endian
+ ' flag = 4, binary data is taken to be UTF8
+   
+   Dim tmpChar&
+   IsPrintable = True
+   Select Case flag
+   Case 2 ' UTF16 Little Endian
+   
+      HexStringToString = Space(Len(HexString) \ 4)
+      For i = 1 To Len(HexString) Step 4
+         tmpChar = HexToInt(Mid$(HexString, i, 2))
+         If IsPrintable Then
+            IsPrintable = RangeCheck(tmpChar, &HFF, &H20)
+         End If
+         MidB$(HexStringToString, (i \ 2) + 1) = Chr(tmpChar)
+      
+         tmpChar = HexToInt(Mid$(HexString, i + 2, 2))
+         MidB$(HexStringToString, (i \ 2) + 2) = Chr(tmpChar)
+      
+      Next
+   
+   Case 3 ' UTF16 Big Endian
+
+      HexStringToString = Space(Len(HexString) \ 4)
+      For i = 1 To Len(HexString) Step 4
+         tmpChar = HexToInt(Mid$(HexString, i, 2))
+         MidB$(HexStringToString, (i \ 2) + 2) = Chr(tmpChar)
+      
+         tmpChar = HexToInt(Mid$(HexString, i + 2, 2))
+         If IsPrintable Then
+            IsPrintable = RangeCheck(tmpChar, &HFF, &H20)
+         End If
+         MidB$(HexStringToString, (i \ 2) + 1) = Chr(tmpChar)
+      
+      Next
+
+   Case Else
+      HexStringToString = Space(Len(HexString) \ 2)
+      For i = 1 To Len(HexString) Step 2
+         tmpChar = HexToInt(Mid$(HexString, i, 2))
+         If IsPrintable Then
+            IsPrintable = RangeCheck(tmpChar, &HFF, &H20)
+         End If
+         
+         Mid$(HexStringToString, (i \ 2) + 1) = Chr(tmpChar)
+      Next
+   End Select
+
+End Function
+
+' "41 42 43" -> "ABC"
 Public Function HexvaluesToString$(Hexvalues$)
    Dim tmpChar
    For Each tmpChar In Split(Hexvalues)
       'HexvaluesToString = HexvaluesToString & ChrB("&h" & tmpchar) & ChrB(0)
       'Note ChrB("&h98") & ChrB(0) is not correct translated
-      HexvaluesToString = HexvaluesToString & Chr("&h" & tmpChar)
+      HexvaluesToString = HexvaluesToString & Chr(HexToInt(tmpChar))
    Next
 End Function
 
+
+' "ABC" -> "41 42 43"
 Public Function ValuesToHexString$(Data As StringReader, Optional seperator = " ")
 'ValuesToHexString = ""
    With Data
@@ -242,6 +300,7 @@ Public Function BlockAlign_l(RawString, Blocksize) As String
    BlockAlign_l = Space(Blocksize - Len(RawString)) & RawString
 End Function
 
+'used to call from the VB6-debug console to be able to scroll textboxes/Listboxes...
 Public Function qw()
    Cancel = True
    Do
@@ -258,6 +317,15 @@ Public Function szNullCut$(zeroString$)
    End If
    
 End Function
+Public Sub szNullCutProc(zeroString$)
+   Dim nullCharPos&
+   nullCharPos = InStr(1, zeroString, Chr(0))
+   If nullCharPos Then
+      zeroString = Left(zeroString, nullCharPos - 1)
+   End If
+   
+End Sub
+
 
 
 Public Function Inc(ByRef value, Optional Increment& = 1)
@@ -343,7 +411,7 @@ End Function
 
 
 
-Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue, Optional StartSearchAt = 1)
+Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue = "", Optional StartSearchAt = 1)
    
    Dim cutend&, cutstart&
       cutend = InStr(StartSearchAt, Text, RightString)
@@ -356,14 +424,14 @@ Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue, Optiona
 
 End Function
 
-Function MidMbcs(ByVal str As String, Start, Length)
-    MidMbcs = StrConv(MidB$(StrConv(str, vbFromUnicode), Start, Length), vbUnicode)
+Function MidMbcs(ByVal Str As String, Start, Length)
+    MidMbcs = StrConv(MidB$(StrConv(Str, vbFromUnicode), Start, Length), vbUnicode)
 End Function
 
 
-Function strCutOut$(str$, pos&, Length&, Optional TextToInsert = "")
-   strCutOut = Mid(str, pos, Length)
-   str$ = Mid(str, 1, pos - 1) & TextToInsert & Mid(str, pos + Length)
+Function strCutOut$(Str$, pos&, Length&, Optional TextToInsert = "")
+   strCutOut = Mid(Str, pos, Length)
+   Str$ = Mid(Str, 1, pos - 1) & TextToInsert & Mid(Str, pos + Length)
 End Function
 
 
@@ -704,6 +772,7 @@ Public Sub myDoEvents()
    
    Skip_Test
    CancelAll_Test
+   APP_REQUEST_UNLOAD_Test
 End Sub
 
 Public Sub Skip_Test()
@@ -717,7 +786,6 @@ Public Sub Skip_Test()
 End Sub
 
 
-
 Public Sub CancelAll_Test()
    If CancelAll = True Then
       
@@ -727,6 +795,17 @@ Public Sub CancelAll_Test()
    End If
   
 End Sub
+
+Public Sub APP_REQUEST_UNLOAD_Test()
+   If APP_REQUEST_UNLOAD = True Then
+      
+      Err.Raise ERR_CANCEL_ALL, , "Application shutdown."
+      
+   End If
+  
+End Sub
+
+
 
 Public Function FileLoad$(FileName$)
    Dim File As New FileStream
@@ -738,10 +817,222 @@ Public Function FileLoad$(FileName$)
 End Function
 
 Public Sub FileSave(FileName$, Data$)
+   On Error GoTo err_FileSave
    Dim File As New FileStream
    With File
       .Create FileName, True, False, False
       .FixedString(-1) = Data
       .CloseFile
    End With
+
+Exit Sub
+err_FileSave:
+   Log "ERROR during FileSave: " & Err.Description
 End Sub
+
+
+Public Function FormatSize$(ByVal SizeValue&)
+   On Error GoTo FormatSize_err
+   If SizeValue < 0 Then
+      FormatSize = "#Error Negative Value: " & SizeValue & "#"
+   
+   ElseIf SizeValue > &H100000 Then
+      Dim SizePostFix$
+      Dim tmpSizeValue& 'As Double
+      tmpSizeValue = SizeValue \ &H100000 ' clng(&H400) * &H400)
+      SizePostFix = "M"
+    
+   ElseIf SizeValue > &H400 Then
+      tmpSizeValue = SizeValue \ &H400
+      SizePostFix = "K"
+   
+   Else
+      SizePostFix = ""
+   End If
+
+   FormatSize = Format(tmpSizeValue, "##,##0")
+ '  If Right(FormatSize, 1) = "," Then
+ '     FormatSize = Left(FormatSize, Len(FormatSize) - 1)
+ '  End If
+   
+   FormatSize = FormatSize & " " & SizePostFix & "B"
+FormatSize_err:
+Select Case Err
+   Case 0
+   Case Else
+      FormatSize = "#Error [" & Err.Description & "]"
+End Select
+
+
+End Function
+
+
+'///////////////////////////////////////////
+'// General Load/Save Configuration Setting
+Function ConfigValue_Load(Section$, Key$, Optional DefaultValue)
+   ConfigValue_Load = GetSetting(App.Title, Section, Key, DefaultValue)
+End Function
+Property Let ConfigValue_Save(Section$, Key$, value As Variant)
+      SaveSetting App.Title, Section, Key, value
+End Property
+
+'///////////////////////////////////////////
+'// Load/Save a Form Setting
+  'Iterate through all Item on the OptionsFrame
+  'incase it's no Checkbox a 'type mismatch error' will occur
+  'and due to "On Error Resume Next" it skip the call
+Sub FormSettings_Load(Form As Form, Optional ExcludedNames$)
+   On Error Resume Next
+   ExcludedNamesSet ExcludedNames
+   
+   Dim controlItem
+   For Each controlItem In Form.Controls
+      If IsExcludedName(controlItem.Name) = False Then
+         Select Case TypeName(controlItem)
+         Case "TextBox"
+   '         If (controlItem Is Combo_Filename) = False Then
+               TextBox_Load Form.Name, controlItem
+   '         End If
+   
+         Case "CheckBox"
+            CheckBox_Load Form.Name, controlItem
+         
+         
+         Case "ComboBox"
+            ComboBox_Load Form.Name, controlItem
+         
+         
+         End Select
+'      Else
+'         Debug.Print controlItem.Name
+      End If
+   Next
+   
+End Sub
+Sub FormSettings_Save(Form As Form, Optional ExcludedNames$)
+
+   On Error Resume Next
+   ExcludedNamesSet ExcludedNames
+   
+   Dim controlItem
+   For Each controlItem In Form.Controls
+      If IsExcludedName(controlItem.Name) = False Then
+         CheckBox_Save Form.Name, controlItem
+         TextBox_Save Form.Name, controlItem
+         ComboBox_Save Form.Name, controlItem
+'      Else
+'         Debug.Print "ExcludedName: " & controlItem.Name
+      End If
+   Next
+
+End Sub
+
+
+Sub ExcludedNamesSet(ExcludedNamesStr$)
+   Set ExcludedNames = New Collection
+   Dim item
+   For Each item In Split(ExcludedNamesStr)
+      ExcludedNames.Add item, item
+   Next
+End Sub
+
+
+Function IsExcludedName(controlName) As Boolean
+   On Error Resume Next
+   ExcludedNames.item controlName
+   IsExcludedName = (Err = 0)
+End Function
+
+
+
+'///////////////////////////////////////////
+'// Load/Save a CheckBox State
+Sub CheckBox_Load(Section$, ByVal ChkBox As CheckBox)
+   ChkBox.value = ConfigValue_Load(Section, ChkBox.Name, ChkBox.value)
+End Sub
+Sub CheckBox_Save(Section$, ByVal ChkBox As CheckBox)
+   ConfigValue_Save(Section, ChkBox.Name) = ChkBox.value
+End Sub
+
+'///////////////////////////////////////////
+'// Load/Save comboBox States
+Sub ComboBox_Load(Section$, ByVal cbBox As ComboBox)
+   With cbBox
+      Dim i
+      For i = 0 To ConfigValue_Load(Section, cbBox.Name & "_ListCount", 0) - 1
+         .AddItem ConfigValue_Load(Section, cbBox.Name & "_" & i, "")
+      Next
+   End With
+ End Sub
+
+Sub ComboBox_Save(Section$, ByVal cbBox As ComboBox)
+   With cbBox
+      Dim i
+      For i = 0 To .ListCount - 1
+         ConfigValue_Save(Section, cbBox.Name & "_" & i) = .List(i)
+      Next
+      
+      If .ListCount > 0 Then
+         ConfigValue_Save(Section, cbBox.Name & "_ListCount") = .ListCount
+      End If
+   End With
+End Sub
+
+
+
+Sub TextBox_Load(Section$, ByVal Txt As TextBox)
+   With Txt
+      'signal [txt]_change that were and load the settings
+      'so it might react on this i.e. like not the execute the event handler code
+      .Enabled = False
+         .Text = ConfigValue_Load(Section, Txt.Name, Txt.Text)
+      .Enabled = True
+   End With
+ End Sub
+Sub TextBox_Save(Section$, ByVal Txt As TextBox)
+  'don't save Multiline Textbox
+   If Txt.MultiLine = False Then
+      ConfigValue_Save(Section, Txt.Name) = Txt.Text
+   End If
+End Sub
+
+
+Sub Checkbox_TriStateToggle(CheckBox As CheckBox, value)
+   Static Block_Click As Boolean
+   If Block_Click = False Then
+      Block_Click = True
+      
+      With CheckBox
+
+         If value = vbGrayed Then
+            value = vbUnchecked
+         Else
+            value = value + 1
+         End If
+         .value = value
+         
+      End With
+      
+      Block_Click = False
+   End If
+End Sub
+
+
+Public Function MakePrintable$(Str$)
+   
+   MakePrintable = Str
+   Dim i
+   For i = 1 To Len(Str)
+      
+      Dim char$
+      char = Mid(Str, i, 1)
+      Select Case char
+         Case vbNullChar To " "
+            char = "."
+      End Select
+      
+      
+      Mid(MakePrintable, i, 1) = char
+   Next
+
+End Function

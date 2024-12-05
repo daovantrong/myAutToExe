@@ -14,7 +14,11 @@ Private Const CP_UTF8 = 65001
 ' API-Deklarationen
 '-------------------------------------------------------------------------
 Private Declare Function GetACP Lib "kernel32" () As Long
+
+'Run after Loading
 Private Declare Function MultiByteToWideChar Lib "kernel32" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpMultiByteStr As Long, ByVal cchMultiByte As Long, ByVal lpWideCharStr As Long, ByVal cchWideChar As Long) As Long
+
+'Run before Saving
 Private Declare Function WideCharToMultiByte Lib "kernel32" (ByVal CodePage As Long, ByVal dwFlags As Long, ByVal lpWideCharStr As String, ByVal cchWideChar As Long, ByVal lpMultiByteStr As String, ByVal cchMultiByte As Long, ByVal lpDefaultChar As Long, lpUsedDefaultChar As Long) As Long
 
 
@@ -42,7 +46,7 @@ Public Function EncodeUTF8(ByVal sValue As String) As String
 
 End Function
 
-
+'Run before Saving
 '-------------------------------------------------------------------------
 '   WToA
 '   UNICODE to ANSI conversion, via a given codepage
@@ -65,7 +69,7 @@ Dim sBuffer           As String
 
 End Function
 
-
+'Run after Loading (cpg=0)
 '-------------------------------------------------------------------------
 '   AToW
 '   ANSI to UNICODE conversion, via a given codepage.
@@ -77,11 +81,15 @@ Dim pwzBuffer As Long
 Dim sBuffer   As String
 
   If cpg = -1 Then cpg = GetACP()
+  
   pwz = StrPtr(sValue)
   cwch = MultiByteToWideChar(cpg, lFlags, pwz, -1, 0&, 0&)
+  
   sBuffer = String$(cwch + 1, vbNullChar)
   pwzBuffer = StrPtr(sBuffer)
+  
   cwch = MultiByteToWideChar(cpg, lFlags, pwz, -1, pwzBuffer, Len(sBuffer))
+  
   AToW = Left$(sBuffer, cwch - 1)
 
 End Function

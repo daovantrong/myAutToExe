@@ -6,11 +6,9 @@ Public FileName As New ClsFilename
 
 Public Const ERR_NO_AUT_EXE& = vbObjectError Or &H10
 Public Const ERR_NO_OBFUSCATE_AUT& = vbObjectError Or &H20
+Public Const ERR_NO_TEXTFILE& = vbObjectError Or &H30
 
 
-Public Const ERR_CANCEL_ALL& = vbObjectError Or &H1000
-
-Public Const ERR_SKIP& = vbObjectError Or &H2000
 
 
 Public Const StringBody_SingleQuoted As String = "[^']*"
@@ -62,11 +60,15 @@ End Sub
 
 Public Sub GUI_SkipEnable()
    FrmMain.Cmd_Skip.Visible = True
-   FrmMain.Cmd_Skip.SetFocus
+   If FrmMain.bCmd_Skip_HasFocus = False Then
+      FrmMain.Cmd_Skip.SetFocus
+      FrmMain.bCmd_Skip_HasFocus = True
+   End If
 End Sub
 
 Public Sub GUI_SkipDisable()
    FrmMain.Cmd_Skip.Visible = False
+   FrmMain.bCmd_Skip_HasFocus = False
 End Sub
 
 
@@ -127,12 +129,15 @@ Public Sub RunTidy(ScriptData$, Optional skipTidy As Boolean)
       .Log ""
      
       If skipTidy Then
-         .Log "Skipping to run 'tidy\Tidy.exe' on" & FileName.NameWithExt & "' to improve sourcecode readability. (Plz run it manually if you need it.)"
+         .Log "Skipping to run 'data\Tidy\Tidy.exe' on" & FileName.NameWithExt & "' to improve sourcecode readability. (Plz run it manually if you need it.)"
       Else
+         
          .Log "Running 'Tidy.exe " & FileName.NameWithExt & "' to improve sourcecode readability."
          
+         FrmMain.ScriptLines = Split(ScriptData, vbCrLf)
+         
          Dim cmdline$, parameters$, Logfile$
-         cmdline = App.Path & "\Tidy\Tidy.exe"
+         cmdline = App.Path & "\" & "data\Tidy\Tidy.exe"
          parameters = """" & FileName & """" ' /KeepNVersions=1
          .Log cmdline & " " & parameters
          

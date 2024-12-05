@@ -33,6 +33,7 @@ Public Const SW_NORMAL As Long = 1
 Public Const SW_RESTORE As Long = 9
 Public Const SW_SHOW As Long = 5
 Public Declare Function ShellExecute Lib "shell32.dll" Alias "ShellExecuteA" (ByVal hwnd As Long, ByVal lpOperation As String, ByVal lpFile As String, ByVal lpParameters As String, ByVal lpDirectory As String, ByVal nShowCmd As Long) As Long
+Public Declare Function TerminateProcess Lib "kernel32.dll" (ByVal hProcess As Long, ByVal uExitCode As Long) As Long
 
 Public Console As New Console
 
@@ -111,6 +112,9 @@ On Error GoTo ShellEx_err
     
     hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, 0, PID)
     If hProcess Then
+    
+       GUI_SkipEnable
+
        Do
           Retval = GetExitCodeProcess(hProcess, ExitCode)
 '               RetVal = WaitForSingleObject(hProcess, 100)
@@ -137,6 +141,15 @@ Select Case Err
    Case 0
    Case 5, 53
       Err.Raise vbObjectError Or Err.Number, "ShellEx()", "Shell(" & ShellCommand & ") [@ApiHelper.bas] FAILED! Error: " & Err.Description
+   
+   Case ERR_SKIP
+      Retval = TerminateProcess(hProcess, ExitCode)
+      If Retval Then
+         Log "User skipped/canceled process " & FileName & " terminated."
+      Else
+         Log "User skipped/canceled process " & FileName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
+      End If
+   
    Case Else
       Err.Raise vbObjectError Or Err.Number, "ShellEx()", Err.Description
 End Select
@@ -229,9 +242,9 @@ Private Sub createBackup()
 End Sub
 
 
-Sub log_verbose(Text$)
-   FrmMain.Log Text
-End Sub
+'Sub log_verbose(Text$)
+'   FrmMain.Log Text
+'End Sub
 
 Function isUTF16(Text$) As Boolean
    isUTF16 = (Mid(Text, 1, Len(UTF16_BOM)) = UTF16_BOM)

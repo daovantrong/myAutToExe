@@ -8,9 +8,9 @@ Begin VB.Form FrmRegExp_Renamer
    LinkTopic       =   "Form1"
    ScaleHeight     =   8115
    ScaleWidth      =   12810
-   StartUpPosition =   3  'Windows Default
+   StartUpPosition =   3  'Windows-Standard
    Begin VB.CommandButton cmd_RegExpSave 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Caption         =   "Save"
       Height          =   255
       Left            =   840
@@ -19,7 +19,7 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   735
    End
    Begin VB.CommandButton cmd_RegExpLoad 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Caption         =   "Load"
       Height          =   255
       Left            =   120
@@ -31,14 +31,14 @@ Begin VB.Form FrmRegExp_Renamer
       Caption         =   "Simple"
       Height          =   375
       Left            =   11880
-      Style           =   1  'Graphical
+      Style           =   1  'Grafisch
       TabIndex        =   12
       ToolTipText     =   "Enables Simple Mode - that do not adds 0001,0002... to each match"
       Top             =   120
       Width           =   855
    End
    Begin VB.CommandButton Cmd_Test 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Caption         =   "&Test"
       Height          =   495
       Left            =   11880
@@ -47,7 +47,7 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   615
    End
    Begin VB.CommandButton cmd_help 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Caption         =   "?"
       Height          =   495
       Left            =   12480
@@ -56,7 +56,7 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   255
    End
    Begin VB.CommandButton Cmd_Save 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Caption         =   "&Save"
       Height          =   495
       Left            =   11880
@@ -72,7 +72,7 @@ Begin VB.Form FrmRegExp_Renamer
       Top             =   1800
       Width           =   4335
       Begin VB.ListBox List_Matches 
-         Appearance      =   0  'Flat
+         Appearance      =   0  '2D
          Height          =   5880
          ItemData        =   "FrmRegExp_Renamer.frx":0000
          Left            =   120
@@ -82,7 +82,7 @@ Begin VB.Form FrmRegExp_Renamer
          Width           =   4095
       End
       Begin VB.TextBox txt_Matches 
-         BorderStyle     =   0  'None
+         BorderStyle     =   0  'Kein
          Height          =   5055
          Left            =   240
          MultiLine       =   -1  'True
@@ -93,7 +93,7 @@ Begin VB.Form FrmRegExp_Renamer
       End
    End
    Begin VB.ListBox List_log 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Height          =   1005
       ItemData        =   "FrmRegExp_Renamer.frx":002C
       Left            =   120
@@ -103,18 +103,18 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   8175
    End
    Begin VB.TextBox txt_FileName 
-      Appearance      =   0  'Flat
+      Appearance      =   0  '2D
       Height          =   285
       Left            =   120
-      OLEDropMode     =   1  'Manual
+      OLEDropMode     =   1  'Manuell
       TabIndex        =   4
       Text            =   "<Drag some au3-file in here>"
       Top             =   120
       Width           =   11655
    End
    Begin VB.TextBox txt_ReplaceString 
-      Appearance      =   0  'Flat
-      BorderStyle     =   0  'None
+      Appearance      =   0  '2D
+      BorderStyle     =   0  'Kein
       BeginProperty Font 
          Name            =   "Courier New"
          Size            =   8.25
@@ -140,7 +140,7 @@ Begin VB.Form FrmRegExp_Renamer
       Top             =   1800
       Width           =   8175
       Begin VB.TextBox txt_Replace 
-         BorderStyle     =   0  'None
+         BorderStyle     =   0  'Kein
          Height          =   4815
          Left            =   120
          MultiLine       =   -1  'True
@@ -151,7 +151,7 @@ Begin VB.Form FrmRegExp_Renamer
          Width           =   7935
       End
       Begin VB.TextBox txt_Original 
-         BorderStyle     =   0  'None
+         BorderStyle     =   0  'Kein
          Height          =   4815
          Left            =   120
          MultiLine       =   -1  'True
@@ -289,11 +289,12 @@ Private Sub Cmd_Save_Click()
 End Sub
 
 Private Sub Cmd_Test_Click()
+   On Error Resume Next
    Apply ScriptData.Data, True
 End Sub
 
 Private Sub Form_Load()
-   'Txt_Filename = "!Test\CBS Bot (Chr Obfuscated)\1.93\LauncherGUI.au3"
+   'txt_Filename = "!Test\CBS Bot (Chr Obfuscated)\1.93\LauncherGUI.au3"
 End Sub
 
 Private Sub List_Matches_Click()
@@ -326,7 +327,7 @@ Exit Sub
 
 End Sub
 
-Private Sub Txt_FileName_Change()
+Private Sub txt_Filename_Change()
    If FileExists(txt_FileName) Then
       FileName = txt_FileName
    
@@ -377,7 +378,7 @@ Private Sub FindMatches(Data$, RE_Search$) ' As MatchCollection
 '      Dim SearchReplace_Matches As MatchCollection
       Set SearchReplace_Matches = .Execute(Data)
       
-      Log SearchReplace_Matches.count & " matches found."
+      Log SearchReplace_Matches.Count & " matches found."
 '      Set FindMatches = SearchReplace_Matches
     
     ' show Matches
@@ -385,7 +386,7 @@ Private Sub FindMatches(Data$, RE_Search$) ' As MatchCollection
       For Each Match In SearchReplace_Matches
          With Match
 '            txt_Matches = txt_Matches & vbCrLf & .value
-            If .SubMatches.count <= 1 Then
+            If .SubMatches.Count <= 1 Then
                 List_Matches.AddItem Replace(.value, Match.SubMatches(0), "=>" & .SubMatches(0) & "<=")
             
             Else
@@ -448,7 +449,7 @@ End Function
 Public Sub RE_Replace_SplitMatches(Data$, SearchReplace_Matches As MatchCollection, ByRef Replace_FixData)
 
  ' Dim Array for splited Data
-   ReDim Replace_FixData((2 * SearchReplace_Matches.count))
+   ReDim Replace_FixData((2 * SearchReplace_Matches.Count))
 
    Dim StrReader As New StringReader
    With StrReader
@@ -462,7 +463,7 @@ Public Sub RE_Replace_SplitMatches(Data$, SearchReplace_Matches As MatchCollecti
       For Each Match In SearchReplace_Matches
         
         Dim MatchStart&, MatchLen&
-        If Match.SubMatches.count = 0 Then
+        If Match.SubMatches.Count = 0 Then
          ' No SubMatches so use normal match data
            MatchStart = Match.FirstIndex
            MatchLen = Match.Length
@@ -556,8 +557,8 @@ Private Sub DoSearchReplace(Data$, RE_Search$, RE_Replace$, Optional Comments = 
 '
 ''---------------------------------------------
       
-      If SearchReplace_Matches.count = 0 Then Exit Sub
-      If SearchReplace_Matches(0).SubMatches.count = 0 Then
+      If SearchReplace_Matches.Count = 0 Then Exit Sub
+      If SearchReplace_Matches(0).SubMatches.Count = 0 Then
          Dim ErrText$
          ErrText = "ERROR! - There are SubMatches. Please put the NamePatter of the RegExpSearchPattern into round parentheses()."
          txt_Replace = ErrText
@@ -574,7 +575,7 @@ Private Sub DoSearchReplace(Data$, RE_Search$, RE_Replace$, Optional Comments = 
       Dim Match As Match
       Dim VarCount&
       VarCount = 0
-      GUIEvent_ProcessBegin SearchReplace_Matches.count
+      GUIEvent_ProcessBegin SearchReplace_Matches.Count
    
       For Each Match In SearchReplace_Matches
          With Match
@@ -691,14 +692,14 @@ End Select
 End Function
 
 
-Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
-   On Error GoTo Txt_FileName_OLEDragDrop_err
+Private Sub txt_Filename_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+   On Error GoTo txt_Filename_OLEDragDrop_err
    
    txt_FileName = Data.Files(1)
 '   Timer_OleDrag.Enabled = True
    
 
-Txt_FileName_OLEDragDrop_err:
+txt_Filename_OLEDragDrop_err:
 Select Case Err
 Case 0
 

@@ -15,12 +15,12 @@ Public Sub CRCInit(Optional ByVal Poly As Long = &HEDB88320)
   Class_Initialize
   
   Dim CRC As Long
-  Dim ByteValue As Integer
+  Dim int8 As Integer
   Dim Bits As Integer
   
-  For ByteValue = 0 To 255
+  For int8 = 0 To 255
   
-    CRC = Mul(ByteValue, 0, &H1000000, 0) '* (2 ^ &H18)
+    CRC = Mul(int8, 0, &H1000000, 0) '* (2 ^ &H18)
     For Bits = 7 To 0 Step -1
     
       'crc32 & 0x80000000) ?
@@ -33,9 +33,9 @@ Public Sub CRCInit(Optional ByVal Poly As Long = &HEDB88320)
       End If
     
     Next Bits
-    pTable(ByteValue) = CRC
+    pTable(int8) = CRC
   
-  Next ByteValue
+  Next int8
   pInititialized = True
 End Sub
 

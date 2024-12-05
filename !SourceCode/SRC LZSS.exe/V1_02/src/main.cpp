@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
 	printf("Usage: %s <-c | -d> <infile> <outfile>\n", argv[0]);
 	printf("  -c performs file to file compression\n");
 	printf("  -d performs file to file decompression\n\n");
-	printf("Supported files type(s) 'JB01' (and 'EA05', 'EA06' decompression only).\n");
+	printf("Supported files type(s) 'JB01' (and 'JB00', 'EA05', 'EA06' decompression only).\n");
 
 	return 0;
 }

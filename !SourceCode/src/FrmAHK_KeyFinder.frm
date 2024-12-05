@@ -1,6 +1,6 @@
 VERSION 5.00
 Begin VB.Form FrmAHK_KeyFinder 
-   BorderStyle     =   4  'Fixed ToolWindow
+   BorderStyle     =   4  'Festes Werkzeugfenster
    Caption         =   "AHK Keyfinder"
    ClientHeight    =   1500
    ClientLeft      =   6300
@@ -40,7 +40,7 @@ Begin VB.Form FrmAHK_KeyFinder
       Width           =   735
    End
    Begin VB.Label Label1 
-      Alignment       =   2  'Center
+      Alignment       =   2  'Zentriert
       BackStyle       =   0  'Transparent
       Caption         =   "Use Mousewheel or the up and down keys to scroll. Double click to restore inital key."
       Height          =   855
@@ -86,7 +86,7 @@ Private Sub cmd_cancel_Click()
    Unload Me
 End Sub
 
-Private Sub Cmd_ok_Click()
+Private Sub cmd_ok_Click()
    Unload Me
 End Sub
 
@@ -97,7 +97,7 @@ End Sub
 Private Sub Combo_AHK_Key_Click()
    On Error GoTo Combo_AHK_Key_Change_err
    
-   AHK_Key = "&h" & Combo_AHK_Key.Text
+   AHK_Key = HexToInt(Combo_AHK_Key.Text)
 '   FrmMain.Txt_Script =
 AHK_ExtraDecryption ScriptDataEncryptedPreviewBuff, AHK_Key
 

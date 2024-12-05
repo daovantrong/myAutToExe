@@ -89,13 +89,13 @@ Const NORMAL_PRIORITY_CLASS& = &H20&
 Const STARTUPINFOF_USESTDHANDLES& = &H100&
 Const STARTF_USESHOWWINDOW& = 1
 
-
+Public Event OnInit(ProgramName$)
 Public Event OnOutput(TextLine$, ProgramName$)
+Public Event OnDone(ExitCode&)
 
 Public Function ShellExConsole(FileName$, Params$, Optional ByRef ExitCode&, Optional WinStyle As VbAppWinStyle = vbHide) As String
 On Error GoTo ShellExConsole_err
   
-   GUI_SkipEnable
    
    
    Dim tmp As New ClsFilename
@@ -103,6 +103,10 @@ On Error GoTo ShellExConsole_err
    
    Dim ProgramName$
    ProgramName = tmp.Name
+  
+   'GUI_SkipEnable
+   RaiseEvent OnInit(ProgramName)
+   
   
   
   ' Create CommandLine
@@ -123,7 +127,7 @@ On Error GoTo ShellExConsole_err
     Dim hReadPipe As Long, hWritePipe As Long
     Retval = CreatePipe(hReadPipe, hWritePipe, sa, 0)
     If Retval = 0 Then
-        Err.Raise 5, , "CreatePipe failed! RetVal: 0x" & H32(Retval)
+        Err.raise 5, , "CreatePipe failed! RetVal: 0x" & H32(Retval)
     End If
    
   ' Prepare STARTUPINFO for CreateProcess
@@ -172,7 +176,7 @@ On Error GoTo ShellExConsole_err
                     
                     
                 Else
-                    Err.Raise 5, , "ReadFile failed! RetVal: 0x" & H32(Retval)
+                    Err.raise 5, , "ReadFile failed! RetVal: 0x" & H32(Retval)
                 End If
                 
             Else
@@ -186,7 +190,7 @@ On Error GoTo ShellExConsole_err
         Loop While GetExitCode_RetVal And (ExitCode = STILL_ACTIVE)
     
     Else
-        Err.Raise 5, , "CreateProcessA failed! RetVal: 0x" & H32(Retval)
+        Err.raise 5, , "CreateProcessA failed! RetVal: 0x" & H32(Retval)
     End If
     
     CloseHandle hReadPipe
@@ -197,19 +201,17 @@ On Error GoTo ShellExConsole_err
 Err.Clear
 ShellExConsole_err:
 
-GUI_SkipDisable
-
 Select Case Err
    Case 0
    Case 5, 53
-      Err.Raise vbObjectError Or Err.Number, "ShellExConsole()", "Shell(" & ShellCommand & ") [@ApiHelper.bas] FAILED! Error: " & Err.Description
+      Err.raise vbObjectError Or Err.Number, "ShellExConsole()", "Shell(" & ShellCommand & ") [@ApiHelper.bas] FAILED! Error: " & Err.Description
       
    Case ERR_CANCEL_ALL
       Retval = TerminateProcess(proc.hProcess, ExitCode)
       If Retval Then
-         Err.Raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated."
+         Err.raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated."
       Else
-         Err.Raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
+         Err.raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
       End If
       
    Case ERR_SKIP
@@ -222,9 +224,12 @@ Select Case Err
       
       
    Case Else
-      Err.Raise vbObjectError Or Err.Number, "ShellExConsole()", Err.Description
+      Err.raise vbObjectError Or Err.Number, "ShellExConsole()", Err.Description
 End Select
 
+
+RaiseEvent OnDone(GetExitCode_RetVal)
+'GUI_SkipDisable
 
 
 End Function

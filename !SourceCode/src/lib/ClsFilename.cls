@@ -24,7 +24,7 @@ Attribute FileName.VB_UserMemId = 0
 End Property
 
 Public Property Let FileName(ByVal vNewValue As String)
-   mvarFileName = vNewValue
+   mvarFileName = Trim(vNewValue)
 End Property
 
 '         FileName.WholeName = .lpstrFile

@@ -38,7 +38,7 @@ Public Sub SeperateIncludes()
       Dim bUTF16detected As Boolean
       
       Dim UnicodeBomBuff%
-      UnicodeBomBuff = .intValue
+      UnicodeBomBuff = .int16
       
       bUTF16detected = UnicodeBomBuff = &HFEFF
       If bUTF16detected Then 'LittleEndian of UTF16
@@ -72,7 +72,7 @@ Public Sub SeperateIncludes()
    
  ' Convert unicode to accii
    If bUTF16detected Then
-      ScriptData = StrConv(ScriptData, vbFromUnicode, LocaleID_ENG)
+      ScriptData = StrConv(ScriptData, vbFromUnicode, LocaleID)
    End If
    
    SeperateIncludes2 ScriptData
