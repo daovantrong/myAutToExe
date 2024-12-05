@@ -600,9 +600,9 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
 
 
 '=== Replace Dim Const and Globals
-BenchStart
+'BenchStart
    DeObfu_ReplaceGlobals NewScript
-BenchEnd
+'BenchEnd
 ' ReplaceDoMulti 49297 ;51078
 ' ReplaceDo 23188
 ' Empty 9719  9625  9641
@@ -1021,43 +1021,43 @@ End Sub
 
 Private Sub DeObfu_ReplaceGlobals(ByRef CodeSnipped$, Optional IgnoreLinesWith)
 Log "Renaming Globals..."
-   'z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
-'Global Const $A4A14104939 = $A2014201D1E
-
-'Global $A4201D12945 =
-'http://msdn.microsoft.com/en-us/library/1400241x.aspx
-  Dim ObfuName$
-  ObfuName = "[0123456789ABCDEF]{11}"
-  Dim GlobalVar As New RegExp
-  With GlobalVar
-      .IgnoreCase = True
-      .Global = False
-      '.Pattern = WSpace("Global $" & ObfuName, "=")
-      .Pattern = ObfuName
-      
-  End With
- 
-
- 'separate Chr's
-  Dim GlobalVar_Match As Match
-  For Each GlobalVar_Match In GlobalVar.Execute(NewScript)
-     
-    ' Concat Chrs to a ChrString
-      With GlobalVar_Match
-        Dim tmp
-         tmp = .SubMatches(0)    'Chrs_arg1 = 157
-      End With
-        
-   Next GlobalVar_Match
- 
- ' replace ChrString in line
-'   ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
-
- ' save modified Line
- '  ScriptLines(Line_idx) = Line
-   
-'Loop ' next ChrString in Line
-
+   z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
+''Global Const $A4A14104939 = $A2014201D1E
+'
+''Global $A4201D12945 =
+''http://msdn.microsoft.com/en-us/library/1400241x.aspx
+'  Dim ObfuName$
+'  ObfuName = "[0123456789ABCDEF]{11}"
+'  Dim GlobalVar As New RegExp
+'  With GlobalVar
+'      .IgnoreCase = True
+'      .Global = True
+'      '.Pattern = WSpace("Global $" & ObfuName, "=")
+'      .Pattern = ObfuName
+'
+'  End With
+'
+'
+' 'separate Chr's
+'  Dim GlobalVar_Match As Match
+'  For Each GlobalVar_Match In GlobalVar.Execute(NewScript)
+'
+'    ' Concat Chrs to a ChrString
+'      With GlobalVar_Match
+'        Dim tmp
+'         tmp = .SubMatches(0)    'Chrs_arg1 = 157
+'      End With
+'
+'   Next GlobalVar_Match
+'
+' ' replace ChrString in line
+''   ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
+'
+' ' save modified Line
+' '  ScriptLines(Line_idx) = Line
+'
+''Loop ' next ChrString in Line
+'
 
 
 

@@ -1,5 +1,5 @@
 Type=Exe
-Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#5.5#0#C:\WINXP\system32\vbscript.dll\3#Microsoft VBScript Regular Expressions 5.5
+Reference=*\G{3F4DACA7-160D-11D2-A8E9-00104B365C9F}#5.5#0#C:\WINDOWS\system32\vbscript.dll\3#Microsoft VBScript Regular Expressions 5.5
 Form=!SourceCode\src\frmMain.frm
 Form=!SourceCode\src\FrmAbout.frm
 Form=!SourceCode\src\frmLogView.frm
@@ -29,13 +29,13 @@ Startup="FrmMain"
 HelpFile=""
 Title="AutToExe"
 ExeName32="myAutToExe.exe"
-Command32=""e:\Programmierung\Projekte\AutToExe\!Test\JayS\patch\patch_restore.au3""
+Command32=""e:\Programmierung\Projekte\AutToExe\!Test\JayS\patch\patch_restore.au3-""
 Name="myAutToExe"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
-MinorVer=4
-RevisionVer=93
+MinorVer=5
+RevisionVer=94
 AutoIncrementVer=1
 ServerSupportFiles=0
 VersionComments="http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234"
@@ -59,3 +59,6 @@ Retained=0
 ThreadPerObject=-1
 MaxNumberOfThreads=1
 DebugStartupOption=0
+
+[MS Transaction Server]
+AutoRefresh=1

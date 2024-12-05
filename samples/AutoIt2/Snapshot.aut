@@ -1,0 +1,38 @@
+; Example Script
+; ==============
+;
+; OS:     Windows 9x
+; Author: Jonathan Bennett (jbennett@hidden.demon.co.uk)
+;
+; This script will take a snapshot of the screen using PRINTSCREEN
+; and then paste it into paintbrush
+
+MsgBox, 4, AutoIt Example  (English Only), This script will get a screen snapshot into paintbrush.  Run?
+IfMsgBox, NO, Goto, denied
+
+Run, notepad.exe
+WinWaitActive, Untitled - Notepad,"",3
+Send, !{PRINTSCREEN}
+WinClose, Untitled - Notepad
+
+; Use pbrush.exe under Win9x, mspaint.exe under NT
+IfEqual, OS, Windows_NT, Goto, WinNT
+Run, pbrush.exe
+Goto, Continue
+WinNT:
+Run, mspaint.exe
+
+Continue:
+WinWaitActive, untitled - Paint,"",3
+Send, !e
+Send, p
+Sleep, 2000
+Exit
+
+denied:
+Exit
+
+
+
+[ADLIB]
+Paint, The image in the clipboard is larger, Send, !y

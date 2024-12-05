@@ -1,0 +1,20 @@
+================================================================================
+myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler< 2.5 build(94)
+================================================================================
+Unpacking: E:\Programmierung\Projekte\AutToExe\Ver 2.0\samples\AutoIt2\Snapshot.exe
+AlternativeSigScan for 'FILE'-signature in au3-body...
+Scanning for FILE-(old)signature: FF 6D B0 CE    ÿm°Î
+...not found.
+Scanning for FILE-(new)signature: 6B 43 CA 52    kCÊR
+...not found.
+'FILE'-signature not found. Please enter start of script manually.
+===============================================================================
+Trying to DeTokenise: E:\Programmierung\Projekte\AutToExe\Ver 2.0\samples\AutoIt2\Snapshot.exe
+STOPPED!!! Required FileExtension for Tokenfiles: '.tok .mem'
+Rename this file manually to show that this should be detokenied.
+===============================================================================
+Trying to DeObfuscate : E:\Programmierung\Projekte\AutToExe\Ver 2.0\samples\AutoIt2\Snapshot.exe
+Script is NOT obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]', v1.0.14[June 16, 2007] or 'EncodeIt 2.0'
+
+Saving Logdata to : E:\Programmierung\Projekte\AutToExe\Ver 2.0\samples\AutoIt2\_myExeToAut.log
+

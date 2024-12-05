@@ -215,7 +215,7 @@ Sub FL_verbose(Text)
 End Sub
 
 Sub log_verbose(TextLine$)
-   If Chk_verbose.value = vbChecked Then Log TextLine
+   If Chk_verbose.Value = vbChecked Then Log TextLine
 End Sub
 
 
@@ -263,6 +263,23 @@ End Sub
 
 
 
+Private Sub Chk_ForceOldScriptType_Click()
+   Static Block_Chk_ForceOldScriptType_Click As Boolean
+   If Block_Chk_ForceOldScriptType_Click Then Exit Sub
+   Block_Chk_ForceOldScriptType_Click = True
+   With Chk_ForceOldScriptType
+      Static Value
+      If Value = 2 Then
+         Value = 0
+      Else
+         Value = Value + 1
+      End If
+      .Value = Value
+      
+   End With
+   Block_Chk_ForceOldScriptType_Click = False
+End Sub
+
 Private Sub Cmd_About_Click()
    FrmAbout.Show vbModal
 End Sub
@@ -282,8 +299,8 @@ End Sub
 Private Function ConfigValue_Load(Key$, Optional DefaultValue)
    ConfigValue_Load = GetSetting(App.Title, Me.Name, Key, DefaultValue)
 End Function
-Property Let ConfigValue_Save(Key$, value As Variant)
-      SaveSetting App.Title, Me.Name, Key, value
+Property Let ConfigValue_Save(Key$, Value As Variant)
+      SaveSetting App.Title, Me.Name, Key, Value
 End Property
 
 
@@ -291,10 +308,10 @@ End Property
 '///////////////////////////////////////////
 '// Load/Save a CheckBox State
 Sub CheckBox_Load(ByVal ChkBox As CheckBox)
-   ChkBox.value = ConfigValue_Load(ChkBox.Name, ChkBox.value)
+   ChkBox.Value = ConfigValue_Load(ChkBox.Name, ChkBox.Value)
 End Sub
 Sub CheckBox_Save(ByVal ChkBox As CheckBox)
-   ConfigValue_Save(ChkBox.Name) = ChkBox.value
+   ConfigValue_Save(ChkBox.Name) = ChkBox.Value
 End Sub
 
 
@@ -444,7 +461,7 @@ Public Function GetLogdata$()
    
    End If
    
-   GetLogdata = LogData.value
+   GetLogdata = LogData.Value
    
 End Function
 
@@ -571,7 +588,7 @@ Private Sub Txt_Filename_Change()
           Select Case Err
           Case 0, ERR_NO_OBFUSCATE_AUT
             
-            If Chk_RestoreIncludes.value = vbChecked Then SeperateIncludes
+            If Chk_RestoreIncludes.Value = vbChecked Then SeperateIncludes
           
           Case Else
             Log Err.Description
