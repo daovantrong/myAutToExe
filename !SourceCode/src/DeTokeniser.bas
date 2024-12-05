@@ -12,6 +12,8 @@ Dim bDontAddWhiteSpace As Boolean
 
 Sub DeToken()
 
+   
+   
    With File
     
       log "Trying to DeTokenise: " & FileName.FileName
@@ -61,7 +63,7 @@ Sub DeToken()
 
       Dim SourceCode ' As New Collection
       Dim SourceCodeLineCount&
-      ReDim SourceCode(0 To Lines):     SourceCodeLineCount = 1:
+      ReDim SourceCode(1 To Lines):     SourceCodeLineCount = 1:
       Dim TokenCount&: TokenCount = 0
       
       Dim RawString As StringReader: Set RawString = New StringReader
@@ -69,7 +71,8 @@ Sub DeToken()
 
       Do
       
-      
+
+         
          If (SourceCodeLineCount > Lines) Then
             Exit Do
          End If
@@ -91,7 +94,7 @@ Sub DeToken()
          Select Case Cmd
          Case &H0 To &HF
             '&H5
-            Dim int32&
+            Dim int32$
             int32 = .longValue
             Atom = int32
             FL_verbose "Ini32: 0x" & H32(int32) & "   " & int32
@@ -129,45 +132,26 @@ Sub DeToken()
            'Get StrLength and load it
             size = .longValue
             FL_verbose "StringSize: " & H32(size)
-            
-            RawString = .FixedString(size * 2)
-           
-           
+            RawString = .FixedStringW(size)
            
            'XorDecode String
-            Dim StrCharPos&, tmpBuff$, XorKey_l%, XorKey_h%, XorKey%
-            
-'            XorKey = (size And &HFFFF)
+            Dim pos&, XorKey_l%, XorKey_h%, XorKey%
             
             XorKey_l = (size And &HFF)
-            XorKey_h = (size / &HFF And &HFF) ' 2^8 = 255
+            XorKey_h = ((size \ &H100) And &HFF) ' 2^8 = 256
             
-            Dim bNeedsUnicode As Boolean
-            bNeedsUnicode = False
-            Dim Char As Byte
+            Dim tmpBuff() As Byte
+            tmpBuff = RawString
             
-'            tmpBuff$ = StrConv(RawString, vbFromUnicode)
-            tmpBuff$ = RawString
-            For StrCharPos = 1 To Len(RawString) Step 2
-               'MidB$(tmpBuff, StrCharPos, 2) = ChrB$(AscB(MidB$(tmpBuff, StrCharPos * 2 - 1, 2)) _
-                     Xor XorKey)
-               MidB$(tmpBuff, StrCharPos * 2 - 1, 2) = ChrB$(AscB(MidB$(tmpBuff, StrCharPos * 2 - 1, 2)) Xor XorKey_l)
+            For pos = LBound(tmpBuff) To UBound(tmpBuff) Step 2
+               tmpBuff(pos) = tmpBuff(pos) Xor XorKey_l
+               tmpBuff(pos + 1) = tmpBuff(pos + 1) Xor XorKey_h
+'               DecodeString = tmpBuff
                
-               Char = AscB(MidB$(tmpBuff, StrCharPos * 2 + 1, 2)) Xor XorKey_h
-               MidB$(tmpBuff, StrCharPos * 2 + 1, 2) = ChrB$(Char)
-               bNeedsUnicode = (Char <> 0) Or (bNeedsUnicode = True)
-               
-'                Mid$(tmpBuff, StrCharPos, 1) = ChrW$(AscW(Mid$(tmpBuff, StrCharPos, 1)) Xor XorKey)
-               
-               If 0 = (StrCharPos Mod &H8000) Then DoEvents
+               If 0 = (pos Mod &H8000) Then DoEvents
             Next
             
-'            DecodeString = Left(tmpBuff, size)
-            If bNeedsUnicode Then
-               DecodeString = tmpBuff
-            Else
-               DecodeString = StrConv(tmpBuff, vbFromUnicode)
-            End If
+            DecodeString = tmpBuff
             
 'Comment out due to bad performance
 '            RawString.Position = 0
@@ -180,7 +164,7 @@ Sub DeToken()
             Select Case Cmd
             
             Case &H30 'BlockElement (FUNC, IF...) and the Rest of 42 Elements: "AND OR NOT IF THEN ELSE ELSEIF ENDIF WHILE WEND DO UNTIL FOR NEXT TO STEP IN EXITLOOP CONTINUELOOP SELECT CASE ENDSELECT SWITCH ENDSWITCH CONTINUECASE DIM REDIM LOCAL GLOBAL CONST FUNC ENDFUNC RETURN EXIT BYREF WITH ENDWITH TRUE FALSE DEFAULT ENUM NULL"
-               FL_verbose """" & DecodeString & """   Type: BlockElement"
+               FL_verbose """" & DecodeString.Data & """   Type: BlockElement"
                
                Atom = DecodeString
               
@@ -194,23 +178,23 @@ Sub DeToken()
             
             Case &H31 'FunctionCall with params
                Atom = DecodeString
-               FL_verbose """" & DecodeString & """   Type: AutoItFunction"
+               FL_verbose """" & DecodeString.Data & """   Type: AutoItFunction"
                
             Case &H32 'Macro
                Atom = "@" & DecodeString
-               FL_verbose """" & DecodeString & """   Type: Macro"
+               FL_verbose """" & DecodeString.Data & """   Type: Macro"
             
             Case &H33 'Variable
                Atom = "$" & DecodeString
-               FL_verbose """" & DecodeString & """   Type: Variable"
+               FL_verbose """" & DecodeString.Data & """   Type: Variable"
             
             Case &H34 'FunctionCall
                Atom = DecodeString
-               FL_verbose """" & DecodeString & """   Type: UserFunction"
+               FL_verbose """" & DecodeString.Data & """   Type: UserFunction"
             
             Case &H35 'Property
                Atom = "." & DecodeString
-               FL_verbose """" & DecodeString & """   Type: Property"
+               FL_verbose """" & DecodeString.Data & """   Type: Property"
             
             Case &H36 'UserString
                
@@ -231,11 +215,11 @@ Sub DeToken()
                   Atom = """" & DecodeString & """"
                End If
                
-               FL_verbose """" & DecodeString & """   Type: UserString"
+               FL_verbose """" & DecodeString.Data & """   Type: UserString"
             
             Case &H37 '# PreProcessor
                Atom = DecodeString
-               FL_verbose """" & DecodeString & """   Type: PreProcessor"
+               FL_verbose """" & DecodeString.Data & """   Type: PreProcessor"
             
             
             Case Else
@@ -248,6 +232,8 @@ Sub DeToken()
          Case &H40 To &H56
 '            Atom = Choose((Cmd - &H40 + 1), ",", "=", ">", "<", "<>", ">=", "<=", "(", ")", "+", "-", "/", "", "&", "[", "]", "==", "^", "+=", "-=", "/=", "*=", "&=")
          '                     Au3Manual AcciChar
+            
+            bDontAddWhiteSpace = True
             Select Case Cmd
                Case &H40: Atom = ","  '        2C
                Case &H41: Atom = "="  ' 1  13  3D
@@ -258,11 +244,11 @@ Sub DeToken()
                Case &H46: Atom = "<=" ' 19     3C
                Case &H47: Atom = "("  '        28
                Case &H48: Atom = ")"  '        29
-               Case &H49: Atom = "+"  ' 7      2B
-               Case &H4A: Atom = "-"  ' 8      2D
+               Case &H49: Atom = "+": bDontAddWhiteSpace = False ' 7      2B
+               Case &H4A: Atom = "-": bDontAddWhiteSpace = False ' 8      2D
                Case &H4B: Atom = "/"  ' 10     2F
                Case &H4C: Atom = "*"  ' 9      2A
-               Case &H4D: Atom = "&"  ' 11     26
+               Case &H4D: Atom = "&" ' 11     26
                Case &H4E: Atom = "["  '        5B
                Case &H4F: Atom = "]"  '        5D
                Case &H50: Atom = "==" ' 14     3D
@@ -273,8 +259,6 @@ Sub DeToken()
                Case &H55: Atom = "*=" '4       2A
                Case &H56: Atom = "&=" '6       26
             End Select
-            
-            bDontAddWhiteSpace = True
 
 
          Case &H7F
@@ -305,11 +289,13 @@ Sub DeToken()
 
          End Select
          
+         'Debug.Assert SourceCodeLineCount < 1021
+         
          If bDontAddWhiteSpace Then
            'Add to SourceLine
             SourceCodeLine = SourceCodeLine & Atom
          Else
-              'Add to SourceLine
+           'Add to SourceLine
             SourceCodeLine = SourceCodeLine & AddWhiteSpace & Atom
          End If
          
@@ -325,7 +311,28 @@ Sub DeToken()
   End If
   
   FileName.Ext = ".au3"
-  SaveScriptData (Join(SourceCode, vbCrLf))
+  
+  
+'   If bUnicodeEnable Then
+      Dim ScriptData$
+      ScriptData = Join(SourceCode, vbCrLf)
+'
+'      Dim FileName_UTF16 As New ClsFilename
+'      FileName_UTF16.FileName = FileName.FileName
+'
+'      FileName_UTF16.Name = FileName.Name & "_UTF16"
+'      FrmMain.log "Saving UTF16-Script to: " & FileName_UTF16.FileName
+'
+'      File.Create FileName_UTF16.FileName, True, False, False
+'      File.Position = 0
+'      File.FixedString(-1) = UTF16_BOM & ScriptData
+'      File.setEOF
+'      File.CloseFile
+'
+'   End If
+  
+  FrmMain.log "Converting Unicode to UTF8, since Tidy don't support unicode."
+  SaveScriptData UTF8_BOM & EncodeUTF8(ScriptData)
    
   log "Token expansion succeed."
    
@@ -381,7 +388,7 @@ End Function
 
 
 Private Sub FL_verbose(text)
-   FrmMain.FL_verbose (text)
+   FrmMain.FL_verbose text
 End Sub
 Private Sub log_verbose(TextLine$)
    FrmMain.log_verbose TextLine$

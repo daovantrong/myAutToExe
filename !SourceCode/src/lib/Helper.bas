@@ -326,3 +326,12 @@ Public Function BenchEnd()
    Debug.Print BenchtimeB - BenchtimeA
 
 End Function
+
+
+Public Function FileExists(FileName) As Boolean
+   On Error GoTo FileExists_err
+   FileExists = FileLen(FileName)
+
+FileExists_err:
+End Function
+

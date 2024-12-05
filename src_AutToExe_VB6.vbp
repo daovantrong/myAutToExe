@@ -17,25 +17,27 @@ Module=modSeperateIncludes; !SourceCode\src\SeperateIncludes.bas
 Module=ModCRC32; !SourceCode\src\ModCRC32.bas
 Module=DeTokeniser; !SourceCode\src\DeTokeniser.bas
 Module=DeCompiler; !SourceCode\src\Decompile.bas
-Class=Commandline; !SourceCode\src\lib\Commandline.cls
+Class=Commandline; !SourceCode\SRC\lib\Commandline.cls
+Form=!SourceCode\SRC\FrmFuncRename.frm
+Module=UTF8; !SourceCode\SRC\lib\UTF8.bas
 IconForm="FrmMain"
 Startup="FrmMain"
 HelpFile=""
 Title="AutToExe"
-ExeName32="myAutToExe2.exe"
-Command32=""E:\Programmierung\PrE:\Programmierung\Projekte\AutToExe\!Test\simon\2\Simon.exe""
+ExeName32="myAutToExe.exe"
+Command32=""e:\Programmierung\Projekte\AutToExe\!Test\unicodeTest\test2\1\test2.exe""
 Name="myAutToExe"
 HelpContextID="0"
 CompatibleMode="0"
 MajorVer=2
-MinorVer=0
-RevisionVer=65
+MinorVer=1
+RevisionVer=70
 AutoIncrementVer=1
 ServerSupportFiles=0
-VersionComments="http://maghia.free.fr/Board/viewtopic.php?t=234"
+VersionComments="http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234"
 VersionCompanyName="CW2K@gmx.de"
 VersionFileDescription="Decompiles 'compiled' AutoIT Exe files."
-VersionProductName="AutToExe"
+VersionProductName="myAutToExe"
 CondComp="DoUserPassWordCheck = 0"
 CompilationType=-1
 OptimizationType=2

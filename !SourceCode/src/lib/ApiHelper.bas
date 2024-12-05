@@ -55,7 +55,9 @@ End Type
 
 Public Declare Function FileTimeToSystemTime Lib "kernel32.dll" (ByRef lpFileTime As FILETIME, ByRef lpSystemTime As SYSTEMTIME) As Long
 
-
+Public Const UTF16_BOM$ = "ÿþ" 'Chr(&HFF) & Chr(&HFE)
+Public Const UTF8_BOM$ = "ï»¿" 'Chr(&HEF) & Chr(&HBB)& Chr(&HBF)
+'Public Const bUnicodeEnable As Boolean = True
 
 
 'The LB_GETHORIZONTALEXTENT message is useful to retrieve the current value of the horizontal extent:
@@ -69,13 +71,13 @@ Private Declare Function SendMessage Lib "user32" Alias "SendMessageA" (ByVal _
 ' If this value is greater than the current control's width
 ' an horizontal scrollbar appears.
 
-Sub Listbox_SetHorizontalExtent(lb As ListBox, ByVal newWidth As Long)
+Sub Listbox_SetHorizontalExtent(lb As Listbox, ByVal newWidth As Long)
     SendMessage lb.hwnd, LB_SETHORIZONTALEXTENT, newWidth, ByVal 0&
 End Sub
 
 
 ' Return the horizontal extent of the control (in pixel).
-Function Listbox_GetHorizontalExtent(lb As ListBox) As Long
+Function Listbox_GetHorizontalExtent(lb As Listbox) As Long
     Listbox_GetHorizontalExtent = SendMessage(lb.hwnd, LB_GETHORIZONTALEXTENT, 0, ByVal 0&)
 End Function
 
@@ -192,8 +194,34 @@ Private Sub createBackup()
 End Sub
 
 
-
-
 Sub log_verbose(text$)
    FrmMain.log text
 End Sub
+
+Function isUTF16(text$) As Boolean
+   isUTF16 = (Mid(text, 1, Len(UTF16_BOM)) = UTF16_BOM)
+End Function
+Function isUTF8(text$) As Boolean
+   isUTF8 = (Mid(text, 1, Len(UTF8_BOM)) = UTF8_BOM)
+End Function
+
+
+''Converts a string to Unicode if unicode is enabled
+'Function T$(TextString$)
+'   If bUnicodeEnable Then
+'      T = StrConv(TextString, vbUnicode)
+'   Else
+'      T = TextString
+'   End If
+'
+'End Function
+'
+'Function Accii$(TextString$)
+'   If bUnicodeEnable Then
+'      Accii = StrConv(TextString, vbFromUnicode)
+'   Else
+'      Accii = TextString
+'   End If
+'
+'End Function
+

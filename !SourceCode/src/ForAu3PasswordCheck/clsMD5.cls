@@ -695,7 +695,7 @@ Public Function md5(sMessage As String) As String
     
         ' The hex number on the end of each of the following procedure calls is
         ' an element from the 64 element table constructed with
-        ' T(i) = Int(4294967296 * Abs(Sin(i))) where i is 1 to 64.
+        'i) = Int(4294967296 * Abs(Sin(i))) where i is 1 to 64.
         '
         ' However, for speed we don't want to calculate the value every time.
         FF a, b, c, d, x(k + 0), S11, &HD76AA478

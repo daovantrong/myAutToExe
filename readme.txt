@@ -15,11 +15,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -63,6 +64,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -260,6 +305,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -310,9 +361,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -412,11 +463,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -460,6 +512,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -657,6 +753,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -707,9 +809,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -808,11 +910,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -856,6 +959,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -1053,6 +1200,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -1103,9 +1256,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -1205,11 +1358,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -1253,6 +1407,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -1450,6 +1648,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -1500,9 +1704,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -1601,11 +1805,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -1649,6 +1854,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -1846,6 +2095,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -1896,9 +2151,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -1998,11 +2253,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -2046,6 +2302,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -2243,6 +2543,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -2293,9 +2599,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -2394,11 +2700,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -2442,6 +2749,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -2639,6 +2990,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -2689,9 +3046,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -2791,11 +3148,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -2839,6 +3197,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -3036,6 +3438,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -3086,9 +3494,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -3185,11 +3593,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -3233,6 +3642,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -3430,6 +3883,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -3480,9 +3939,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -3582,11 +4041,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -3630,6 +4090,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -3827,6 +4331,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -3877,9 +4387,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -3978,11 +4488,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -4026,6 +4537,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -4223,6 +4778,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -4273,9 +4834,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -4375,11 +4936,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -4423,6 +4985,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -4620,6 +5226,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -4670,9 +5282,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -4771,11 +5383,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -4819,6 +5432,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -5016,6 +5673,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -5066,9 +5729,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -5168,11 +5831,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -5216,6 +5880,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -5413,6 +6121,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -5463,9 +6177,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -5564,11 +6278,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -5612,6 +6327,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -5809,6 +6568,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -5859,9 +6624,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -5961,11 +6726,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -6009,6 +6775,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -6206,6 +7016,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -6256,9 +7072,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -6350,11 +7166,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -6398,6 +7215,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -6595,6 +7456,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -6645,9 +7512,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -6747,11 +7614,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -6795,6 +7663,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -6992,6 +7904,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -7042,9 +7960,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -7143,11 +8061,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -7191,6 +8110,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -7388,6 +8351,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -7438,9 +8407,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -7540,11 +8509,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -7588,6 +8558,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -7785,6 +8799,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -7835,9 +8855,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -7936,11 +8956,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -7984,6 +9005,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -8181,6 +9246,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -8231,9 +9302,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -8333,11 +9404,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -8381,6 +9453,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -8578,6 +9694,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -8628,9 +9750,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -8729,11 +9851,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -8777,6 +9900,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -8974,6 +10141,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -9024,9 +10197,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -9126,11 +10299,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -9174,6 +10348,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -9371,6 +10589,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -9421,9 +10645,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -9520,11 +10744,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -9568,6 +10793,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -9765,6 +11034,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -9815,9 +11090,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -9917,11 +11192,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -9965,6 +11241,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -10162,6 +11482,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -10212,9 +11538,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -10313,11 +11639,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -10361,6 +11688,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -10558,6 +11929,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -10608,9 +11985,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -10710,11 +12087,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -10758,6 +12136,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -10955,6 +12377,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -11005,9 +12433,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -11106,11 +12534,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -11154,6 +12583,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -11351,6 +12824,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -11401,9 +12880,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -11503,11 +12982,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -11551,6 +13031,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -11748,6 +13272,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -11798,9 +13328,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -11899,11 +13429,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -11947,6 +13478,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -12144,6 +13719,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -12194,9 +13775,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 
@@ -12296,11 +13877,12 @@ Supported Obfuscators:
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.14 [June 16, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July  1, 2007]' ,
 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.20 [Sept  8, 2007]' ,
-'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' and
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.22 [Oct  18, 2007]' ,
+'Jos van der Zande AutoIt3 Source Obfuscator v1.0.24 [Feb  15, 2008]' and
 'EncodeIt 2.0'
 
 Tested with:
-	AutoIT	 : v3.2.9.4 and 
+	AutoIT	 : v3.2.11 and 
 	AutoHotKey: v1.0.47.4
 
 The options:
@@ -12344,6 +13926,50 @@ The options:
 	http://www.freewarecorner.de/download.php?id=7298
 	http://www.freeware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
 	http://www.shareware.de/Windows/Tools_Utilities/Sicherheit_Backup/Ver__und_Entschluesselung/Detail_EDECRYPT_Brute_Force_MD5_Cracker_9832.html
+
+Tools
+=====
+	'Function Renamer'
+		If you decompiled a file that was obfuscated all variable and function got lost.
+		
+		Is 'Function Renamer' to transfer the function names from one simulare file to 
+		your decompiled au3-file.
+		
+		A simulare file can be a included 'include files' but can be also an older version
+		of the script with intact names or some already recoved + manual improved with 
+		more meaningful function names.
+		
+		Bot files are shown side by side seperated by their functions
+		Here some example:
+
+      > myScript_decompiled.au3    | > ...AutoIt3\autoit-v3.1.0\Include\Date.au3
+      ...                          |  ...		                                   
+      Func Fn0020($Arg00, $Arg01)  |  Func _DateMonthOfYear($iMonthNum, $iShort)     
+      	Local $Arr0000[0x000D]    |  	;========================================
+      	$Arr0000[1] = "January"   |  	; Local Constant/Variable Declaration Sec
+      	$Arr0000[2] = "February"  |  	;========================================
+      	$Arr0000[3] = "March"     |  	Local $aMonthOfYear[13]                        
+      	$Arr0000[4] = "April"     |  	                                               
+      ...                          |  	$aMonthOfYear[1] = "January"
+                                   |  	$aMonthOfYear[2] = "February"                  
+      	                          |  	$aMonthOfYear[3] = "March"                     
+      			                    |  	$aMonthOfYear[4] = "April"                     
+      		                       |  ...                                             
+      Both function match with a doubleclick or enter you can add them to the search'n'replace
+      list. That will replace 'Fn0020 with '_DateMonthOfYear'.
+      
+      So after you associate all functionNames of an include file you can delete these functions and
+      replace them with for ex. #include <Date.au3>
+      
+      Hint for best matching of includes look at the version properties of the au3.exe 
+      download/install(unpack) that version from
+      http://www.autoitscript.com/autoit3/files/archive/autoit/
+      and use the include from there.
+    
+    '&Seperate includes of *.au3'
+      Good for already decompiled *.au3
+      
+      
 
 CommandLine:
 ===========
@@ -12541,6 +14167,12 @@ Version 3_26
 
 History
 =======
+2.1  added function renamer module
+	  Output is done in UTF-8 to have a normal Accii file while also retaining unicode chars
+	  bugfix:  in detokener with strings that were long than 4096 byte
+	  lowered limit for too long script lines from 2000 to 1800 and improved linecutter
+	  Detection for 'van Zande 1.0.24'-Deobfuscator added
+
 2.01 Bugfix in 'van Zande 1.0.14'-Deobfuscator
      DeTokeniser will take care about unicode strings int the way that
      the highbyte is not just padded with 00 (especially important for DBCS-string / used for chinese)
@@ -12591,9 +14223,9 @@ History
 
 1.0 initial Version
 
-<cw2k[�t]gmx.de>        http://maghia.free.fr/Board/viewtopic.php?t=234
-								http://antiwpa.cwsurf.de/antiwpa/Other/tmp
+<cw2k[�t]gmx.de>        http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234
 								http://myAutToExe.angelfire.com/
+								http://cw2k.cwsurf.de/Other/tmp
 
 ========= OutTakes (from previous Versions) =================
 

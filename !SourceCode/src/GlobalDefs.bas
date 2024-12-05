@@ -33,7 +33,16 @@ Sub DoEventsVerySeldom()
    End If
 End Sub
 
+Sub ShowScript(ScriptData$)
+   If isUTF16(ScriptData) Then
+      FrmMain.Txt_Script = StrConv((Mid(ScriptData, 1 + Len(UTF16_BOM))), vbFromUnicode)
+   ElseIf isUTF8(ScriptData) Then
+      FrmMain.Txt_Script = Mid(ScriptData, 1 + Len(UTF8_BOM))
+   Else
+      FrmMain.Txt_Script = ScriptData
+   End If
 
+End Sub
 
 Sub SaveScriptData(ScriptData$)
 
@@ -62,9 +71,7 @@ Sub SaveScriptData(ScriptData$)
      File.setEOF
      File.CloseFile
      
-      
-       
-     FrmMain.Txt_Script = ScriptData
+     ShowScript ScriptData
      
      .log ""
      .log "Running 'Tidy.exe " & FileName.NameWithExt & "' to improve sourcecode readablity."
@@ -95,7 +102,7 @@ Sub SaveScriptData(ScriptData$)
      ScriptData = File.FixedString(-1)
      File.CloseFile
    
-     FrmMain.Txt_Script = ScriptData
+     ShowScript ScriptData
      
   End With
 End Sub

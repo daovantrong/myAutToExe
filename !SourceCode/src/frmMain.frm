@@ -3,7 +3,7 @@ Begin VB.Form FrmMain
    Caption         =   "myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler<"
    ClientHeight    =   9510
    ClientLeft      =   2595
-   ClientTop       =   4935
+   ClientTop       =   5235
    ClientWidth     =   9345
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
@@ -34,10 +34,10 @@ Begin VB.Form FrmMain
       Begin VB.CheckBox Chk_NoDeTokenise 
          Caption         =   "Disable Detokeniser"
          Height          =   195
-         Left            =   8760
+         Left            =   7440
          TabIndex        =   10
          ToolTipText     =   "Enable that when you decompile AutoItScripts lower than ver 3.1.6"
-         Top             =   480
+         Top             =   600
          Visible         =   0   'False
          Width           =   5295
       End
@@ -131,6 +131,29 @@ Begin VB.Form FrmMain
       Top             =   600
       Width           =   9135
    End
+   Begin VB.Menu mu_Tools 
+      Caption         =   "&Tools"
+      Begin VB.Menu mi_FunctionRenamer 
+         Caption         =   "&FunctionRenamer"
+         Shortcut        =   {F12}
+      End
+      Begin VB.Menu mi_SeperateIncludes 
+         Caption         =   "&Seperate includes of *.au3"
+      End
+   End
+   Begin VB.Menu mu_Info 
+      Caption         =   "&Info"
+      Begin VB.Menu mi_About 
+         Caption         =   "About"
+         Visible         =   0   'False
+      End
+      Begin VB.Menu mi_Update 
+         Caption         =   "&Update"
+      End
+      Begin VB.Menu mi_Forum 
+         Caption         =   "&Forum"
+      End
+   End
 End
 Attribute VB_Name = "FrmMain"
 Attribute VB_GlobalNameSpace = False
@@ -158,26 +181,31 @@ Dim FilePath_for_Txt$
 
 
 'Const MD5_CRACKER_URL$ = "http://gdataonline.com/qkhash.php?mode=txt&hash="
-Const MD5_CRACKER_URL$ = "http://www.md5cracker.de/crack.php?form=Cracken&md5="
+
+'Const MD5_CRACKER_URL$ = "http://www.md5cracker.de/crack.php?form=Cracken&md5="
+'Const MD5_CRACKER_URL$ = "http://web18.server10.nl.kolido.net/md5cracker/crack.php?form=Cracken&md5="
+
+Const MD5_CRACKER_URL$ = "http://hashkiller.com/api/api.php?md5="
+
 '   http://www.milw0rm.com/cracker/info.php?'
 
 
-Sub FL_verbose(text)
-   log_verbose H32(File.Position - 1) & " -> " & text
+Sub FL_verbose(Text)
+   log_verbose H32(File.Position - 1) & " -> " & Text
 End Sub
 
 Sub log_verbose(TextLine$)
-   If Chk_verbose.Value = vbChecked Then log TextLine
+   If Chk_verbose.Value = vbChecked Then Log TextLine
 End Sub
 
 
 
-Sub FL(text)
-   log H32(File.Position - 1) & " -> " & text
+Sub FL(Text)
+   Log H32(File.Position - 1) & " -> " & Text
 End Sub
 
 Public Sub LogSub(TextLine$)
-   log "  " & TextLine
+   Log "  " & TextLine
 End Sub
 
 
@@ -187,7 +215,7 @@ End Sub
 
 '/////////////////////////////////////////////////////////
 '// log -Add an entry to the Log
-Public Sub log(TextLine$)
+Public Sub Log(TextLine$)
 On Error Resume Next
    List1.AddItem TextLine
 '   List1.AddItem H32(GetTickCount) & vbTab & TextLine
@@ -220,7 +248,7 @@ Private Sub cmd_MD5_pwd_Lookup_Click()
    Clipboard.SetText MD5PassphraseHashText
 
    Dim hProc&
-   hProc = ShellExecute(0, "open", MD5_CRACKER_URL$ & MD5PassphraseHashText, "", "", 1)
+   hProc = ShellExecute(0, "open", MD5_CRACKER_URL$ & LCase$(MD5PassphraseHashText), "", "", 1)
 
 End Sub
 
@@ -272,7 +300,19 @@ End Sub
 
 Private Sub Form_Load()
 
-  
+
+'   Dim Map() As Byte
+'   Dim s$
+'   Do
+'      s = ChrW(&H5B9A) ' & ChrW(&H9A5B)
+''      MidB(s, 2) = "4"
+'      s = UTF8.EncodeUTF8(T(s))
+'      Map = s
+'      s = Map
+'
+'   Loop While 1
+'
+
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
    FormSettings_Load
@@ -304,7 +344,7 @@ Private Sub ProcessCommandline()
    
       If .NumberOfCommandLineArgs Then
       
-         log "Cmdline Args: " & .CommandLine
+         Log "Cmdline Args: " & .CommandLine
          
          Dim arg
          For Each arg In .getArgs
@@ -354,20 +394,27 @@ Private Sub ProcessCommandline()
 
 End Sub
 
-Private Function FileExists(FileName) As Boolean
-   On Error GoTo FileExists_err
-   FileExists = FileLen(FileName)
-
-FileExists_err:
-End Function
 
 Public Function GetLogdata$()
    Dim LogData As New clsStrCat
    LogData.Clear
    Dim i
-   For i = 0 To List1.ListCount
-      LogData.Concat (List1.List(i) & vbCrLf)
-   Next
+   If (List1.ListCount > 0) Then
+      For i = 0 To List1.ListCount
+         LogData.Concat (List1.List(i) & vbCrLf)
+      Next
+   Else
+      For i = 0 To &H7FFE
+         LogData.Concat (List1.List(i) & vbCrLf)
+      Next
+      LogData.Concat "<Data cut due to VB-listbox.ListCount bug :( >"
+      
+'   Do While List1.ListCount < 0
+'      LogData.Concat (List1.List(&H7FFF) & vbCrLf)
+'      List1.RemoveItem &H7FFF
+'   Loop
+   
+   End If
    
    GetLogdata = LogData.Value
    
@@ -385,6 +432,43 @@ Private Sub List1_DblClick()
    frmLogView.txtlog = GetLogdata()
    frmLogView.Show
 End Sub
+
+Private Sub mi_Update_Click()
+   Dim hProc&
+   hProc = ShellExecute(0, "open", "http://myauttoexe2.tk/", "", "", 1)
+
+End Sub
+Private Sub mi_Forum_Click()
+   Dim hProc&
+   hProc = ShellExecute(0, "open", "http://defcon5.biz/phpBB3/viewtopic.php?f=5&t=234", "", "", 1)
+
+End Sub
+
+Private Sub mi_FunctionRenamer_Click()
+   Load FrmFuncRename
+'   If FileExists(Txt_Filename) Then
+'      FrmFuncRename.Txt_Fn_Org_FileName = Txt_Filename
+'   Else
+'
+'
+'   End If
+   
+   FrmFuncRename.Show vbModal
+   Unload FrmFuncRename
+   
+End Sub
+
+Private Sub mi_SeperateIncludes_Click()
+   Dim File$
+   File = InputBox("Normally seperating includes is done automatically after you decompiled some au3.exe(of old none tokend format)." & vbCrLf & _
+          "However that tool is useful in the case you have some decompiled *.au3 with these '; <AUT2EXE INCLUDE-START: C:\ ...' comments you like to process." & vbCrLf & vbCrLf & _
+          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'seperate au3 includes' on file", Txt_Filename)
+   If File <> "" Then
+      FileName.FileName = File
+      SeperateIncludes
+   End If
+End Sub
+
 
 
 Private Sub Timer_OleDrag_Timer()
@@ -405,35 +489,34 @@ Private Sub Txt_Filename_Change()
       FileName = Txt_Filename
       
       
-      log String(80, "=")
+      Log String(80, "=")
 '      log "           -=  " & Me.Caption & "  =-"
-      log Me.Caption
-      log String(80, "=")
+      Log Me.Caption
+      Log String(80, "=")
 '      log ""
          
       Decompile
       
-      log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
+      Log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
 
       For Each FileName In ExtractedFiles
 '         If FileName.Ext Like "*.au*" Then
             On Error Resume Next
-            log String(79, "=")
+            Log String(79, "=")
          DeToken
-            If Err Then log "ERR: " & Err.Description
+            If Err Then Log "ERR: " & Err.Description
 
             On Error Resume Next
-            log String(79, "=")
+            Log String(79, "=")
          DeObfuscate.DeObfuscate
-            If Err Then log "ERR: " & Err.Description
-            
+            If Err Then Log "ERR: " & Err.Description
           Select Case Err
           Case 0, ERR_NO_OBFUSCATE_AUT
             
             If Chk_RestoreIncludes.Value = vbChecked Then SeperateIncludes
           
           Case Else
-            log Err.Description
+            Log Err.Description
           End Select
           
  '        End If
@@ -448,11 +531,11 @@ GoTo Txt_Filename_err
       
       
 DeToken:
-      log String(79, "=")
+      Log String(79, "=")
       DeToken
 
 DeObfuscate:
-      log String(79, "=")
+      Log String(79, "=")
       DeObfuscate.DeObfuscate
       
 Txt_Filename_err:
@@ -462,20 +545,20 @@ Txt_Filename_err:
     Case 0
     
     Case ERR_NO_AUT_EXE
-       log Err.Description
+       Log Err.Description
        Resume DeToken
     
     Case NO_AUT_DE_TOKEN_FILE
-       log Err.Description
+       Log Err.Description
        Resume DeObfuscate
     
     Case ERR_NO_OBFUSCATE_AUT
-       log Err.Description
+       Log Err.Description
        Resume Txt_Filename_err
        
        
     Case Else
-       log Err.Description
+       Log Err.Description
        Resume Txt_Filename_err
     End Select
    
@@ -487,8 +570,8 @@ Txt_Filename_err:
     FileName = ExtractedFiles(1).FileName
     FileName.NameWithExt = "_myExeToAut.log"
     
-    log ""
-    log "Saving Logdata to : " & FileName.FileName
+    Log ""
+    Log "Saving Logdata to : " & FileName.FileName
     File.Create FileName.FileName, True
     File.FixedString(-1) = GetLogdata
     File.CloseFile
@@ -506,9 +589,9 @@ End Sub
 Private Function OpenFile(Target_FileName As ClsFilename) As Boolean
    
    On Error GoTo Scanfile_err
-   log "------------------------------------------------"
+   Log "------------------------------------------------"
 
-   log Space(4) & Target_FileName.NameWithExt
+   Log Space(4) & Target_FileName.NameWithExt
 
    File.Create Target_FileName.mvarFileName, Readonly:=True
    
@@ -520,7 +603,7 @@ Select Case Err
    Case 0
 
    Case Else
-      log "-->ERR: " & Err.Description
+      Log "-->ERR: " & Err.Description
 
 End Select
    
@@ -528,8 +611,21 @@ End Function
 
 
 Private Sub Txt_Filename_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+   On Error GoTo Txt_Filename_OLEDragDrop_err
+   
    FilePath_for_Txt = Data.Files(1)
    Timer_OleDrag.Enabled = True
+   
+
+Txt_Filename_OLEDragDrop_err:
+Select Case Err
+Case 0
+
+Case Else
+   Log "-->Drop'n'Drag ERR: " & Err.Description
+
+End Select
+
 End Sub
 
 

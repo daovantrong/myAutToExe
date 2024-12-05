@@ -44,6 +44,7 @@ Private Const FILE_FLAG_SEQUENTIAL_SCAN = &H8000000
 Private Const FILE_FLAG_WRITE_THROUGH = &H80000000
 Private Declare Function CreateFile Lib "kernel32" Alias "CreateFileA" (ByVal lpFileName As String, ByVal dwDesiredAccess As Long, ByVal dwShareMode As Long, ByVal lpSecurityAttributes As Long, ByVal dwCreationDisposition As Long, ByVal dwFlagsAndAttributes As Long, ByVal hTemplateFile As Long) As Long
 
+Private Declare Function ReadFilePtr Lib "kernel32" Alias "ReadFile" (ByVal hFile As Long, ByVal lpBuffer As Long, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, ByVal lpOverlapped As Long) As Long
 Private Declare Function ReadFile Lib "kernel32" (ByVal hFile As Long, ByVal lpBuffer As String, ByVal nNumberOfBytesToRead As Long, lpNumberOfBytesRead As Long, ByVal lpOverlapped As Long) As Long
 Private Declare Function ReadFileLong Lib "kernel32" Alias "ReadFile" (ByVal hFile As Long, ByRef lpBuffer As Long, ByVal nNumberOfBytesToRead As Integer, lpNumberOfBytesRead As Long, ByVal lpOverlapped As Long) As Long
 Private Declare Function ReadFileDouble Lib "kernel32" Alias "ReadFile" (ByVal hFile As Long, ByRef lpBuffer As Double, ByVal nNumberOfBytesToRead As Integer, lpNumberOfBytesRead As Long, ByVal lpOverlapped As Long) As Long
@@ -122,6 +123,28 @@ Public Sub setEOF()
    mvarMaxPosition = Position
 End Sub
 
+'Public Property Let FixedStringW(ByVal Length As Long, ByRef vData As String)
+'   If Length = -1 Then Length = Len(vData)
+'   If WriteFile(hFile, vData, Length, bytesRead, 0) <= 0 Then Err.Raise vbObjectError, , "Error in Property Let fixedString: Can't write data. Filestream::Readonly=" & Readonly
+'End Property
+
+Public Property Get FixedStringW(ByVal Length As Long) As String
+   If Length = -1 Then
+      Length = (Me.Length - Me.Position)
+   End If
+ 
+ ' create Buffer
+   FixedStringW = Space(Length)
+   
+ ' Read Fixed String
+   RetVal = ReadFilePtr(hFile, StrPtr(FixedStringW), Length * 2, bytesRead, 0)
+   If RetVal < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
+End Property
+
+
+
+
+
 
 Public Property Let FixedString(ByVal Length As Long, ByRef vData As String)
    If Length = -1 Then Length = Len(vData)
@@ -168,8 +191,8 @@ Public Sub FindBytes(ParamArray Bytes())
 End Sub
 
 Public Function FindString&(StringToFind$, Optional SearchBackwards As Boolean = False)
-   Dim tmp$, oldpos&
-   oldpos = Position
+   Dim tmp$, oldPos&
+   oldPos = Position
       tmp = FixedString(-1)
       
       If SearchBackwards Then
@@ -179,7 +202,7 @@ Public Function FindString&(StringToFind$, Optional SearchBackwards As Boolean =
       End If
       
       If FindString = -1 Then
-         Position = oldpos
+         Position = oldPos
          FindString = 0
       Else
          Position = FindString

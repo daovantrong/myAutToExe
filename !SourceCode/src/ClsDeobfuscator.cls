@@ -19,12 +19,12 @@ Option Compare Text
 Dim DeObfu_FunctionNames As New Collection
 Dim NewScript$
 
-Sub log(text$)
-   FrmMain.log text
+Sub Log(Text$)
+   FrmMain.Log Text
 End Sub
 
-Sub log2(text$)
-   FrmMain.log2 (text)
+Sub log2(Text$)
+   FrmMain.log2 (Text)
 End Sub
 
 Private Sub DeObfuscate_Encodeit()
@@ -72,20 +72,20 @@ Private Sub DeObfuscate_Encodeit()
    
   '==== Load String =====
   
-   Dim i&, line$, EncString$
+   Dim i&, Line$, EncString$
    Dim VarNames As New Collection
    Dim VarValues As New Collection
 
    For i = 3 To UBound(globs)
       Dim tmpstr$
       tmpstr = globs(i)
-      line = strCropAndDelete(tmpstr, "", vbCrLf)
+      Line = strCropAndDelete(tmpstr, "", vbCrLf)
       globs(i) = tmpstr
    
 
       
       Dim Words
-      Words = Split(line, "'")
+      Words = Split(Line, "'")
       EncString = Words(1)
       
       Dim VarName$
@@ -117,7 +117,7 @@ Private Sub DeObfuscate_Encodeit()
    NewScript = Join(globs, "Global Const ")
    FrmMain.Txt_Script = NewScript
    
-   log "Search'n'replace strings: "
+   Log "Search'n'replace strings: "
    
 '  ==== Replace Strings =====
    
@@ -127,13 +127,13 @@ Private Sub DeObfuscate_Encodeit()
       
       NewScript = Replace(NewScript, CStr("$" & VarNames(ItemIndex)), CStr("""" & Replace(VarValues(ItemIndex), """", """""") & """"))
       
-      log CStr("$" & VarNames(ItemIndex)) & "    " & """" & Replace(VarValues(ItemIndex), """", """""") & """"
+      Log CStr("$" & VarNames(ItemIndex)) & "    " & """" & Replace(VarValues(ItemIndex), """", """""") & """"
 
    Next
    
    FrmMain.Txt_Script = NewScript
    
-   log "Processing function names and arguments:"
+   Log "Processing function names and arguments:"
    
 ' ======== Functions
 
@@ -187,7 +187,7 @@ End Sub
 
 Public Function DetectScriptObfuscated() As Integer
 '   FileName = "I:\!Cracks & Projects\AutoIt3\Obfuscator\smarty_Obfuscated.au3"
-log "Trying to DeObfuscate : " & FileName
+Log "Trying to DeObfuscate : " & FileName
    
  
  '=== Open & Test Obfu-Type ===
@@ -210,6 +210,8 @@ log "Trying to DeObfuscate : " & FileName
 '   Dim UCaseScript$
 '   UCaseScript = UCase(NewScript)
    If NewScript Like "*Func A2C4558BC554*" Then
+      DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
+   ElseIf NewScript Like "*""4074656D70646972""*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
       
    ElseIf NewScript Like "*Int(99/3+15*100/4-13^2+81/3-17-245+99/3+15*100/4-13^2+81/3-17)*" Then
@@ -235,21 +237,21 @@ Public Sub DeObfuscate()
          
       Case DE_OBFUSC_TYPE_VANZANDE
          If InStr(1, NewScript, "lobal $Os") Then
-            log "Deobfuscating van Zande 1.0.15..."
+            Log "Deobfuscating van Zande 1.0.15..."
             DeObfuscate_VanZande1_0_15
          Else
-            log "Deobfuscating van Zande 1.0.14..."
+            Log "Deobfuscating van Zande 1.0.14..."
             DeObfuscate_VanZande1_0_14
          End If
          
       Case DE_OBFUSC_TYPE_ENCODEIT
-         log "Deobfuscating Encodeit 2.0..."
+         Log "Deobfuscating Encodeit 2.0..."
          DeObfuscate_Encodeit
    
    End Select
    
    SaveScriptData NewScript
-   log "Deobfucation succeed."
+   Log "Deobfucation succeed."
 End Sub
 
 
@@ -274,7 +276,7 @@ Private Sub DeObfuscate_VanZande1_0_15()
    
    FrmMain.Txt_Script = NewScript
 
-   log "Okay. Obfucated script loaded and displayed."
+   Log "Okay. Obfucated script loaded and displayed."
    
 '=== Prepare ===
 
@@ -287,11 +289,12 @@ Private Sub DeObfuscate_VanZande1_0_15()
    
   
   
- log "Extracting TBLFileName from Script."
+ Log "Extracting TBLFileName from Script."
   ' GetStringfile(*.tbl) from obfuscate script
     Dim StringTBLFileName As New ClsFilename
     StringTBLFileName.Path = FileName.Path
-    StringTBLFileName.NameWithExt = Mid(strCrop(NewScript, "FileInstall(", ".tbl"), 2) & ".tbl"
+    StringTBLFileName.NameWithExt = Mid(strCrop(NewScript, "(", ".tbl"), 2) & ".tbl"
+'    StringTBLFileName.NameWithExt = Mid(strCrop(NewScript, "FileInstall(", ".tbl"), 2) & ".tbl"
 '    Dim line
 '    For Each line In Split(NewScript, vbCrLf)
 '    FileInstall('*.tbl",
@@ -300,27 +303,27 @@ Private Sub DeObfuscate_VanZande1_0_15()
 '    Next
     
  
- log "Loading StringTBLFileName: " & StringTBLFileName.FileName & "..."
+ Log "Loading StringTBLFileName: " & StringTBLFileName.FileName & "..."
     
     Dim StringTBLFile As New FileStream
     StringTBLFile.Create StringTBLFileName.FileName
     
    'Read Stringtable
     Dim StringTBL As New Collection
-    Dim line
+    Dim Line
     StringTBLFile.Position = 0
-    For Each line In Split(StringTBLFile.FixedString(-1), "O")
-       StringTBL.Add HexStringToString(line)
+    For Each Line In Split(StringTBLFile.FixedString(-1), "O")
+       StringTBL.Add HexStringToString(Line)
     Next
     StringTBLFile.CloseFile
    
    
-log StringTBL.Count & " strings found."
+Log StringTBL.Count & " strings found."
  
   
   
   
-log "Restoring StringNames in ..."
+Log "Restoring StringNames in ..."
   Dim LocalStringNames
   ReDim LocalStringNames(StringTBL.Count)
   
@@ -353,14 +356,14 @@ BenchStart
       Dim FunctionName$
       If i = 0 Then
          FunctionName = "Main"
-         log "FunctionName: " & FunctionName
+         Log "FunctionName: " & FunctionName
          
       Else
         
        ' Extract FunctionName, Store it for later
          FunctionName = strCrop1(ScriptFunction, "", "(")
          DeObfu_FunctionNames.Add FunctionName
-         log "FunctionName: " & FunctionName
+         Log "FunctionName: " & FunctionName
        
        ' === Replace Locals ====
          DeObfu_ReplaceLocals ScriptFunction
@@ -408,7 +411,8 @@ BenchStart
 
 '         obfuSection = strCropAndDelete(tmpstr, "If Not Isdeclared(", "EndIF" & vbCrLf)
          obfuSection = strCropAndDelete(ScriptFunction, "If Not IsDeclared(", "EndIf" & vbCrLf)
-         Debug.Assert InStr(1, ScriptFunction, "IsDeclared", vbTextCompare) = 0
+'         'maybe also triggered by some normal 'IsDeclared'
+'         Debug.Assert InStr(1, ScriptFunction, "IsDeclared", vbTextCompare) = 0
       End If
          
     ' Statistic Counter for String in Current function
@@ -475,7 +479,7 @@ BenchStart
       Stat_NumLocal = Stat_NumLocal + UBound(GlobalStringDef)
       Loop While True
       
-      log "  Local strings: " & Stat_NumLocal
+      Log "  Local strings: " & Stat_NumLocal
       Stat_NumAtAll = Stat_NumAtAll + Stat_NumLocal
     
    ' Show ScriptFunction after
@@ -491,8 +495,8 @@ BenchStart
    i = i + 1
    Next
   
-log "Strings at all: " & Stat_NumAtAll
-log "strings in Tbl: " & StringTBL.Count
+Log "Strings at all: " & Stat_NumAtAll
+Log "strings in Tbl: " & StringTBL.Count
   
 ' Cut of rest after FnNameLoadTBL
   ReDim Preserve NewScript2(i - 1)
@@ -517,10 +521,10 @@ log "strings in Tbl: " & StringTBL.Count
   
   'Used String
 '  Dim i&
-   log "UnAssigned/Unused strings [Index, Value]: "
+   Log "UnAssigned/Unused strings [Index, Value]: "
    For i = 1 To StringTBL.Count
       If LocalStringNames(i) = "" Then
-         log "  " & H16(i) & " " & StringTBL(i)
+         Log "  " & H16(i) & " " & StringTBL(i)
       End If
    Next
   
@@ -666,13 +670,13 @@ Private Sub z_DeObfu_ReplaceX(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional Ig
 End Sub
 
 Private Sub DeObfu_ReplaceGlobals(ByRef CodeSnipped$, Optional IgnoreLinesWith)
-log "Renaming Globals..."
+Log "Renaming Globals..."
    z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
 End Sub
 Private Sub DeObfu_ReplaceDimsAndConst(ByRef CodeSnipped$)
-log "Renaming Dims..."
+Log "Renaming Dims..."
    z_DeObfu_ReplaceX CodeSnipped, "Dim", "gDim"
-log "Renaming Consts..."
+Log "Renaming Consts..."
    z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Const", "gConst"
    
    z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Global Const ", "glConst"
@@ -703,7 +707,7 @@ Private Sub DeObfuscate_VanZande1_0_14()
 
    FrmMain.Txt_Script = NewScript
 
-   log "Okay. Obfucated script loaded and displayed."
+   Log "Okay. Obfucated script loaded and displayed."
   
   
    Dim StringTBL As New Collection
@@ -740,7 +744,7 @@ Private Sub DeObfuscate_VanZande1_0_14()
 '!!!   DeObfu_ReplaceGlobals NewScript, fnStringDecrypt
 
 
-log "Restoring StringNames in ..."
+Log "Restoring StringNames in ..."
   
   
    Dim i&
@@ -781,7 +785,7 @@ log "Restoring StringNames in ..."
       
       
 
-   log "FunctionName: " & FunctionName
+   Log "FunctionName: " & FunctionName
    'Debug.Assert "A5E30E02006" <> FunctionName
 
      
@@ -918,7 +922,7 @@ log "Restoring StringNames in ..."
       Stat_NumLocal = Stat_NumLocal + UBound(GlobalStringDef)
       Loop While True
       
-      log "  Local strings: " & Stat_NumLocal
+      Log "  Local strings: " & Stat_NumLocal
       Stat_NumAtAll = Stat_NumAtAll + Stat_NumLocal
     
     
@@ -934,8 +938,8 @@ log "Restoring StringNames in ..."
   
   
   
-log "Strings at all: " & Stat_NumAtAll
-log "strings in Tbl: " & StringTBL.Count
+Log "Strings at all: " & Stat_NumAtAll
+Log "strings in Tbl: " & StringTBL.Count
   
 ' Cut of last Three Functions that where for decrypting
   ReDim Preserve NewScript2(UBound(NewScript2) - 3)
@@ -950,7 +954,7 @@ log "strings in Tbl: " & StringTBL.Count
 
   '=== Replace Global Strings
   
-  log "Restoring global strings..."
+  Log "Restoring global strings..."
   For Each index In MainIndexes
 '           For index = 1 To StringTBL.Count
 'Debug.Assert LocalStringNames(index) <> "$SA5C9AB03457"
@@ -961,10 +965,10 @@ log "strings in Tbl: " & StringTBL.Count
   
   'Used String
 '  Dim i&
-   log "UnAssigned/Unused strings [Index, Value]: "
+   Log "UnAssigned/Unused strings [Index, Value]: "
    For i = 1 To StringTBL.Count
       If LocalStringNames(i) = "" Then
-         log "  " & H16(i) & " " & StringTBL(i)
+         Log "  " & H16(i) & " " & StringTBL(i)
       End If
    Next
    

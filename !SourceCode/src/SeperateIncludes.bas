@@ -1,15 +1,15 @@
 Attribute VB_Name = "modSeperateIncludes"
 Option Explicit
-Private Const INCLUDE_Seperator$ = vbCrLf & "; ----------------------------------------------------------------------------" & vbCrLf
+Private Const INCLUDE_Seperator$ = "; ----------------------------------------------------------------------------" & vbCrLf
 Private Const INCLUDE_START$ = INCLUDE_Seperator & "; <AUT2EXE INCLUDE-START: "
 Private Const INCLUDE_END$ = INCLUDE_Seperator & "; <AUT2EXE INCLUDE-END: "
-Private Const INCLUDE_Close$ = ">" & INCLUDE_Seperator
+Private Const INCLUDE_Close$ = ">" & vbCrLf & INCLUDE_Seperator
    
-Private Const INCLUDE_FirstLine = "#include-once"
+Private Const INCLUDE_FirstLine = "#include-once" & vbCrLf
 Private Const INCLUDE_FirstLine_Len = 13
    
 Private Const INCLUDE_REPLACE_START = "#include <"
-Private Const INCLUDE_REPLACE_END = ">"
+Private Const INCLUDE_REPLACE_END = ">" & vbCrLf
 Private IncludeList As New Collection
 Private IncludeListCount&
 Private IncludeFileName As New ClsFilename
@@ -28,6 +28,25 @@ Public Sub SeperateIncludes()
    Dim ScriptData$
    With File
       .Create FileName.FileName
+      
+      
+      'Test for Unicode-Bom
+      Dim bUTF16detected As Boolean
+      
+      Dim UnicodeBomBuff%
+      UnicodeBomBuff = .intValue
+      
+      bUTF16detected = UnicodeBomBuff = &HFEFF
+      If bUTF16detected Then 'LittleEndian of UTF16
+      
+      ElseIf UnicodeBomBuff = &HFFFE Then
+         log "ERR: BigEndian of UTF16 detected - Please convert input file manually to 8-bit Accii or LittleEndian UTF16."
+      Else
+        'Seek to begin
+         .Position = 0
+      End If
+
+      
       ScriptData = .Data
       .CloseFile
    End With
@@ -45,8 +64,12 @@ Public Sub SeperateIncludes()
       .NameWithExt = ""
    End With
    
-   FrmMain.log "  " & Len(ScriptData) & " byte loaded."
+   FrmMain.log "  " & Len(ScriptData) & IIf(bUTF16detected, "(Unicode)", "") & " bytes loaded."
    
+ ' Convert unicode to accii
+   If bUTF16detected Then
+      ScriptData = StrConv(ScriptData, vbFromUnicode)
+   End If
    
    SeperateIncludes2 ScriptData
    

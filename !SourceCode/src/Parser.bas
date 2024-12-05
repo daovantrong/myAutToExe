@@ -49,15 +49,12 @@ Function BB$()
 End Function
 
 
-
-
-
 Function AddLineBreakToLongLines$(ByRef Lines)
 ' Adding a underscope '_' for lines longer than 2047
 ' so Tidy will not complain
    
 '  Dim Lines
-  Dim line, NewLine As New clsStrCat
+  Dim Line, NewLine As New clsStrCat
 '   Lines = Split(TextLine, vbCrLf)
 
    'Find place to break line
@@ -67,11 +64,17 @@ Function AddLineBreakToLongLines$(ByRef Lines)
    '...total "&@CRLF&_
    '"fees....
    '
-   Const MAX_CODE_LINE_LENGHT& = 2000
-   For line = 0 To UBound(Lines)
+   
+'   Const MAX_CODE_LINE_LENGHT& = 2000
+'   Const MAX_CODE_LINE_LENGHT& = 1897
+   Const MAX_CODE_LINE_LENGHT& = 1800
+   
+   
+   For Line = 0 To UBound(Lines)
       
       Dim lineLen&
-      lineLen = Len(Lines(line))
+      lineLen = Len(Lines(Line))
+      
       
       If lineLen > MAX_CODE_LINE_LENGHT Then
          
@@ -80,34 +83,54 @@ Function AddLineBreakToLongLines$(ByRef Lines)
          Dim linePos&, LastPos&
          linePos = 1
          LastPos = 1
+         
          Do While linePos + MAX_CODE_LINE_LENGHT < lineLen
             
-            Dim NextAmpersandPos&
-            NextAmpersandPos = InStrRev(Mid(Lines(line), linePos, MAX_CODE_LINE_LENGHT), "&")
-            
-            'if there is on Ampersand and line gets to big output a
-            'notice in the log - user should manually fix this
-            If (NextAmpersandPos <> 0) Then
+            Dim CrackAtPos&
+            CrackAtPos = InStrRev(Mid(Lines(Line), linePos, MAX_CODE_LINE_LENGHT), "&")
+            If (CrackAtPos <> 0) Then
                            
-               NewLine.Concat Mid(Lines(line), linePos, NextAmpersandPos)
+               NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos)
                NewLine.Concat " _" & vbCrLf
+             ' Test for special cases
+            ElseIf Mid(Lines(Line), linePos, 7) = "GLOBAL " Then
+               CrackAtPos = InStrRev(Mid(Lines(Line), linePos, MAX_CODE_LINE_LENGHT), ",")
+               If (CrackAtPos <> 0) Then
+                  NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos - 1)
+                  NewLine.Concat vbCrLf & "GLOBAL "
+               Else
+
+                  GoTo notice_user
+               End If
             
+            'IF with AND
+            ElseIf Mid(Lines(Line), linePos, 3) = "IF " Then
+               CrackAtPos = InStrRev(Mid(Lines(Line), linePos, MAX_CODE_LINE_LENGHT), " AND ")
+               If (CrackAtPos <> 0) Then
+                  NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos)
+                  NewLine.Concat " _" & vbCrLf
+               Else
+
+                  GoTo notice_user
+               End If
             Else
+notice_user:
+              'notice in the log - user should manually fix this
+               CrackAtPos = MAX_CODE_LINE_LENGHT
+               NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos)
+               log " PROBLEM: Line " & Line & " is longer than " & MAX_CODE_LINE_LENGHT & " Bytes. Tidy will refuse to work. Fix this manually an then apply Tidy."
                
-               NextAmpersandPos = MAX_CODE_LINE_LENGHT
-               NewLine.Concat Mid(Lines(line), linePos, NextAmpersandPos)
-               log " PROBLEM: Line " & line & " is longer than " & MAX_CODE_LINE_LENGHT & " Bytes. Tidy will refuse to work. Fix this manually an then apply Tidy."
-            
             End If
+           
+            Inc linePos, CrackAtPos
             
-            Inc linePos, NextAmpersandPos
          Loop
          
         'add last end
-         NewLine.Concat Mid(Lines(line), linePos)
+         NewLine.Concat Mid(Lines(Line), linePos)
          
          
-         Lines(line) = NewLine.Value
+         Lines(Line) = NewLine.Value
          
       End If
    Next
