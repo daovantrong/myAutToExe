@@ -262,7 +262,64 @@ example, '(.)\1' matches two consecutive identical characters. </p></td></tr><tr
                 </p></td></tr><tr><td><p>
                     \u<i>n</i> </p></td><td><p>
                     Matches <i>n</i>, where <i>n</i> is a Unicode character expressed as four hexadecimal digits. For example, \u00A9 matches the copyright symbol (©).
-                </p></td></tr></tbody></table></div></div></div></div></div>  </div></div></div>
+                </p></td></tr></tbody></table>
+  <p>&nbsp;</p>
+  <p class="CollapseRegionLink">Replacement MetaCharacters</p>
+  <p>Example data: &quot;Print 'Hello World';&quot; 
+              search pattern: &quot;(Hello)\s*(World)&quot;</p>
+  <div class="tableSection">
+    <table width="50%" frame="lhs">
+      <tbody>
+        <tr>
+          <th><p> Character </p></th>
+          <th><p> Description </p></th>
+        </tr>
+        <tr>
+          <td><p> $1-9 </p></td>
+          <td><p> Back reference<br />
+            <br />
+  Replace pattern: &quot;$2&quot; [-&gt;&quot;World&quot;]<br />
+              <br />
+              Note: $10, $11... is also possible</p>
+            </td>
+        </tr>
+        <tr>
+          <td><p> $+</p></td>
+          <td><p>Last back reference [-&gt;&quot;World&quot;]</p>
+            <p>              Note: Regarding the   example '$+' is the same as '$2'.</p>
+            </td>
+        </tr>
+        <tr>
+          <td><p>$&amp;</p>
+            </td>
+          <td><p>MatchText [-&gt;&quot;Hello World&quot;]</p>
+            </td>
+        </tr>
+        <tr>
+          <td><p>$'</p>
+            </td>
+          <td><p>Text left from subject [-&gt;&quot;';&quot;]</p>
+            </td>
+        </tr>
+        <tr>
+          <td><p>$`</p>
+            </td>
+          <td><p>Text right from subject [-&gt;&quot;Print '&quot;]</p>
+            </td>
+        </tr>
+        <tr>
+          <td><p>$_</p>
+            </td>
+          <td><p>Whole subject [-&gt;&quot;Print 'Hello World';&quot;]</p>
+            </td>
+        </tr>
+      </tbody>
+    </table>
+    <p>&nbsp;</p>
+    <p>&nbsp;</p>
+  </div>
+  <p>&nbsp;</p>
+</div></div></div></div></div>  </div></div></div>
       <div id="ctl00_WikiViewer1_cc" class="wv_cc">
 	
     <div id="ctl00_WikiViewer1_ccContainer">

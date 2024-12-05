@@ -19,6 +19,10 @@ Option Compare Text
 Const AU_NEWLINE$ = " _" & vbCrLf
 
 
+Dim IsDeTokeniserOutput As Boolean
+
+Dim myRegExp As New RegExp
+
 Dim DeObfu_FunctionNames As New Collection
 Dim NewScript$
 
@@ -500,6 +504,10 @@ Private Sub DeObfuscate_Encodeit()
    
    Dim FnDeCryHexToStrIn$
    FnDeCryHexToStrIn = Trim(strCrop1(globs(2), "'", "'"))
+   If FnDeCryHexToStrIn = "" Then
+      FnDeCryHexToStrIn = Trim(strCrop1(globs(2), """", """"))
+   End If
+
    
    Dim FnDeCryHexToStrKey, q
    q = Split(NewScript, FnDeCryHexToStr)(2)
@@ -507,8 +515,11 @@ Private Sub DeObfuscate_Encodeit()
    'FnDeCryHexToStrKey = strCrop1(NewScript, FnDeCryHexToStr, "StringLen", , InStrRev(NewScript, FnDeCryHexToStr))
    FnDeCryHexToStrKey = Split(q, vbCrLf)(0)
    
-   Dim AA&, BB&, Key&
+   If FnDeCryHexToStrKey Like "*0x*" Then
+      FnDeCryHexToStrKey = CInt("&h" & Split(FnDeCryHexToStrKey, "0x")(1))
+   End If
    
+   Dim AA&, BB&, Key&
    AA = ("&h" & Mid(FnDeCryHexToStrIn, 1, 2)) - FnDeCryHexToStrKey
    BB = ("&h" & Mid(FnDeCryHexToStrIn, 3, 2)) - FnDeCryHexToStrKey
    Key = Chr(AA) & Chr(BB)
@@ -531,6 +542,10 @@ Private Sub DeObfuscate_Encodeit()
       
       Dim Words
       Words = Split(Line, "'")
+      If UBound(Words) = 0 Then
+         Words = Split(Line, """")
+      End If
+      
       EncString = Words(1)
       
       Dim VarName$
@@ -644,7 +659,7 @@ Log "Trying to DeObfuscate : " & FileName
    Dim UnicodeMarker%
    UnicodeMarker = File.intValue
    If UnicodeMarker = &HFEFF Then
-      NewScript = StrConv(File.FixedString(-1), vbFromUnicode)
+      NewScript = StrConv(File.FixedString(-1), vbFromUnicode, LocaleID_ENG)
    Else
       File.Move -2
       NewScript = File.FixedString(-1)
@@ -666,8 +681,9 @@ Log "Trying to DeObfuscate : " & FileName
    'Obfuscator v1.0.24.23  ( find 'func A1D00103002')
    ElseIf NewScript Like "*A1D00103002*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
+'   ElseIf NewScript Like "*Int(99/3+15[*]100/4-13^2+81/3-17-245+99/3+15[*]100/4-13^2+81/3-17)*" Then
+   ElseIf NewScript Like "*Global Const*Int(*/*+*[*]*/*-*^*+*/*-*-*+*/*+*[*]*/*-*^*+*/*-*)*" Then
       
-   ElseIf NewScript Like "*Int(99/3+15[*]100/4-13^2+81/3-17-245+99/3+15[*]100/4-13^2+81/3-17)*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_ENCODEIT
       
    ElseIf NewScript Like "*Chr(##?[-+]?##*" Then
@@ -687,7 +703,7 @@ End Function
 Public Sub DeObfuscate()
 
    ' Test for if obfuscated
-   'my dilettantic deObfuscator
+   'my dilettantic deObfuscator                                      (okay It still got better and is not that dilettantic it was before :))
    Select Case DetectScriptObfuscated
       Case DE_OBFUSC_TYPE_NOT_OBFUSC
          File.CloseFile
@@ -786,6 +802,11 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
    
    Dim OSString$
    OSString = strCropWithSeek(NewScript, "($", "[")
+   
+   
+  'In a decompiled & detokenise file that was not run in tidy VarNames are in UpperCase
+   IsDeTokeniserOutput = InStr(1, NewScript, "GLOBAL $", vbBinaryCompare)
+   
    ReplaceDo NewScript, OSString, "Os", , , vbTextCompare
    
    ReplaceDo NewScript, "$Os [", "$Os[", , , vbTextCompare
@@ -876,7 +897,7 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
     ReDim StringTBL(1 To 1)
       Dim Line
       For Each Line In Split(TBLFileData.Data, TBLStringSeperator)
-         StringTBL(UBound(StringTBL)) = HexStringToString(Line)
+         StringTBL(UBound(StringTBL)) = EncodeUTF8(HexStringToString(Line))
          ReDim Preserve StringTBL(1 To UBound(StringTBL) + 1)
       Next
      'delete last two elements
@@ -906,8 +927,16 @@ Log "Restoring StringNames in ..."
    Stat_NumAtAll = 0
 
  
-   Dim EndToken$, NewScript2
+   
+   Dim NewScript2
+   Dim EndToken$
    EndToken = "EndFunc" & vbCrLf
+   
+   If InStr(1, NewScript, EndToken) = 0 Then
+      Log "WARNING - deobfucator needs a clean 'EndFunc' after each function!"
+      Log "          Probably it currently looks like this: 'EndFunc   ;==>A27F180133A'. ReRun Tidy with '/Skip_EndFunc_Comment'(/sefc) switch or run it /Remove_EndFun_comment (/refc) on this file."
+   End If
+   
   
    NewScript2 = Split(NewScript, "Func ")
    Dim i&
@@ -915,11 +944,13 @@ Log "Restoring StringNames in ..."
  ' add new line at the end (to ensure function ends with "ENDFUNC\n" )
    NewScript2(UBound(NewScript2)) = NewScript2(UBound(NewScript2)) & vbCrLf
    
+         
+   
    
    Dim iter: i = 0
    For iter = LBound(NewScript2) To UBound(NewScript2)
-   Dim ScriptFunction$
-   ScriptFunction = NewScript2(iter)
+      Dim ScriptFunction$
+      ScriptFunction = NewScript2(iter)
       
  ' Show ScriptFunction Before
    GUI_Show_Text ScriptFunction
@@ -937,7 +968,8 @@ Log "Restoring StringNames in ..."
          FunctionName = strCrop1(ScriptFunction, "", "(")
          DeObfu_FunctionNames.Add FunctionName
          Log "FunctionName: " & FunctionName
-               
+         
+              
        ' === Replace FunctionArguments  ====
          DeObfu_ReplaceFnArgs ScriptFunction, FunctionName
          
@@ -975,7 +1007,7 @@ Log "Restoring StringNames in ..."
    End If
       
       
-'   Debug.Assert "A2600102853" <> FunctionName
+'Debug.Assert "A4B00A0510D" <> FunctionName
 
      
     'Delete/ Seperate 'Obfu-Header' in ScriptFunction
@@ -1027,7 +1059,7 @@ Log "Restoring StringNames in ..."
          Dim LocalStringName
          For Each LocalStringName In GlobalStringDef
              
-             'Sepertate GlobalStringDef further...
+             'Seperate GlobalStringDef further...
              Dim LocalStringName_Splitted
              LocalStringName_Splitted = Split(LocalStringName, "=")
              'LocalStringName_Splitted    with         $SA3160B01D3E=A0000006239($Os[0x7])
@@ -1050,8 +1082,11 @@ Log "Restoring StringNames in ..."
              End If
 
              'Replace Strings
-            ' In ScriptFunction code Replace all "$SA3160B01D3E" with for exsample "Wrong Name Entered!"
-         '            Debug.Print "Number(" & LocalStringNames(index) & ")", StringTBL(index)
+            ' In ScriptFunction code Replace all "$SA3160B01D3E" with for example "Wrong Name Entered!"
+'Debug.Print "Number(" & LocalStringNames(index) & ")", StringTBL(index)
+'Debug.Assert index <> 846
+              
+'Debug.Assert Not (StringTBL(index) Like "gro*")
               DeObfu_ReplaceStrings ScriptFunction, LocalStringNames(index), StringTBL(index)
          
 
@@ -1066,7 +1101,7 @@ Log "Restoring StringNames in ..."
       
       Stat_NumLocal = Stat_NumLocal + UBound(GlobalStringDef)
       Loop While True
-
+      
 
 'Bench no stringReplace    1219
 'Old stringReplace         15172 14813
@@ -1086,6 +1121,8 @@ Log "Restoring StringNames in ..."
      
    i = i + 1
    Next
+  
+  
   
 Log "Local strings at all: " & Stat_NumAtAll
 Log "strings in Tbl: " & UBound(StringTBL)
@@ -1386,7 +1423,7 @@ Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional I
       isUniqueItem.Clear
       
       
-   BenchStart
+'   BenchStart
                
    Dim RE_Searchpattern As New clsStrCat
             
@@ -1412,6 +1449,9 @@ Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional I
            'fill up ReplaceString with space to bring it to same size
             If Len(SearchString) > Len(ReplaceString) Then
                 ReplaceString = BlockAlign_r(ReplaceString, Len(SearchString))
+            Else
+               Stop
+               'todo handle replacestring is bigger than searchstr
             End If
             
          ' Replace one Var
@@ -1486,13 +1526,11 @@ End Sub
 Private Sub DeObfu_Replacer(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional IgnoreLinesWith = "$Os")
    If IsMissing(IgnoreLinesWith) Then IgnoreLinesWith = "$Os"
 
-   z_DeObfu_ReplaceX2 CodeSnipped, KeyWord & " Const", Prefix & "Const", IgnoreLinesWith
+' 'Global Const $A4A14104939 = $A2014201D1E'
+   z_DeObfu_ReplaceX2 CodeSnipped, KeyWord$ & " Const", Prefix & "Const", IgnoreLinesWith
 
 ' 'Global $A4201D12945 = '       OR
    z_DeObfu_ReplaceX2 CodeSnipped, KeyWord, Prefix & "Var", IgnoreLinesWith
-
-' 'Global Const $A4A14104939 = $A2014201D1E'
-   z_DeObfu_ReplaceX2 CodeSnipped, "Const", "Const", IgnoreLinesWith
 
 
 End Sub
@@ -1500,15 +1538,27 @@ End Sub
 
 
 Private Sub DeObfu_ReplaceDimsAndConst(ByRef CodeSnipped$, Optional IgnoreLinesWith)
+
+' Glocal  Const   -> gConst
+' Glocal          -> gVar
 Log "Renaming Consts..."
-   DeObfu_Replacer CodeSnipped, "Const", "gConst", IgnoreLinesWith
+   DeObfu_Replacer CodeSnipped, "Global", "g", IgnoreLinesWith
 
-   DeObfu_Replacer CodeSnipped, "Global Const ", "glConst", IgnoreLinesWith
+' Local   Const   -> lConst
+' Local           -> lVar
+Log "Renaming Locals..."
+   DeObfu_Replacer CodeSnipped, "Local", "l", IgnoreLinesWith
 
+' Dim     Const   -> dConst
+' Dim             -> dVar
 Log "Renaming Dims..."
-   DeObfu_Replacer CodeSnipped, "Dim", "gDim", IgnoreLinesWith
+   DeObfu_Replacer CodeSnipped, "Dim", "gd", IgnoreLinesWith
 
-
+'
+'         Const   -> Const
+'                 -> Var
+Log "Renaming Const..."
+   DeObfu_Replacer CodeSnipped, "", "", IgnoreLinesWith
 
 
 'Log "Renaming Dims..."
@@ -1526,22 +1576,144 @@ Private Sub DeObfu_ReplaceLocals(ByRef CodeSnipped$)
    z_DeObfu_ReplaceX2 CodeSnipped, "Local ", "Local"
 End Sub
 
+Private Function c(Text$)
+   If IsDeTokeniserOutput Then
+      c = UCase(Text)
+   Else
+      c = Text
+   End If
+End Function
+
+
 Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
 
-'log "Renaming Locals..."
- ' avoid Replacing ShellExecute
-   ReplaceDo Data, "ShellExecute", "Shell_xecute"
-      ReplaceDo Data, "Execute(" & ReplaceStr & ")", NewStr
-   ReplaceDo Data, "Shell_xecute", "ShellExecute"
+''log "Renaming Locals..."
+' ' avoid Replacing ShellExecute
+'   ReplaceDo Data, "ShellExecute", "Shell_xecute"
+'      ReplaceDo Data, "Execute(" & ReplaceStr & ")", NewStr
+'   ReplaceDo Data, "Shell_xecute", "ShellExecute"
 
-If "$H729026783220739177320" = Data Then Stop
+   With myRegExp
+      .Global = True
+'      .MultiLine = True
+      .IgnoreCase = False
+      
+' Nice but somehow too slow
+'      .Pattern = RE_WSpace("(" & _
+'                  RE_Literal(C("Number(")) & ")|(" & _
+'                  RE_Literal(C("ShellExecute(")) & ")|(" & _
+'                  RE_Literal(C("Execute(")) & _
+'                  ")", _
+'                     RE_Literal(ReplaceStr), _
+'                  RE_Literal(")"))
+'
+'      Dim match As match
+'      For Each match In .Execute(Data)
+'         With match
+'            If .SubMatches(1) <> Empty Then
+'             ' ShellExecute
+'              'Do Nothing (ignore this)
+'
+'            ElseIf .SubMatches(2) <> Empty Then
+'             ' Macros/Commands...
+'               Stop
+'
+'            ElseIf .SubMatches(0) <> Empty Then
+'             ' Numbers...
+'               NewStr = FormatNumber(NewStr)
+'               If Len(NewStr) > .Length Then
+'                  'Extend String
+'                  Stop
+'                  ReplaceDo Data, .value, NewStr, .FirstIndex
+'               Else
+'                  Mid(Data, .FirstIndex + 1, .Length) = BlockAlign_r(FormatNumber(NewStr), .Length)
+'               End If
+'            Else
+'
+'               ' Strings...
+'
+'               myRegExp.Pattern = RE_WSpace(RE_Literal(ReplaceStr), "")
+'               If myRegExp.Test(Data) Then
+'                  ReplaceDo NewStr, """", """"""
+'                  Data = myRegExp.Replace(Data, RE_Replace_Literal(Quote(NewStr)))
+'               End If
+'
+'            End If
+'
+'         End With
+'      Next
+      
+'-------------------------------
 
-      ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr), , , vbTextCompare
-      ReplaceDo Data, ReplaceStr, """" & Replace(NewStr, """", """""") & """"
+' Macros/Commands...
+    ' No ShellExecute(...) but catch all Execute(...)
+    ' This is done by 'consuming' ShellExecute and later writing it back via $1
+'     .Pattern = RE_WSpace(RE_LookHead_negative( _
+                              RE_Literal(C("ShellExecute("))) & _
+                           RE_Group(RE_AnyChar & RE_Repeat(5, 5)) & _
+                           RE_Literal(C("Execute(")), _
+                           RE_Literal(ReplaceStr), _
+                           RE_Literal(")"))
+'         Data = .Replace(Data, "$1" & RE_Replace_Literal(NewStr)) & " "
+
+     .Pattern = RE_WSpace(RE_Literal(c("Execute(")), _
+                          RE_Literal(ReplaceStr), _
+                          RE_Literal(")"))
+      If .Test(Data) Then
+         
+         Dim Match As Match
+         For Each Match In .Execute(Data)
+            With Match
+              'Skip ShellExecute
+               If Mid(Data, .FirstIndex + 1 - 5, 5) <> c("Shell") Then
+                  
+                 'Do Replacing
+                  QuickReplace Data, NewStr, .FirstIndex + 1, .Length, .value
+               End If
+            End With
+         Next
+
+      Else
+
+' Numbers...
+        .Pattern = RE_WSpace(RE_Literal(c("Number(")), RE_Literal(ReplaceStr), RE_Literal(")"))
+         If .Test(Data) Then
+            Data = .Replace(Data, FormatNumber(NewStr) & " ")
+         Else
+
+' Strings...
+
+             ReplaceDo Data, ReplaceStr, MakeAutoItString(CStr(NewStr))
+'            .Pattern = RE_Literal(ReplaceStr)
+'            If .Test(Data) Then
+'               Data = .Replace(Data, RE_Replace_Literal(MakeAutoItString(CStr(NewStr))))
+'            End If
+         End If
+
+      End If
+   End With
+   
+   
+
+'If "$H729026783220739177320" = Data Then Stop
+
+'      ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr), , , vbTextCompare
+'      ReplaceDo Data, ReplaceStr, Quote (Replace(NewStr, """", """""") )
 
 End Sub
 
+Private Sub QuickReplace(Data$, NewStr, NewPos&, NewLen&, oldValue$)
+    
+   'Do Replacing
+    If Len(NewStr) > NewLen Then
+       'Extend String
+       Stop
+       ReplaceDo Data, oldValue, NewStr, NewPos
+    Else
+       Mid(Data, NewPos, NewLen) = BlockAlign_r(NewStr, NewLen)
+    End If
 
+End Sub
 
 Private Sub DeObfuscate_VanZande1_0_14()
 
@@ -1571,8 +1743,6 @@ Private Sub DeObfuscate_VanZande1_0_14()
    Stat_NumAtAll = 0
 
   '=== Replace Dim Const and Globals
-  DeObfu_ReplaceDimsAndConst NewScript
-   
    
    
   ' global $SA60D010561B=A0300004831("41415354")
@@ -1592,7 +1762,7 @@ Log "Restoring StringNames in ..."
   
   
    Dim i&
-   NewScript2 = Split(NewScript, "Func ", , vbTextCompare)
+'   NewScript2 = Split(NewScript, "Func ", , vbTextCompare)
   
    
    Dim iter: i = 0
@@ -1790,7 +1960,6 @@ Log "strings in Tbl: " & StringTBL.Count
   
   
    NewScript = Join(NewScript2, vbCrLf & "Func ")
-'  Stop
   
   '=== Replace Functionname
    DeObfu_ReplaceFunctionNames NewScript
@@ -1819,6 +1988,11 @@ Log "strings in Tbl: " & StringTBL.Count
 
   File.CloseFile
   
+  
+  DeObfu_ReplaceDimsAndConst NewScript
+  
+  
+  
 End Sub
 
 
@@ -1826,8 +2000,10 @@ End Sub
 Private Function FormatNumber(Expr)
    On Error GoTo err_FormatNumber
      'Set default incase of error
-'      FormatNumber = Expr
-'      If IsNumeric(Expr) Then
+      FormatNumber = Expr
+    
+    ' Exclude decimalNumbers like 1.6 or 234.21
+      If Not (Expr Like "*.*") Then
          
         'Beautify Numbers
          If (Expr > 65535) Or (Expr < 0) Then
@@ -1842,9 +2018,9 @@ Private Function FormatNumber(Expr)
             
          End If
          
-'      Else
-'         FormatNumber = Expr
-'      End If
+      Else
+         FormatNumber = Expr
+      End If
 Exit Function
 
 err_FormatNumber:

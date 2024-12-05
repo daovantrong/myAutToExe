@@ -3,8 +3,8 @@ Option Explicit
 ' Src based on ... http://vb-tec.de/crc.htm
 Private pInititialized As Boolean
 Private pTable(0 To 255) As Long
-Const RESERVED& = 0
-Private Declare Function Mul Lib "MSVBVM60.DLL" Alias "_allmul" (ByVal dw1 As Long, ByVal RESERVED As Long, ByVal dw3 As Long, ByVal RESERVED As Long) As Long
+Const Reserved& = 0
+Private Declare Function Mul Lib "MSVBVM60.DLL" Alias "_allmul" (ByVal dw1 As Long, ByVal Reserved As Long, ByVal dw3 As Long, ByVal Reserved As Long) As Long
 
 Private m_l2Power(0 To 30) As Long
 Private m_lOnBits(0 To 30) As Long
@@ -43,20 +43,21 @@ End Sub
 Public Function CRC32(ByRef Bytes() As Byte) As Long
   
   If Not pInititialized Then CRCInit
- 
+' BenchStart
   ' CRC berechnen:
   CRC32 = &HFFFFFFFF
   Dim i As Long
   For i = LBound(Bytes) To UBound(Bytes)
   
     'CRC = (CRC << 0x18) ^ pTable[Bytes[i] ^ (CRC >> 0x08)]
-    CRC32 = LShift(CRC32, &H8) Xor pTable(Bytes(i) Xor RShift(CRC32, &H18) And &HFF&)
+'    CRC32 = LShift(CRC32, &H8) Xor pTable(Bytes(i) Xor RShift(CRC32, &H18) And &HFF&)
   
     DoEventsVerySeldom
-'    CRC32 = Mul(CRC32, 0, &H100, 0) Xor pTable((Bytes(i) Xor _
+    CRC32 = Mul(CRC32, 0, &H100, 0) Xor pTable((Bytes(i) Xor _
     RShift(CRC32, &H18) And &HFF&))
   
   Next i
+'BenchEnd
 End Function
 
 

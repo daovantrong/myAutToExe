@@ -42,8 +42,8 @@ Private Sub Class_Initialize()
    
   GetCommandLine
 
-  If CommandLine = Empty Then Exit Sub
-  Call commandLineSplitRek(CommandLine)
+'  If CommandLine = Empty Then Exit Sub
+  Call commandLineSplitRek
 
 End Sub
 
@@ -51,74 +51,57 @@ End Sub
 '////////////////////////////////////////////////////////////////////////////////////////////////
 '// commandLineSplitRek -  Split the commandLine and store chunks in args() and argsWithQuotes()
 '//                        should only used by the Constructor
-Private Sub commandLineSplitRek(lCommandLine As String, Optional oldPos% = 1, Optional levelCounter = 0)
-'On Error GoTo commandLineSplitRek_err
+Private Sub commandLineSplitRek(Optional ByVal startPos = 1, Optional levelCounter = 0)
+  'On Error GoTo commandLineSplitRek_err
    
    Dim endPos%                ' Endposition for cut (...e.exe"<-)
-   Dim startPos%           ' Startposition for "new" commandline (->"C:\p...")
-   Dim bIsQuoted As Boolean
-   Dim bEndLine As Boolean
-   Dim bNoQuotedAtEnd As Boolean
+'   Dim startPos%           ' Startposition for "new" commandline (->"C:\p...")
    
+   endPos = Len(CommandLine) + 1
+  
   'Filter Leading Space
-   For startPos = 1 To Len(lCommandLine)
-     If Mid(lCommandLine, startPos, 1) > " " Then Exit For
+   For startPos = startPos To endPos
+     If Mid(CommandLine, startPos, 1) > " " Then Exit For
    Next
    
-  'Trivial case - we are already at the end
-   If (startPos >= Len(lCommandLine)) Then
-           
+ ' Trivial case - Empty String
+   If startPos >= endPos Then
     ' create array for saving commandline arguments
       NumberOfCommandLineArgs = levelCounter
       If NumberOfCommandLineArgs > 0 Then
-         ReDim argsWithQuotes(NumberOfCommandLineArgs - 1)
          ReDim Args(NumberOfCommandLineArgs - 1)
       Else
-       'Clear Arrays
-         argsWithQuotes = EmptyArray
+       ' Clear Arrays
          Args = EmptyArray
       End If
-
-
-
-  'Recusion case - Look for next element
+ 
+ ' Recursion case
    Else
-   
+ 
    ' does Commandline starts with "C:\P...
-      bIsQuoted = Mid(lCommandLine, startPos, 1) = """"
-      If bIsQuoted Then
-       ' find next "(DoubleQuote)
-         endPos = InStr(startPos + 1, lCommandLine, """") + 1
-         bEndLine = (endPos <= 1)
-      Else
-       ' find next ' '(Space)
-         endPos = InStr(startPos, lCommandLine, " ")
-         bEndLine = (endPos <= 0)
-      End If
-      
-      If bEndLine Then
-        endPos = Len(lCommandLine)
-      End If
-      
-      ' Call commandLineSplitRek recursiv with "new" commandline 6 increase levelCounter
-        commandLineSplitRek Mid(lCommandLine, endPos), startPos, levelCounter + 1
-      
-
-'      bNoQuotedAtEnd = bIsQuoted And bEndLine And (endPos = 0)
-   
-     Dim Length&
-     Length = endPos - startPos
-     
-    'Save Data in Array
-     argsWithQuotes(levelCounter) = Mid(lCommandLine, startPos, Length)
-     If bIsQuoted Then
-        Args(levelCounter) = Mid(argsWithQuotes(levelCounter), 2, Length - 2)
+     If Mid(CommandLine, startPos, 1) = """" Then
+           
+      ' seek over quote
+        Inc startPos
         
+      ' find next "(DoubleQuote)
+        endPos = InStr(startPos, CommandLine, """")
      Else
-        Args(levelCounter) = argsWithQuotes(levelCounter)
-        
+      ' find next ' '(Space)
+        endPos = InStr(startPos, CommandLine, " ")
      End If
      
+   ' we are already at the end
+     If (endPos <= 0) Then
+        endPos = Len(CommandLine) + 1
+     End If
+
+   ' Call commandLineSplitRek recursiv with "new" commandline 6 increase levelCounter
+     commandLineSplitRek endPos + 1, levelCounter + 1
+     
+   ' Save Data in Array
+     Args(levelCounter) = Mid(CommandLine, startPos, endPos - startPos)
+   
    End If
    
 'commandLineSplitRek_err:

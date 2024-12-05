@@ -19,6 +19,20 @@ Private Buffer As String
 Private BufferLen As Long
 Private Pointer As Long
 
+'Inhalt des internen Strings:
+Public Property Let value(vData As String)
+Attribute value.VB_UserMemId = 0
+
+  Pointer = 1
+  Concat vData
+  
+End Property
+Public Property Get value() As String
+Attribute value.VB_UserMemId = 0
+
+  value = LeftB$(Buffer, Pointer - 1)
+End Property
+
 'Auf "Leerstring" setzen:
 Public Sub Clear()
   Pointer = 1
@@ -67,15 +81,6 @@ Public Property Get Length() As Long
   Length = Pointer \ 2
 End Property
 
-'Inhalt des internen Strings:
-Public Property Let value(vData As String)
-  Pointer = 1
-  Concat vData
-  
-End Property
-Public Property Get value() As String
-  value = LeftB$(Buffer, Pointer - 1)
-End Property
 
 
 

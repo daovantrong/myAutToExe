@@ -36,6 +36,7 @@ End Function
 '-------------------------------------------------------------------------
 Public Function EncodeUTF8(ByVal sValue As String) As String
 
+
   If Len(sValue) = 0 Then Exit Function
   EncodeUTF8 = WToA(StrConv(sValue, vbUnicode), CP_UTF8)
 

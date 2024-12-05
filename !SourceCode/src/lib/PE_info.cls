@@ -62,20 +62,36 @@ Public Sub Create()
     ' Validate Machine Type
       If PE_Header.Machine <> &H14C Then
          If PE_Header.Machine = &H8664 Then
-            Err.Raise vbObjectError Or 4, , "PE-Header.Signature=HDR64_MAGIC!"
+'            Err.Raise vbObjectError Or 4, , "PE-Header.Signature=HDR64_MAGIC!"
+            IsPE64 = True
+            
+                '  --- get PE_Header64  ---
+            hFile = FreeFile
+            Open File.FileName For Binary Access Read As #hFile
+              Get hFile, PEStart, PE_Header64
+            Close hFile
+
+            
+            
          Else
            Err.Raise vbObjectError Or 3, , "Unsupported PE-Header.Signature 0x" & H16(PE_Header.Machine) & " <>I386(0x14C)."
          End If
+      
+      Else
+         If PE_Header.OptionalHeaderSize <> &HE0 Then
+            Err.Raise vbObjectError Or 5, , "PE_Header.OptionalHeaderSize = E0 expected but curvalue is " & H32(PE_Header.OptionalHeaderSize)
+         
+         End If
+   
+   '    ' Validate Optionaldata Type
+   '      If PE_Header.Magic <> &H10B Then
+   '         err.Raise vbObjectError Or 5, , "PE_Header.Magic <> PE32!"
+   '      End If
+
+
       End If
      
-'    ' Validate Optionaldata Type
-'      If PE_Header.Magic <> &H10B Then
-'         err.Raise vbObjectError Or 5, , "PE_Header.Magic <> PE32!"
-'      End If
      
-      If PE_Header.OptionalHeaderSize <> &HE0 Then
-         Err.Raise vbObjectError Or 5, , "PE_Header.OptionalHeaderSize = E0 expected but curvalue is " & H32(PE_Header.OptionalHeaderSize)
-      End If
       
 
      

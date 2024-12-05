@@ -2,6 +2,9 @@ Attribute VB_Name = "Helper"
 Option Explicit
 Option Compare Text
 
+Dim myRegExp As New RegExp
+
+
 Public Cancel As Boolean
 
 
@@ -20,6 +23,7 @@ Public Const HKEY_USERS = &H80000003
 
 Public Const ERROR_NONE = 0
 
+Public Const LocaleID_ENG = 1031
 
 Public Const ERR_FILESTREAM = &H1000000
 Public Const ERR_OPENFILE = vbObjectError Or ERR_FILESTREAM + 1
@@ -27,6 +31,9 @@ Private i, j As Integer
 
 Public Declare Sub MemCopyAnyToAny Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As Any, src As Any, ByVal Length&)
 Public Declare Sub MemCopy Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, ByVal src As Any, ByVal Length&)
+Public Declare Sub MemCopyX Lib "kernel32" Alias "RtlMoveMemory" _
+(Dest As Any, ByVal src As Long, ByVal Length&)
+
 Public Declare Sub MemCopyAnyToStr Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, src As Any, ByVal Length&)
 Public Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As String, src As Long, ByVal Length&)
 
@@ -52,8 +59,14 @@ Public Const RE_Anchor_LineEnd$ = "$"
 
 Public Const RE_Anchor_WordBoarder$ = "\b"
 Public Const RE_Anchor_NoWordBoarder$ = "\B"
-Public Const RE_AnyChar$ = "."
 
+Public Const RE_AnyChar$ = "."
+Public Const RE_AnyChars$ = ".*"
+
+Public Const RE_AnyCharNL$ = "[\S\s]"
+Public Const RE_AnyCharsNL$ = "[\S\s]*?"
+
+Public Const RE_NewLine$ = "\r?\n"
 
 
 Function MulInt32&(a&, b&)
@@ -333,14 +346,14 @@ Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue, Optiona
 
 End Function
 
-Function MidMbcs(ByVal Str As String, Start, Length)
-    MidMbcs = StrConv(MidB$(StrConv(Str, vbFromUnicode), Start, Length), vbUnicode)
+Function MidMbcs(ByVal str As String, Start, Length)
+    MidMbcs = StrConv(MidB$(StrConv(str, vbFromUnicode), Start, Length), vbUnicode)
 End Function
 
 
-Function strCutOut$(Str$, pos&, Length&, Optional TextToInsert = "")
-   strCutOut = Mid(Str, pos, Length)
-   Str$ = Mid(Str, 1, pos - 1) & TextToInsert & Mid(Str, pos + Length)
+Function strCutOut$(str$, pos&, Length&, Optional TextToInsert = "")
+   strCutOut = Mid(str, pos, Length)
+   str$ = Mid(str, 1, pos - 1) & TextToInsert & Mid(str, pos + Length)
 End Function
 
 
@@ -377,7 +390,7 @@ Public Function FileExists(FileName) As Boolean
 FileExists_err:
 End Function
 
-Public Function Quote(ByRef Text As String) As String
+Public Function Quote(ByRef Text) As String
    Quote = """" & Text & """"
 End Function
 
@@ -430,19 +443,33 @@ Public Function RE_Literal(TextWithLiterals) As String
                                            
 End Function
 
-Private Function RE_Mask(ByVal Text, CharsToMask$) As String
-'   Dim t As New RegExp
-   With New RegExp
+
+Public Function RE_Replace_Literal(TextWithLiterals) As String
+  'Mask Replace metachars
+   ' $0-9   Back reference
+   ' $+     Last reference
+   
+   ' $&     MatchText
+   
+   ' $`     Text left from subject
+   ' $'     Text right from subject
+   ' $_     Whole subject
+   
+   RE_Replace_Literal = RE_Mask(TextWithLiterals, "0-9+`'_", "\$", "$$")
+
+
+End Function
+
+
+Private Function RE_Mask(Text, CharsToMask$, _
+   Optional CharMaskSearch$ = "", _
+   Optional CharMaskReplace$ = "\") As String
+   With myRegExp
       .Global = True
       
-     ' Unmask it first to avoid double mask
-      .Pattern = "\\" & _
-                  "([" & CharsToMask & "])"
-       Text = .Replace(Text, "$1")
-   
      ' Mask MetaChars like with a preciding '\'
-      .Pattern = "[" & CharsToMask & "]"
-      RE_Mask = .Replace(Text, "\$&")
+      .Pattern = CharMaskSearch & "[" & CharsToMask & "]"
+      RE_Mask = .Replace(Text, CharMaskReplace & "$&")
    
    
    End With
@@ -477,3 +504,177 @@ Public Function IsAlreadyInCollection(CollectionToTest As Collection, Key$) As B
 
 End Function
 
+'Public Sub ArrayEnsureBounds(Arr)
+'
+''   Dim tmp_ptr&
+''   MemCopy tmp_ptr, VarPtr(Arr) + 8, 4 ' resolve Variant
+''   MemCopy tmp_ptr, tmp_ptr, 4               ' get arraypointer
+''
+''   Dim bIsNullArray As Boolean
+''   bIsNullArray = (tmp_ptr = 0)
+'' On Error Resume Next
+'
+'   Dim bIsNullArray As Boolean
+'   bIsNullArray = (Not Not Arr) = 0 'use vbBug to get pointer to Arr
+'
+''   Rnd 1 ' catch Expression too complex error that is cause by the bug
+''On Error GoTo 0
+'
+''   Exit Function
+'
+'   If bIsNullArray Then
+'
+'   ElseIf (UBound(Arr) - LBound(Arr)) < 0 Then
+'   Else
+'      Exit Function
+'   End If
+'
+'   ReDim Arr(0)
+'   ArrayEnsureBounds = True
+'   Exit Function
+
+Public Sub ArrayEnsureBounds(Arr)
+
+On Error GoTo Array_err
+  ' IsArray(Arr)=False        ->  13 - Type Mismatch
+  ' [Arr has no Elements]     ->  9 - Subscript out of range
+  ' ZombieArray[arr=Array()]  -> GoTo Array_new
+   If UBound(Arr) - LBound(Arr) < 0 Then GoTo Array_new
+Exit Sub
+Array_err:
+Select Case Err
+    Case 9, 13
+Array_new:
+      ArrayDelete Arr
+
+'   Case Else
+'      Err.Raise Err.Number, "", "Error in ArrayEnsureBounds: " & Err.Description
+
+End Select
+
+End Sub
+
+
+
+Public Sub ArrayAdd(Arr, Optional Element = "")
+   ArrayEnsureBounds Arr
+   ReDim Preserve Arr(LBound(Arr) To UBound(Arr) + 1)
+   Arr(UBound(Arr)) = Element
+
+End Sub
+
+
+'Public Sub ArrayAdd(Arr As Variant, Optional element = "")
+'' Is that already a Array?
+'   If IsArray(Arr) Then
+'      ReDim Preserve Arr(LBound(Arr) To UBound(Arr) + 1)
+'
+' ' VarType(Arr) = vbVariant must be
+'   Else 'If VarType(Arr) = vbVariant Then
+'      ReDim Arr(0)
+'   End If
+'
+'   Arr(UBound(Arr)) = element
+'
+'End Sub
+
+Public Sub ArrayRemoveLast(Arr)
+   ReDim Preserve Arr(LBound(Arr) To UBound(Arr) - 1)
+End Sub
+
+Public Sub ArrayDelete(Arr)
+   ReDim Arr(0)
+   'Arr = Array()
+   'Set Arr = Nothing
+End Sub
+
+
+Public Function ArrayGetLast(Arr)
+ArrayEnsureBounds Arr
+   ArrayGetLast = Arr(UBound(Arr))
+End Function
+Public Sub ArraySetLast(Arr, Element)
+ArrayEnsureBounds Arr
+    Arr(UBound(Arr)) = Element
+End Sub
+Public Sub ArrayAppendLast(Arr(), Element)
+ArrayEnsureBounds Arr
+    Arr(UBound(Arr)) = Arr(UBound(Arr)) & Element
+End Sub
+
+
+Public Function ArrayGetFirst(Arr)
+ArrayEnsureBounds Arr
+   ArrayGetFirst = Arr(LBound(Arr))
+End Function
+Public Sub ArraySetFirst(Arr, Element)
+ArrayEnsureBounds Arr
+    Arr(LBound(Arr)) = Element
+End Sub
+Public Sub ArrayAppendFirst(Arr, Element)
+ArrayEnsureBounds Arr
+    Arr(LBound(Arr)) = Arr(LBound(Arr)) & Element
+End Sub
+
+
+
+
+Function DelayedReturn(Now As Boolean) As Boolean
+   Static LastState As Boolean
+   
+   DelayedReturn = LastState
+   
+   LastState = Now
+   
+End Function
+
+
+
+
+
+
+
+'Private Sub QuickSort( _
+'                      ByRef ArrayToSort As Variant, _
+'                      ByVal Low As Long, _
+'                      ByVal High As Long)
+'Dim vPartition As Variant, vTemp As Variant
+'Dim i As Long, j As Long
+'  If Low > High Then Exit Sub  ' Rekursions-Abbruchbedingung
+'  ' Ermittlung des Mittenelements zur Aufteilung in zwei Teilfelder:
+'  vPartition = ArrayToSort((Low + High) \ 2)
+'  ' Indizes i und j initial auf die ‰uﬂeren Grenzen des Feldes setzen:
+'  i = Low: j = High
+'  Do
+'    ' Von links nach rechts das linke Teilfeld durchsuchen:
+'    Do While ArrayToSort(i) < vPartition
+'      i = i + 1
+'    Loop
+'    ' Von rechts nach links das rechte Teilfeld durchsuchen:
+'    Do While ArrayToSort(j) > vPartition
+'      j = j - 1
+'    Loop
+'    If i <= j Then
+'      ' Die beiden gefundenen, falsch einsortierten Elemente
+'austauschen:
+'      vTemp = ArrayToSort(j)
+'      ArrayToSort(j) = ArrayToSort(i)
+'      ArrayToSort(i) = vTemp
+'      i = i + 1
+'      j = j - 1
+'    End If
+'  Loop Until i > j  ' ‹berschneidung der Indizes
+'  ' Rekursive Sortierung der ausgew‰hlten Teilfelder. Um die
+'  ' Rekursionstiefe zu optimieren, wird (sofern die Teilfelder
+'  ' nicht identisch groﬂ sind) zuerst das kleinere
+'  ' Teilfeld rekursiv sortiert.
+'  If (j - Low) < (High - i) Then
+'    QuickSort ArrayToSort, Low, j
+'    QuickSort ArrayToSort, i, High
+'  Elsea
+'    QuickSort ArrayToSort, i, High
+'    QuickSort ArrayToSort, Low, j
+'  End If
+'End Sub
+'
+'

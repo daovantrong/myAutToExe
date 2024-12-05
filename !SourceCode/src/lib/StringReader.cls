@@ -102,14 +102,14 @@ Public Property Get Position() As Long
 End Property
 
 
-Private Function StrtoLng(ByVal Value$) As Long
-   MemCopyStrToLng StrtoLng, Value, 4
+Private Function StrtoLng(ByVal value$) As Long
+   MemCopyStrToLng StrtoLng, value, 4
 End Function
 '
-Private Function LngtoStr(ByVal Value&) As String
+Private Function LngtoStr(ByVal value&) As String
    Dim tmp$
    tmp = Space(4)
-   MemCopyLngToStr tmp, Value, 4
+   MemCopyLngToStr tmp, value, 4
    LngtoStr = tmp
 End Function
 
@@ -230,9 +230,9 @@ End Property
 
 
 Public Property Get int16Sig() As Integer
-    Dim Value&
-    Value = StrtoLng(FixedString(2))
-    int16Sig = Value Or -(Value And &H8000)  '-32768 '&H8000
+    Dim value&
+    value = StrtoLng(FixedString(2))
+    int16Sig = value Or -(value And &H8000)  '-32768 '&H8000
 
 
 

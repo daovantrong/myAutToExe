@@ -8,12 +8,14 @@ Const ExcludePostWhiteSpaceTerminal$ = ")]."
 
 Const TokenFile_RequiredInputExtensions = ".tok .mem"
 
-Dim Atom$, SourceCodeLine As New clsStrCat
 Dim bAddWhiteSpace As Boolean
 
 
 Sub DeToken()
    
+   Dim bVerbose As Boolean
+   
+   bVerbose = FrmMain.Chk_verbose.value = vbGrayed
    With File
     
       Log "Trying to DeTokenise: " & FileName.FileName
@@ -55,6 +57,9 @@ Sub DeToken()
       FrmMain.List_Source.Clear
       FrmMain.List_Source.Visible = True
    
+      Dim SourceCodeLine()
+      ReDim SourceCodeLine(0)
+      
       
       
       Dim Cmd&
@@ -68,10 +73,16 @@ Sub DeToken()
       Dim RawString As StringReader: Set RawString = New StringReader
       Dim DecodeString As StringReader: Set DecodeString = New StringReader
 
+'   Stop
+      If bVerbose Then Frm_SrcEdit.Show
       
-      SourceCodeLine.Clear
       Do
    
+         Dim TypeName$
+         TypeName = ""
+   
+   
+         Dim Atom$
          Atom = ""
          
          If (SourceCodeLineCount > Lines) Then
@@ -105,9 +116,11 @@ Sub DeToken()
             Dim int32$
             int32 = .longValue
             Atom = int32
-            FL_verbose "Int32: 0x" & H32(int32) & "   " & int32
             
-'            Debug.Assert Cmd = 5
+            TypeName = "Int32"
+            FL_verbose TypeName & ": 0x" & H32(int32) & "   " & int32
+            
+            Debug.Assert Cmd = 5
          
          Case &H10 To &H1F
             Dim int64 As Currency
@@ -117,7 +130,8 @@ Sub DeToken()
             'Replace 123,45 -> 12345
             Atom = Replace(Replace(CStr(int64), ",", ""), ".", "")
             
-            FL_verbose "int64: " & int64
+            TypeName = "Int64"
+            FL_verbose TypeName & ": " & int64
             
             Debug.Assert Cmd = &H10
          
@@ -129,14 +143,15 @@ Sub DeToken()
            
            'Replace 123,11 -> 123.11
             Atom = Replace(CStr(Double_), ",", ".")
-         
-            FL_verbose "64Bit-float: " & Double_
+            
+            TypeName = "64Bit-float"
+            FL_verbose TypeName & ": " & Double_
          
             Debug.Assert Cmd = &H20
          
 
 '------- Strings -----------
-         Case &H30 To &H3F
+         Case &H30 To &H3F 'Keywords
             
            'Get StrLength and load it
             size = .longValue
@@ -175,7 +190,8 @@ Sub DeToken()
             Select Case Cmd
             
             Case &H30 'BlockElement (FUNC, IF...) and the Rest of 42 Elements: "AND OR NOT IF THEN ELSE ELSEIF ENDIF WHILE WEND DO UNTIL FOR NEXT TO STEP IN EXITLOOP CONTINUELOOP SELECT CASE ENDSELECT SWITCH ENDSWITCH CONTINUECASE DIM REDIM LOCAL GLOBAL CONST FUNC ENDFUNC RETURN EXIT BYREF WITH ENDWITH TRUE FALSE DEFAULT ENUM NULL"
-               FL_verbose """" & DecodeString.Data & """   Type: BlockElement"
+               TypeName = "BlockElement"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
                
                Atom = DecodeString
                bAddWhiteSpace = True
@@ -190,33 +206,47 @@ Sub DeToken()
             
             Case &H31 'FunctionCall with params
                Atom = DecodeString
-               FL_verbose """" & DecodeString.Data & """   Type: AutoItFunction"
+               
+               TypeName = "AutoItFunction"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
                
             Case &H32 'Macro
                Atom = "@" & DecodeString
-               FL_verbose """" & DecodeString.Data & """   Type: Macro"
+               
+               TypeName = "Macro"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
             
             Case &H33 'Variable
                Atom = "$" & DecodeString
-               FL_verbose """" & DecodeString.Data & """   Type: Variable"
+               
+               TypeName = "Variable"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
             
             Case &H34 'FunctionCall
                Atom = DecodeString
-               FL_verbose """" & DecodeString.Data & """   Type: UserFunction"
+               
+               TypeName = "UserFunction"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
             
             Case &H35 'Property
                Atom = "." & DecodeString
-               FL_verbose """" & DecodeString.Data & """   Type: Property"
+               
+               TypeName = "Property"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
             
             Case &H36 'UserString
                
                Atom = MakeAutoItString(DecodeString.Data)
-               FL_verbose """" & DecodeString.Data & """   Type: UserString"
+               
+               TypeName = "UserString"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
             
             Case &H37 '# PreProcessor
                Atom = DecodeString
                bAddWhiteSpace = True
-               FL_verbose """" & DecodeString.Data & """   Type: PreProcessor"
+               
+               TypeName = "PreProcessor"
+               FL_verbose """" & DecodeString.Data & """   Type: " & TypeName
             
             
             Case Else
@@ -263,25 +293,27 @@ Sub DeToken()
                Case &H55: Atom = "*=" '4       2A
                Case &H56: Atom = "&=" '6       26
             End Select
-            FL_verbose """" & Atom & """   Type: operator" '   AddWhiteSpace=" & bAddWhiteSpace
+            TypeName = "operator"
+            FL_verbose """" & Atom & """   Type: " & TypeName
             
 '------- EOL -----------
          Case &H7F
-            'Execute
+          ' Execute
             
             
-            SourceCodeLine.value = RTrim$(SourceCodeLine.value)
+            Dim SourceCodeLineFinal$
+            SourceCodeLineFinal = Join(SourceCodeLine, whiteSpaceTerminal)
             
-            LogSourceCodeLine SourceCodeLine.value
+            LogSourceCodeLine SourceCodeLineFinal
             
             
-            log_verbose ">>>  " & SourceCodeLine.value
+            log_verbose ">>>  " & SourceCodeLineFinal
             log_verbose String(80, "_")
             log_verbose ""
  
           ' Test Length
             Dim SourceCodeLine_Len&
-            SourceCodeLine_Len = SourceCodeLine.Length
+            SourceCodeLine_Len = Len(SourceCodeLineFinal)
             If SourceCodeLine_Len >= AUTOIT_SourceCodeLine_MAXLEN Then
                Log "WARNING: SourceCodeLine: " & SourceCodeLineCount & " is " & _
                SourceCodeLine_Len - AUTOIT_SourceCodeLine_MAXLEN & " chars longer than " & _
@@ -290,11 +322,18 @@ Sub DeToken()
           
           
           ' Add SourceCodeLine to SourceCode
-            SourceCode(SourceCodeLineCount) = SourceCodeLine.value
+            SourceCode(SourceCodeLineCount) = SourceCodeLineFinal
             Inc SourceCodeLineCount
             
-            SourceCodeLine.Clear
-            
+          ' del SourceCodeLine
+            ArrayDelete SourceCodeLine
+            If bVerbose Then Frm_SrcEdit.LineBreak
+           
+          ' Reset AddWhiteSpace on next item
+            Dim bWasLastAnOperator As Boolean
+            bWasLastAnOperator = True
+            DelayedReturn False
+           
 
          Case Else
             
@@ -310,26 +349,38 @@ Sub DeToken()
 
          End Select
          
-         'Debug.Assert SourceCodeLineCount < 1021
+'         Debug.Assert SourceCodeLineCount <> 851
+
          
-         If bAddWhiteSpace Then
-           'Add to SourceLine
-            'SourceCodeLine = SourceCodeLine & Atom & AddWhiteSpace
-            'SourceCodeLine = SourceCodeLine & Atom & whiteSpaceTerminal
-'            If SourceCodeLine = "" Then
-'               SourceCodeLine = Atom & whiteSpaceTerminal
-'            Else
-               SourceCodeLine.Concat whiteSpaceTerminal & Atom & whiteSpaceTerminal
-'            End If
+         If Cmd <> &H7F Then
             
-         Else
-           'Add to SourceLine
-            SourceCodeLine.Concat Atom
+           
+          ' Add to SourceLine
+            ' Always add a whiteSpace after a command (and preprocessor)
+            '    and add a whiteSpace before; except the token before is an operator (Like: [] () = ...)
+            If DelayedReturn(bAddWhiteSpace) Or _
+               (bAddWhiteSpace And Not (bWasLastAnOperator)) Then
+             
+             ' Add with whitespace
+               ArrayAdd SourceCodeLine, Atom
+               If bVerbose Then Frm_SrcEdit.AddItem whiteSpaceTerminal & Atom, Cmd, TypeName
+            Else
+              'Append to Last
+               
+               ArrayAppendLast SourceCodeLine, Atom
+               If bVerbose Then Frm_SrcEdit.AddItem Atom, Cmd, TypeName
+
+            End If
+            DoEventsVerySeldom
+            
+            bWasLastAnOperator = RangeCheck(Cmd, &H56, &H40)
+'         Else
+            
+            
          End If
-         
-         DoEventsVerySeldom
 
       Loop Until .EOF
+    
     
 Err.Clear
 DeToken_Err:
@@ -339,7 +390,7 @@ Select Case Err
      Dim ErrText$
      ErrText = "ERROR: " & Err.Description & vbCrLf & _
       "FileOffset: " & H32(.Position) & vbCrLf & _
-      "when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & SourceCodeLine.value
+      "when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & Join(SourceCodeLine, whiteSpaceTerminal)
      Log ErrText
      MsgBox ErrText, vbCritical, "Unexpected Error during detokenising"
      
@@ -382,7 +433,6 @@ DeToken_Finally:
   Log "Token expansion succeed."
    
   FrmMain.List_Source.Visible = False
-
 
 End Sub
 
@@ -494,30 +544,30 @@ End Function
 
 
 
-
-' Add WhiteSpace Seperator to SourceCodeLine
-Function AddWhiteSpace$()
-   
-   'No WhiteSpace at the Beginning
-   If SourceCodeLine = "" Then Exit Function
-   
-   Dim LastChar$
-   LastChar = Right(SourceCodeLine, 1)
-   
-   Dim NextChar$
-   NextChar = Left(Atom, 1)
-   
-   'Don'Append WhiteSpace in cases like this :
-   '"@CMDLIND ["   or   "@CMDLIND [0" <-"].."
-   '         (^-PreCase)                (^-PostCase)
-   If InStr(1, ExcludePreWhiteSpaceTerminal, LastChar) Or _
-      InStr(1, ExcludePostWhiteSpaceTerminal, NextChar) Then
-'      Stop
-   ElseIf whiteSpaceTerminal <> LastChar Then
-         AddWhiteSpace = whiteSpaceTerminal
-   End If
-   
-End Function
+'
+'' Add WhiteSpace Seperator to SourceCodeLine
+'Function AddWhiteSpace$()
+'
+'   'No WhiteSpace at the Beginning
+'   If SourceCodeLine = "" Then Exit Function
+'
+'   Dim LastChar$
+'   LastChar = Right(SourceCodeLine, 1)
+'
+'   Dim NextChar$
+'   NextChar = Left(Atom, 1)
+'
+'   'Don'Append WhiteSpace in cases like this :
+'   '"@CMDLIND ["   or   "@CMDLIND [0" <-"].."
+'   '         (^-PreCase)                (^-PostCase)
+'   If InStr(1, ExcludePreWhiteSpaceTerminal, LastChar) Or _
+'      InStr(1, ExcludePostWhiteSpaceTerminal, NextChar) Then
+''      Stop
+'   ElseIf whiteSpaceTerminal <> LastChar Then
+'         AddWhiteSpace = whiteSpaceTerminal
+'   End If
+'
+'End Function
 
 
 
@@ -542,7 +592,7 @@ End Sub
 
 '/////////////////////////////////////////////////////////
 '// log_clear - Clears all log entries
-Private Sub log_clear()
-   FrmMain.log_clear
+Private Sub Log_Clear()
+   FrmMain.Log_Clear
 End Sub
 

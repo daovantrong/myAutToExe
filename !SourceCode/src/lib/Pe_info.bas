@@ -120,6 +120,97 @@ Public Type PE_Header
   Sections(64)                   As Section
 End Type
 
+
+
+
+Public Type PE_Header64
+  PESignature                    As Long
+  Machine                        As Integer
+  NumberofSections               As Integer
+  TimeDateStamp                  As Long
+  PointertoSymbolTable           As Long
+  NumberofSymbols                As Long
+  OptionalHeaderSize             As Integer
+  Characteristics                As Integer
+  Magic                          As Integer
+  MajorVersionNumber             As Byte
+  MinorVersionNumber             As Byte
+  SizeofCodeSection              As Long
+  InitializedDataSize            As Long
+  UninitializedDataSize          As Long
+  EntryPointRVA                  As Long
+  BaseofCode                     As Long
+  BaseofData                     As Long
+
+' extra NT stuff
+  ImageBase                      As Long
+'  ImageBase64                      As Long
+  SectionAlignment               As Long
+  FileAlignment                  As Long
+  OSMajorVersion                 As Integer
+  OSMinorVersion                 As Integer
+  UserMajorVersion               As Integer
+  UserMinorVersion               As Integer
+  SubSysMajorVersion             As Integer
+  SubSysMinorVersion             As Integer
+  Reserved                       As Long
+  ImageSize                      As Long
+  HeaderSize                     As Long
+  FileChecksum                   As Long
+  SubSystem                      As Integer
+  DLLFlags                       As Integer
+  StackReservedSize              As Long
+  StackReservedSize64              As Long
+  StackCommitSize                As Long
+  StackCommitSize64                As Long
+  HeapReserveSize                As Long
+  HeapReserveSize64                As Long
+  HeapCommitSize                 As Long
+  HeapCommitSize64                 As Long
+  LoaderFlags                    As Long
+  NumberofDataDirectories        As Long
+'end of NTOPT Header
+  ExportTableAddress             As Long
+  ExportTableAddressSize         As Long
+  ImportTableAddress             As Long
+  ImportTableAddressSize         As Long
+  ResourceTableAddress           As Long
+  ResourceTableAddressSize       As Long
+  ExceptionTableAddress          As Long
+  ExceptionTableAddressSize      As Long
+  SecurityTableAddress           As Long
+  SecurityTableAddressSize       As Long
+  BaseRelocationTableAddress     As Long
+  BaseRelocationTableAddressSize As Long
+  DebugDataAddress               As Long
+  DebugDataAddressSize           As Long
+  CopyrightDataAddress           As Long
+  CopyrightDataAddressSize       As Long
+  GlobalPtr                      As Long
+  GlobalPtrSize                  As Long
+  TLSTableAddress                As Long
+  TLSTableAddressSize            As Long
+  LoadConfigTableAddress         As Long
+  LoadConfigTableAddressSize     As Long
+  
+  BoundImportsAddress            As Long
+  BoundImportsAddressSize        As Long
+  IATAddress                     As Long
+  IATAddressSize                 As Long
+
+  DelayImportAddress             As Long
+  DelayImportAddressSize         As Long
+  COMDescriptorAddress           As Long
+  COMDescriptorAddressSize       As Long
+  
+  ReservedAddress                As Long
+  ReservedAddressSize            As Long
+  
+'  Gap                            As String * &H28&
+  Sections(64)                   As Section
+End Type
+
+
 ' ------- Additional API declarations ---------------
 Public Const IMAGE_ORDINAL_FLAG = &H80000000
 
@@ -212,6 +303,10 @@ Public Const DATA_SECTION& = 1
 
 Public PE_info As New PE_info
 Public PE_Header As PE_Header
+Public PE_Header64 As PE_Header64
+
+Public IsPE64 As Boolean
+
 'Public file As New FileStream
 Public file_readonly As New FileStream
 'Public FileName As New ClsFilename

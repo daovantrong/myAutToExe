@@ -9,6 +9,15 @@ Begin VB.Form FrmFuncRename
    ScaleHeight     =   9165
    ScaleWidth      =   12510
    StartUpPosition =   3  'Windows Default
+   Begin VB.CheckBox Chk_DontDeleteFunctions 
+      Caption         =   "Keep Functions"
+      Height          =   495
+      Left            =   9360
+      Style           =   1  'Graphical
+      TabIndex        =   27
+      Top             =   645
+      Width           =   855
+   End
    Begin VB.ListBox List_Fn_String_Org 
       Appearance      =   0  'Flat
       Height          =   4515
@@ -42,7 +51,7 @@ Begin VB.Form FrmFuncRename
          Width           =   2775
       End
       Begin VB.CommandButton Cmd_FindNext_Inc 
-         Caption         =   "Find next"
+         Caption         =   "Find n&ext"
          Height          =   255
          Left            =   2880
          TabIndex        =   22
@@ -87,7 +96,7 @@ Begin VB.Form FrmFuncRename
          Width           =   2775
       End
       Begin VB.CommandButton Cmd_FindNext_Org 
-         Caption         =   "Find next"
+         Caption         =   "Find &next"
          Height          =   255
          Left            =   2805
          TabIndex        =   18
@@ -124,7 +133,7 @@ Begin VB.Form FrmFuncRename
       Width           =   2175
    End
    Begin VB.CommandButton Cmd_Remove_assign 
-      Caption         =   "v  Remove func assignment  v"
+      Caption         =   "v  &Remove func assignment  v"
       Height          =   375
       Left            =   5040
       TabIndex        =   11
@@ -141,7 +150,7 @@ Begin VB.Form FrmFuncRename
       Width           =   2175
    End
    Begin VB.CommandButton Cmd_DoSearchAndReplace 
-      Caption         =   "Apply search and replace"
+      Caption         =   "A&pply search and replace"
       Enabled         =   0   'False
       Height          =   495
       Left            =   7080
@@ -150,7 +159,7 @@ Begin VB.Form FrmFuncRename
       Width           =   2295
    End
    Begin VB.CommandButton Cmd_AddSearchAndReplace 
-      Caption         =   "^Add func search 'n' replace^"
+      Caption         =   "^&Add func search 'n' replace^"
       Height          =   375
       Left            =   1560
       TabIndex        =   10
@@ -226,7 +235,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.CommandButton cmd_org_reload 
       Appearance      =   0  'Flat
-      Caption         =   "Reload"
+      Caption         =   "Reload &Target"
       Height          =   315
       Left            =   0
       TabIndex        =   2
@@ -235,7 +244,7 @@ Begin VB.Form FrmFuncRename
    End
    Begin VB.CommandButton cmd_inc_reload 
       Appearance      =   0  'Flat
-      Caption         =   "Reload"
+      Caption         =   "Reload &Include"
       Height          =   330
       Left            =   6120
       TabIndex        =   3
@@ -243,7 +252,7 @@ Begin VB.Form FrmFuncRename
       Width           =   1815
    End
    Begin VB.CommandButton cmd_Save 
-      Caption         =   "Save"
+      Caption         =   "&Save"
       Height          =   615
       Left            =   7080
       TabIndex        =   7
@@ -251,7 +260,7 @@ Begin VB.Form FrmFuncRename
       Width           =   855
    End
    Begin VB.CommandButton cmd_Load 
-      Caption         =   "Load"
+      Caption         =   "&Load"
       Height          =   615
       Left            =   7920
       TabIndex        =   8
@@ -269,10 +278,10 @@ Begin VB.Form FrmFuncRename
    Begin VB.Line Line 
       BorderWidth     =   3
       Index           =   2
-      X1              =   2520
-      X2              =   8280
-      Y1              =   285
-      Y2              =   885
+      X1              =   2760
+      X2              =   8520
+      Y1              =   240
+      Y2              =   840
    End
    Begin VB.Line Line 
       BorderWidth     =   3
@@ -371,7 +380,8 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
       Exit Sub
    End If
  
- 
+   Dim myRegEx As New RegExp
+   
  ' Open file
    Dim File_Org As New FileStream
    Dim SearchAndReplBuff$
@@ -381,7 +391,7 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
       .CloseFile
    End With
    
- 'Search and Replace
+ ' Search and Replace
    Dim SearchAndReplaceJob_Line$
    Dim SearchAndReplace_LookFor$
    Dim SearchAndReplace_ReplaceWith$
@@ -390,6 +400,9 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
    Dim MousePointer_Backup%
    MousePointer_Backup = MousePointer
    MousePointer = vbHourglass
+
+   Dim KeepFunctions As Boolean
+   KeepFunctions = (Chk_DontDeleteFunctions = vbChecked)
    
    With List_Fn_Assigned
       Dim ListItemIdx%
@@ -398,36 +411,68 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
          
          Dim tmp
          tmp = Split(SearchAndReplaceJob_Line, FN_ASSIGNED_FUNC_REPL_SEP)
+         
+         Debug.Assert UBound(tmp) = 2
+         
          SearchAndReplace_LookFor = tmp(0)
          SearchAndReplace_ReplaceWith = tmp(1)
          SearchAndReplace_Include = tmp(2)
       
        ' Delete Function (& insert include)
          Dim FunctionBody_ReplaceText$
-         FunctionBody_ReplaceText = ";  Func " & SearchAndReplace_ReplaceWith
+         FunctionBody_ReplaceText = IIf(KeepFunctions, "", ";  ") & _
+                                    "Func " & SearchAndReplace_ReplaceWith
          
          If SearchAndReplace_Include <> "" Then
             '";" & String(79, "=") &
-            FunctionBody_ReplaceText = vbCrLf & vbCrLf & "#include <" & SearchAndReplace_Include & ">" & vbCrLf & FunctionBody_ReplaceText
-            Log "Deleting Func '" & SearchAndReplace_LookFor & "' & adding include '" & SearchAndReplace_Include & "'"
+            
+            Dim IncludeLine$
+            IncludeLine = vbCrLf & vbCrLf & _
+                           IIf(KeepFunctions, ";", "") & _
+                           "#include <" & SearchAndReplace_Include & ">" & _
+                            vbCrLf
+            
+            FunctionBody_ReplaceText = IncludeLine & FunctionBody_ReplaceText
+'            Log "Deleting Func '" & SearchAndReplace_LookFor & "' & adding include '" & SearchAndReplace_Include & "'"
+             Log "Adding include '" & SearchAndReplace_Include & "'"
          Else
-            Log "Deleting Func " & SearchAndReplace_LookFor
+
+'            Log "Deleting Func " & SearchAndReplace_LookFor
          End If
          
          
          
-         strCropAndDelete SearchAndReplBuff, _
+         
+       ' Delete old function
+       
+'OLD         strCropAndDelete SearchAndReplBuff, _
                            vbCrLf & vbCrLf & "Func " & SearchAndReplace_LookFor, _
                            "EndFunc" & vbCrLf, , , _
                            FunctionBody_ReplaceText
+         With myRegEx
+            If KeepFunctions = False Then
+                  
+               myRegEx.Pattern = RE_NewLine & RE_NewLine & _
+                                    RE_WSpace("Func", SearchAndReplace_LookFor) & _
+                                       RE_AnyCharsNL & _
+                                    "EndFunc" & RE_AnyChars & _
+                                 RE_NewLine
+            Else
+               myRegEx.Pattern = RE_WSpace("Func", SearchAndReplace_LookFor)
+            
+            End If
+                          
+            SearchAndReplBuff = .Replace(SearchAndReplBuff, RE_Replace_Literal(FunctionBody_ReplaceText))
+         End With
        
-       
-       ' Replace all
+       ' Replace all function names
          Dim ReplacementsDone&
          ReplacementsDone = &H7FFFFFFF
          ReplaceDo SearchAndReplBuff, SearchAndReplace_LookFor, SearchAndReplace_ReplaceWith, 1, ReplacementsDone
+         
 '         .List(ListItemIdx) = ReplacementsDone & vbTab & .List(ListItemIdx)
-         Log ReplacementsDone & " occurence of " & SearchAndReplaceJob_Line & " found & replaced."
+         
+         Log ReplacementsDone & " occurence replaced: " & SearchAndReplaceJob_Line
          
        ' Mark unused functions with ;;
          If ReplacementsDone = 0 Then
@@ -435,6 +480,7 @@ On Error GoTo Cmd_DoSearchAndReplace_Click_Err
          End If
       Next
    End With
+   
    
    MousePointer = MousePointer_Backup
 '   Cmd_DoSearchAndReplace.Enabled = False
@@ -996,33 +1042,43 @@ Private Sub RemoveComments(Textbox As Textbox) 'Strings As Variant)
   ' /r => carriage return @CR, chr(13)   -   /n => linefeed        @LF, chr(10)
   ' 2 - in Windows it's @CR@LF        -   1 - in Linux/Unix it's just @LF
   ' 0 - at the end of the file there is none of these
-   Const LineBreak As String = "\r?\n?"
    Const WhiteSpaces As String = "\s*"
 
 ' LineComment_EntiredLine should include the LineBreak in the match -> so whole line
   ' can be deleted - while at 'NotEntiredLineComments' the line break is keept as it is.
   ' BlockCommentEnd is in there for the case there's a line like this: " #ce ;some comment"
-   Const LineComment As String = LineBreak & WhiteSpaces & ";[^\r\n]*"
+   Const LineComment As String = RE_NewLine & WhiteSpaces & ";[^\r\n]*"
    
 
-   Const BlockCommentStart As String = LineBreak & WhiteSpaces & "\#c(?:s|omments-start)"
+   Const BlockCommentStart As String = RE_NewLine & WhiteSpaces & "\#c(?:s|omments-start)"
    Const BlockCommentEnd As String = "\#c(?:e|omments-end)"
    Const BlockComment As String = BlockCommentStart & "(?:" & _
-                        StringPattern & "|" & "." & _
+                        "(?:" & StringPattern & ")*" & RE_AnyCharNL & "?" & _
                         ")*?" & BlockCommentEnd
 
-     
+'Strange 'bug' that might occure on other RegExp to
+'"(?:[\S\s]*?)*?" causes a Memory Error while
+'"(?:[\S\s]?)*?" works
+'
+
+
    Dim myRegExp As New RegExp
    With myRegExp 'New RegExp
       .Global = True
       .MultiLine = True
-            
+
       .Pattern = "(?:" & LineComment & ")" & _
-                 "|" & BlockComment & "|" & _
+                 "|" & BlockComment '& "|" & _
                  "(" & StringPattern & ")"
       
+'      Debug.Print Textbox.Text
+'      Debug.Print "_________________________________"
+'      On Error Resume Next
+'      Debug.Print .Replace(Textbox.Text, "") '$1")
+'      If Err Then Stop
+      
      'Remove Comments
-      Textbox.Text = .Replace(Textbox.Text, "$1")
+      Textbox.Text = .Replace(Textbox.Text, "") '$1")
       
 
    End With
@@ -1054,19 +1110,46 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
      
    If (List_Fn_Inc.ListCount = 0) Or (List_Fn_Org.ListCount = 0) Then Exit Function
    
- ' Validate Arguments
+ ' Get FuncOldName
+   Dim FuncOldName$, FuncOldNameIdx&
+   With List_Fn_Org
+   
+     'Cut at '(' of for ex Func MyNewFunc(Arg1,arg2...
+      FuncOldName = Split(.Text, "(")(0)
+      FuncOldNameIdx = .ItemData(.ListIndex)
+   End With
+   
+ ' Get FuncNewName
+   Dim FuncNewName$, FuncNewNameIdx&
+   With List_Fn_Inc
+   
+      FuncNewName = Split(.Text, "(")(0)
+      FuncNewNameIdx = .ItemData(.ListIndex)
+      
+   End With
+   
+   Dim Logtmp$
+   Logtmp = " " & FuncOldName & " <= " & FuncNewName
+   
+ ' ===== Validate Arguments =====
    Dim numArgOrg&, numArgInc&
       numArgOrg = GetNumOccurrenceIn(List_Fn_Org.Text, ",") + 1
       numArgInc = GetNumOccurrenceIn(List_Fn_Inc.Text, ",") + 1
    If numArgOrg <> numArgInc Then
-      If bQuietMode Then Exit Function
+      If bQuietMode Then
+         Log "Rejected - function argument differ:" & Logtmp
+         Exit Function
+      End If
       If vbYes <> MsgBox("Number of argument of both function differs( " & numArgOrg & " <> " & numArgInc & " )." & vbCrLf & _
                          "Add them anyway?", vbQuestion + vbYesNoCancel + vbDefaultButton2, "Attention") Then
+         Log "Rejected by user function argument differ" & Logtmp
          Exit Function
       End If
    End If
    
- ' Validate Strings
+   
+   
+ ' ===== Validate Strings =====
    Dim fn_inc As MatchCollection
    GetStrings Txt_Fn_Inc, fn_inc
    
@@ -1074,47 +1157,62 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
    GetStrings Txt_Fn_Org, fn_org
    
    If RE_MatchesCompare(fn_org, fn_inc) = False Then
-      If bQuietMode Then Exit Function
-'      FrmFuncRename_StringMismatch.Create fn_org, fn_inc
-'      FrmFuncRename_StringMismatch.Show vbModal
-      If vbNo = MsgBox("Local strings don't match continue anyway?", vbYesNo + vbDefaultButton2) Then
+      If bQuietMode Then
+         Log "Rejected - contained strings differ" & Logtmp
+         Exit Function
+      End If
+      
+      With FrmFuncRename_StringMismatch
+         .Create fn_org, fn_inc
+         .Show vbModal
+         
+         Dim result As AcceptResult_enum
+         result = .AcceptResult
+         
+         Log Switch( _
+            (result = Result_False), "Rejected by user - contained strings differ", _
+            (result = Result_True), "Accepted by user", _
+            (True), "ERROR decision undefined.") & Logtmp
+
+      End With
+      
+      If result = Result_False Then
+'      If vbNo = MsgBox("Local strings don't match continue anyway?", vbYesNo + vbDefaultButton2) Then
+         Exit Function
+      ElseIf result = Result_True Then
+      Else
+'         Stop
          Exit Function
       End If
    End If
    
   'Add S&R item
-   Dim FuncOldName$, FuncOldNameIdx&
-   With List_Fn_Org
-   
-     'Cut at '(' of for ex Func MyNewFunc(Arg1,arg2...
-      FuncOldName = Split(.Text, "(")(0)
-      FuncOldNameIdx = .ItemData(.ListIndex)
-      Listbox_removeCurrentItemAndSelectNext List_Fn_Org
-   End With
    
    
-   Dim FuncNewName$, FuncNewNameIdx&
-   With List_Fn_Inc
+   Listbox_removeCurrentItemAndSelectNext List_Fn_Org
+   Listbox_removeCurrentItemAndSelectNext List_Fn_Inc
    
-      FuncNewName = Split(.Text, "(")(0)
-      FuncNewNameIdx = .ItemData(.ListIndex)
-      Listbox_removeCurrentItemAndSelectNext List_Fn_Inc
-      
-   End With
    
    
    
    With List_Fn_Assigned
    
       .AddItem FuncOldName & FN_ASSIGNED_FUNC_REPL_SEP & FuncNewName & FN_ASSIGNED_FUNC_REPL_SEP & Txt_Include
-      .ListIndex = .ListCount - 1
       
+'      If List_Fn_Inc.ListCount = 0 Then
+'       ' all includes added
+'        .AddItem ";#include <" & Txt_Include & ">"
+'      End If
+      
+      
+      .ListIndex = .ListCount - 1
             
       Txt_Include = ""
       
+      
 
       
-    ' Store Functionidx finding&display functionText on click
+    ' Store Functionidx finding & display function text on click
       List_Fn_Assigned_FuncIdxs.Add Array(FuncOldNameIdx, FuncNewNameIdx)
       .ItemData(.ListIndex) = List_Fn_Assigned_FuncIdxs.Count
    End With

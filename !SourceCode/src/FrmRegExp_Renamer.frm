@@ -9,6 +9,16 @@ Begin VB.Form FrmRegExp_Renamer
    ScaleHeight     =   8115
    ScaleWidth      =   11295
    StartUpPosition =   3  'Windows Default
+   Begin VB.CheckBox chk_Simple 
+      Caption         =   "Simple"
+      Height          =   375
+      Left            =   10320
+      Style           =   1  'Graphical
+      TabIndex        =   12
+      ToolTipText     =   "Enables Simple Mode - that do not adds 0001,0002... to each match"
+      Top             =   120
+      Width           =   855
+   End
    Begin VB.CommandButton Cmd_Test 
       Appearance      =   0  'Flat
       Caption         =   "&Test"
@@ -82,7 +92,7 @@ Begin VB.Form FrmRegExp_Renamer
       TabIndex        =   4
       Text            =   "<Drag some au3-file in here>"
       Top             =   120
-      Width           =   10935
+      Width           =   10095
    End
    Begin VB.TextBox txt_ReplaceString 
       Appearance      =   0  'Flat
@@ -108,7 +118,7 @@ Begin VB.Form FrmRegExp_Renamer
          Left            =   120
          MultiLine       =   -1  'True
          TabIndex        =   2
-         Text            =   "FrmRegExp_Renamer.frx":01E4
+         Text            =   "FrmRegExp_Renamer.frx":01AA
          Top             =   240
          Width           =   7935
       End
@@ -118,10 +128,18 @@ Begin VB.Form FrmRegExp_Renamer
          Left            =   120
          MultiLine       =   -1  'True
          TabIndex        =   1
-         Text            =   "FrmRegExp_Renamer.frx":020C
+         Text            =   "FrmRegExp_Renamer.frx":01D2
          Top             =   240
          Width           =   3735
       End
+   End
+   Begin VB.Label Label1 
+      Caption         =   """<RegExpSearchstring>"" -> ""<ReplaceString>"" ; Comments"
+      Height          =   255
+      Left            =   105
+      TabIndex        =   13
+      Top             =   405
+      Width           =   9135
    End
 End
 Attribute VB_Name = "FrmRegExp_Renamer"
@@ -154,7 +172,9 @@ Private Sub SeperateSearchReplacePattern()
       .MultiLine = True
       .IgnoreCase = True
       
-      .Pattern = """(.*)"" -> ""(.*)"" ;(.*)"
+      .Pattern = RE_WSpace("""(.*)""", "->", _
+                           """(.*)""", _
+                           RE_Group_NonCaptured(";(.*)") & "?")
       
       Set SearchReplacePattern = New Collection
       
@@ -174,6 +194,17 @@ Private Sub SeperateSearchReplacePattern()
    End With
 End Sub
 
+
+
+Private Sub chk_Simple_Click()
+   Refresh_Preview
+End Sub
+
+Private Sub Refresh_Preview()
+' Note: even If txt_Original is passed byref
+'       txt_Original.text is not change
+   Apply txt_Original
+End Sub
 
 
 Private Sub cmd_help_Click()
@@ -245,10 +276,7 @@ Private Sub Txt_FileName_Change()
       FileName = txt_FileName
    
       OpenAndFill FileName.FileName
-
-    ' Note: even If txt_Original is passed byref
-    '       txt_Original.text is not change
-      Apply txt_Original
+      Refresh_Preview
    End If
 
 End Sub
@@ -316,6 +344,24 @@ Private Sub FindMatches(Data$, RE_Search$) ' As MatchCollection
   End With
 
 End Sub
+
+
+Private Sub SimpleSearchReplace(Data$, RE_Search$, RE_Replace$) ' As MatchCollection
+   
+  
+   With New RegExp
+      .IgnoreCase = True
+      .Global = True
+      .MultiLine = False
+      
+      .Pattern = RE_Search
+      
+'      Dim SearchReplace_Matches As MatchCollection
+       Data = .Replace(Data, RE_Replace$)
+  End With
+
+End Sub
+
 
 'Attentions this function can be unreliable
 '   Match: "testme (test)"
@@ -397,62 +443,73 @@ Private Sub DoSearchReplace(Data$, RE_Search$, RE_Replace$, Optional Comments = 
    
    If Testonly Then Exit Sub
    
-   Dim Replace_FixData
-   RE_Replace_SplitMatches Data, SearchReplace_Matches, Replace_FixData
+   If chk_Simple.value = CheckBoxConstants.vbChecked Then
    
-   Dim VarCount&
-   VarCount = 1
+      SimpleSearchReplace Data, RE_Search$, RE_Replace$
+      
+   Else
    
-   Dim i
-   For i = LBound(Replace_FixData) To UBound(Replace_FixData) - 1 Step 2
+   
+      Dim Replace_FixData
+      RE_Replace_SplitMatches Data, SearchReplace_Matches, Replace_FixData
+      
+      Dim VarCount&
+      VarCount = 1
+      
+    ' Note Replace_FixData is an Array that contains in
+    ' the first field the match and in
+    ' the next field the data between
+    ' and so on
+      Dim i
+      For i = LBound(Replace_FixData) To UBound(Replace_FixData) - 1 Step 2
+         
+         
+         Dim StrToReplace_Old$
+         StrToReplace_Old = Replace_FixData(i + 1)
+         
+       ' Make New String / Replace
+         Dim StrToReplace_New$
+         StrToReplace_New = RE_Replace & H16(VarCount)
+               
+         Dim DupFinder As New Collection
+         On Error Resume Next
+         DupFinder.Add StrToReplace_New, StrToReplace_Old
+         If Err = 0 Then
+          ' Okay VarName is new and unique
+            Inc VarCount
+         Else
+          ' VarName already exists load existing
+            StrToReplace_New = DupFinder(StrToReplace_Old)
+         End If
+         
+         Replace_FixData(i + 1) = StrToReplace_New
+   
+      
+      Next
+      
+     'Join/Make New String(with replacements applied)
+      Data = Join(Replace_FixData, "")
       
       
-      Dim StrToReplace_Old$
-      StrToReplace_Old = Replace_FixData(i + 1)
-      
-    ' Make New String / Replace
-      Dim StrToReplace_New$
-      StrToReplace_New = RE_Replace & H16(VarCount)
-            
-      Dim DupFinder As New Collection
-      On Error Resume Next
-      DupFinder.Add StrToReplace_New, StrToReplace_Old
-      If Err = 0 Then
-       ' Okay VarName is new and unique
-         Inc VarCount
-      Else
-       ' VarName already exists load existing
-         StrToReplace_New = DupFinder(StrToReplace_Old)
-      End If
-      
-      Replace_FixData(i + 1) = StrToReplace_New
-
-   
-   Next
-   
-  'Join/Make New String(with replacements applied)
-   Data = Join(Replace_FixData, "")
-   
-   
-'   Dim DuplicatesFilter As New clsDuplicateFilter
-'   DuplicatesFilter.Clear
-'
-'
-'   Dim Match As Match
-'   Dim VarCount&
-'   VarCount = 0
-'
-'   For Each Match In SearchReplace_Matches
-'      With Match
-'         If DuplicatesFilter.IsUnique(.value) Then
-'            ReplaceDo Data, .value, RE_Replace & H16(VarCount)
-'            Inc VarCount
-'         End If
-'
-'      End With
-'
-'   Next
-   
+   '   Dim DuplicatesFilter As New clsDuplicateFilter
+   '   DuplicatesFilter.Clear
+   '
+   '
+   '   Dim Match As Match
+   '   Dim VarCount&
+   '   VarCount = 0
+   '
+   '   For Each Match In SearchReplace_Matches
+   '      With Match
+   '         If DuplicatesFilter.IsUnique(.value) Then
+   '            ReplaceDo Data, .value, RE_Replace & H16(VarCount)
+   '            Inc VarCount
+   '         End If
+   '
+   '      End With
+   '
+   '   Next
+   End If
    txt_Replace = Data
    
 '
@@ -521,7 +578,7 @@ Private Function Apply(ByRef Data$, Optional Testonly = False)
    Dim SearchReplaceItem As SubMatches
    For Each SearchReplaceItem In SearchReplacePattern
             
-     'Filter out to short search strings(like "." that are probably incompletet and only slowdown preview)
+     'Filter out to short search strings(like "." that are probably incomplete and only slowdown preview)
       If Len(SearchReplaceItem(Pattern_Search)) >= 5 Then
                
          
@@ -566,5 +623,5 @@ End Select
 End Sub
 
 Private Sub Txt_ReplaceString_Change()
-   Apply txt_Original
+   Refresh_Preview
 End Sub

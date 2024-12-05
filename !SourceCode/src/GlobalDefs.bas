@@ -36,8 +36,9 @@ Sub DoEventsSeldom()
 End Sub
 
 Sub DoEventsVerySeldom()
-   If Rnd < 0.0001 Then
-      DoEvents
+   If (GetTickCount() And &H7F) = 1 Then
+'   If Rnd < 0.00001 Then
+       DoEvents
    End If
 End Sub
 

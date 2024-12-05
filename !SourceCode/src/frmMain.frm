@@ -7,8 +7,17 @@ Begin VB.Form FrmMain
    ClientWidth     =   9300
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
+   OLEDropMode     =   1  'Manual
    ScaleHeight     =   9465
    ScaleWidth      =   9300
+   Begin VB.ListBox List_Positions 
+      Height          =   2010
+      Left            =   6840
+      TabIndex        =   15
+      Top             =   6960
+      Visible         =   0   'False
+      Width           =   1215
+   End
    Begin VB.Timer Timer_TriggerLoad 
       Enabled         =   0   'False
       Interval        =   100
@@ -32,10 +41,18 @@ Begin VB.Form FrmMain
       TabIndex        =   6
       Top             =   8520
       Width           =   9135
+      Begin VB.CommandButton cmd_scan 
+         Caption         =   "<<"
+         Height          =   255
+         Left            =   7605
+         TabIndex        =   16
+         Top             =   495
+         Width           =   375
+      End
       Begin VB.TextBox Txt_Scriptstart 
          Appearance      =   0  'Flat
          Height          =   285
-         Left            =   6960
+         Left            =   6720
          TabIndex        =   13
          ToolTipText     =   $"frmMain.frx":628A
          Top             =   480
@@ -130,9 +147,10 @@ Begin VB.Form FrmMain
       Top             =   120
       Width           =   9135
    End
-   Begin VB.ListBox List1 
+   Begin VB.ListBox ListLog 
       Height          =   2010
       Left            =   120
+      OLEDropMode     =   1  'Manual
       TabIndex        =   0
       ToolTipText     =   "Double click to see more !"
       Top             =   6480
@@ -144,6 +162,7 @@ Begin VB.Form FrmMain
       ItemData        =   "frmMain.frx":6321
       Left            =   120
       List            =   "frmMain.frx":6323
+      OLEDropMode     =   1  'Manual
       TabIndex        =   5
       Top             =   600
       Visible         =   0   'False
@@ -153,6 +172,7 @@ Begin VB.Form FrmMain
       Height          =   5775
       Left            =   120
       MultiLine       =   -1  'True
+      OLEDropMode     =   1  'Manual
       TabIndex        =   3
       Top             =   600
       Width           =   9135
@@ -183,6 +203,10 @@ Begin VB.Form FrmMain
       Begin VB.Menu mi_Forum 
          Caption         =   "&Forum"
       End
+   End
+   Begin VB.Menu mi_MD5_pwd_Lookup 
+      Caption         =   "Lookup Passwordhash"
+      Visible         =   0   'False
    End
 End
 Attribute VB_Name = "FrmMain"
@@ -221,7 +245,7 @@ Const MD5_CRACKER_URL$ = "http://hashkiller.com/api/api.php?md5="
 
 
 Sub FL_verbose(Text)
-   log_verbose H32(File.Position - 1) & " -> " & Text
+   log_verbose H32(File.Position) & " -> " & Text
 End Sub
 
 Sub log_verbose(TextLine$)
@@ -231,7 +255,7 @@ End Sub
 
 
 Sub FL(Text)
-   Log H32(File.Position - 1) & " -> " & Text
+   Log H32(File.Position) & " -> " & Text
 End Sub
 
 Public Sub LogSub(TextLine$)
@@ -247,14 +271,14 @@ End Sub
 '// log -Add an entry to the Log
 Public Sub Log(TextLine$)
 On Error Resume Next
-   List1.AddItem TextLine
-'   List1.AddItem H32(GetTickCount) & vbTab & TextLine
+   ListLog.AddItem TextLine
+'   ListLog.AddItem H32(GetTickCount) & vbTab & TextLine
  
  ' Process windows messages (=Refresh display)
-   If RangeCheck(List1.ListCount, 10000) Then
+   If RangeCheck(ListLog.ListCount, 10000) Then
        ' Scroll to last item ; when there are more than &h7fff items there will be an overflow error
       Dim ListCount&
-      List1.ListIndex = List1.ListCount - 1
+      ListLog.ListIndex = ListLog.ListCount - 1
       DoEvents
       
    ElseIf (Rnd < 0.1) Then
@@ -267,19 +291,23 @@ End Sub
 '// log_clear - Clears all log entries
 Public Sub Log_Clear()
 On Error Resume Next
-   List1.Clear
+   ListLog.Clear
 End Sub
 
 
 
 
 Private Sub Chk_ForceOldScriptType_Click()
-   Static Block_Chk_ForceOldScriptType_Click As Boolean
-   If Block_Chk_ForceOldScriptType_Click = False Then
-      Block_Chk_ForceOldScriptType_Click = True
+   Static value
+   Checkbox_TriStateToggle Chk_ForceOldScriptType, value
+End Sub
+Private Sub Checkbox_TriStateToggle(CheckBox As CheckBox, value)
+   Static Block_Click As Boolean
+   If Block_Click = False Then
+      Block_Click = True
       
-      With Chk_ForceOldScriptType
-         Static value
+      With CheckBox
+
          If value = vbGrayed Then
             value = vbUnchecked
          Else
@@ -289,15 +317,40 @@ Private Sub Chk_ForceOldScriptType_Click()
          
       End With
       
-      Block_Chk_ForceOldScriptType_Click = False
+      Block_Click = False
    End If
+End Sub
+
+Private Sub Chk_verbose_Click()
+   Static value
+   Checkbox_TriStateToggle Chk_verbose, value
+
 End Sub
 
 Private Sub Cmd_About_Click()
    FrmAbout.Show vbModal
 End Sub
 
-Private Sub cmd_MD5_pwd_Lookup_Click()
+Private Sub ListLogClear()
+   ListLog.Clear
+End Sub
+
+Private Sub ListLog_KeyUp(KeyCode As Integer, Shift As Integer)
+   Select Case KeyCode
+      Case vbKeyDelete, vbKeyBack
+         ListLogClear
+   End Select
+
+End Sub
+
+Private Sub ListLog_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
+   If Button = MouseButtonConstants.vbRightButton Then
+      ListLogClear
+   End If
+End Sub
+
+'Copies hash to clipboard and does an online query.
+Private Sub mi_MD5_pwd_Lookup_Click()
    Clipboard.Clear
    Clipboard.SetText MD5PassphraseHashText
 
@@ -359,7 +412,7 @@ Sub FormSettings_Load()
       
       Select Case TypeName(controlItem)
       Case "TextBox"
-         If (Txt Is txt_FileName) = False Then
+         If (controlItem Is Txt_Filename) = False Then
             TextBox_Load controlItem
          End If
 
@@ -382,18 +435,25 @@ Sub FormSettings_Save()
 End Sub
 
 
+Private Sub cmd_scan_Click()
+   LongValScan
+   List_Positions.Visible = True
+End Sub
+
 Private Sub Form_Load()
+
 '   Dim str$, i&
 '   Dim leni%
 '   Do
 '      BenchStart
-'      For i = 0 To 100000000
-'         leni = Len(str)
+'      For i = 0 To 5000000
+'         Dim a
+'         ArrayEnsureBounds a
 '
 '      Next
 '      BenchEnd
 '   Loop While True
-'
+
    
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
@@ -404,7 +464,7 @@ Private Sub Form_Load()
    txt_FILE_DecryptionKey_Validate True
    
    'Extent Listbox width
-   Listbox_SetHorizontalExtent List1, 6000
+   Listbox_SetHorizontalExtent ListLog, 6000
    
  
  ' Commandlinesupport   :)
@@ -416,11 +476,11 @@ Private Sub Form_Load()
   
   'Open the File that was set by the commandline
    If IsCommandlineMode Then
-      txt_FileName = FileName
+      Txt_Filename = FileName
+   Else
+    ' try Load file in the 'File textbox'
+      Timer_TriggerLoad.Enabled = True
    End If
-   
-  'try Load file in the 'File textbox'
-   Timer_TriggerLoad.Enabled = True
 
 End Sub
    
@@ -487,19 +547,19 @@ Public Function GetLogdata$()
    Dim LogData As New clsStrCat
    LogData.Clear
    Dim i
-   If (List1.ListCount >= 0) Then
-      For i = 0 To List1.ListCount
-         LogData.Concat (List1.List(i) & vbCrLf)
+   If (ListLog.ListCount >= 0) Then
+      For i = 0 To ListLog.ListCount
+         LogData.Concat (ListLog.List(i) & vbCrLf)
       Next
    Else
       For i = 0 To &H7FFE
-         LogData.Concat (List1.List(i) & vbCrLf)
+         LogData.Concat (ListLog.List(i) & vbCrLf)
       Next
       LogData.Concat "<Data cut due to VB-listbox.ListCount bug :( >"
       
-'   Do While List1.ListCount < 0
-'      LogData.Concat (List1.List(&H7FFF) & vbCrLf)
-'      List1.RemoveItem &H7FFF
+'   Do While ListLog.ListCount < 0
+'      LogData.Concat (ListLog.List(&H7FFF) & vbCrLf)
+'      ListLog.RemoveItem &H7FFF
 '   Loop
    
    End If
@@ -516,7 +576,14 @@ Private Sub Form_Unload(Cancel As Integer)
    End
 End Sub
 
-Private Sub List1_DblClick()
+
+
+Private Sub List_Positions_DblClick()
+   Txt_Scriptstart = List_Positions.Text
+   List_Positions.Visible = False
+End Sub
+
+Private Sub ListLog_DblClick()
    frmLogView.txtlog = GetLogdata()
    frmLogView.Show
 End Sub
@@ -550,12 +617,14 @@ Private Sub mi_SeperateIncludes_Click()
    Dim File$
    File = InputBox("Normally seperating includes is done automatically after you decompiled some au3.exe(of old none tokend format)." & vbCrLf & _
           "However that tool is useful in the case you have some decompiled *.au3 with these '; <AUT2EXE INCLUDE-START: C:\ ...' comments you like to process." & vbCrLf & vbCrLf & _
-          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'seperate au3 includes' on file", txt_FileName)
+          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'seperate au3 includes' on file", Txt_Filename)
    If File <> "" Then
       FileName.FileName = File
       SeperateIncludes
    End If
 End Sub
+
+
 
 
 
@@ -566,7 +635,7 @@ End Sub
 
 Private Sub Timer_TriggerLoad_OLEDrag_Timer()
    Timer_TriggerLoad_OLEDrag.Enabled = False
-   txt_FileName = FilePath_for_Txt
+   Txt_Filename = FilePath_for_Txt
 End Sub
 
 
@@ -609,16 +678,19 @@ End Sub
 
 Private Sub Txt_FileName_Change()
   'Avoid to be triggered during load settings
-   If txt_FileName.Enabled = False Then Exit Sub
+   If Txt_Filename.Enabled = False Then Exit Sub
   
    On Error GoTo Txt_Filename_err
-   If FileExists(txt_FileName) Then
+   
+   cmd_scan.Visible = FileExists(Txt_Filename)
+   If cmd_scan.Visible Then
+   'If FileExists(Txt_Filename) Then
       
      'Clear Log (expect when run via commandline)
-      If IsCommandlineMode = False Then List1.Clear
+      If IsCommandlineMode = False Then ListLog.Clear
       Txt_Script = ""
       
-      FileName = txt_FileName
+      FileName = Txt_Filename
       
       Log String(80, "=")
 '      log "           -=  " & Me.Caption & "  =-"
@@ -627,8 +699,6 @@ Private Sub Txt_FileName_Change()
          
       Decompile
          Log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
-'      For Each FileName In ExtractedFiles
-'         If FileName.Ext Like "*.au*" Then
          Log String(79, "=")
    
       
@@ -656,9 +726,6 @@ Private Sub Txt_FileName_Change()
 
       CheckScriptFor_COMPILED_Macro
  
-'        End If
-'      Next
-
 ' ErrorHandle for For-Each-Loop
 Err.Clear
 GoTo Txt_Filename_err
@@ -753,7 +820,28 @@ End Select
 End Function
 
 
+Private Sub Form_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+   File_DragDrop Data
+End Sub
+
+Private Sub List_Source_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+   File_DragDrop Data
+End Sub
+
+Private Sub ListLog_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+   File_DragDrop Data
+End Sub
+
+Private Sub Txt_Script_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+   File_DragDrop Data
+End Sub
+
 Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+   File_DragDrop Data
+End Sub
+
+Private Sub File_DragDrop(Data As DataObject)
+   
    On Error GoTo Txt_FileName_OLEDragDrop_err
    
    FilePath_for_Txt = Data.Files(1)

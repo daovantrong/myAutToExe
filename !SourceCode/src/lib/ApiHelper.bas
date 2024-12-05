@@ -107,6 +107,8 @@ On Error GoTo ShellEx_err
     Else
   'Commented out because sometimes there are false positives( PID get's invalid betweem Shell() and OpenProcess()
 '      RaiseDllError "ShellEx()", "OpenProcess", "PROCESS_QUERY_INFORMATION", 0, "PID: " & PID
+      Log "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
+      
 '      Err.Raise vbObjectError, , "OpenProcess() failed. GetLastError: 0x" & H32(Err.LastDllError)
     End If
 
