@@ -16,6 +16,9 @@ Attribute VB_Ext_KEY = "Top_Level" ,"Yes"
 Option Explicit
 Option Compare Text
 
+Const AU_NEWLINE$ = " _" & vbCrLf
+
+
 Dim DeObfu_FunctionNames As New Collection
 Dim NewScript$
 
@@ -41,19 +44,6 @@ End Sub
 
 
 
-'Private Function Eval(Expr As String) As String
-'   'Dim x  As MSScriptControl.ScriptControl
-'   'Set x = New MSScriptControl.ScriptControl
-'   Dim x As Object
-'   Set x = CreateObject("MSScriptControl.ScriptControl") 'regsvr32.exe <WINXP>\SYSTEM32\msscript.ocx
-'   x.Language = "VBScript"
-'
-'   Eval = x.Eval(Expr)
-'
-'   Set x = Nothing
-'
-'
-'End Function
 '
 'Sub ReBase_Array(ByRef Arr, Dim_Min, Optional Dim_Max)
 '
@@ -91,7 +81,7 @@ Private Sub DeObfuscate_Chr_Encode()
  
    Dim CHR_Command$
  ' for CHR_Commands for example "CHR(142+8082)"
-   CHR_Command = WSpace("CHR", "\(", Number, Operator, Number, "\)")
+   CHR_Command = RE_WSpace("CHR", "\(", Number, Operator, Number, "\)")
    
  
    Dim CHR_CommandElements$
@@ -102,7 +92,7 @@ Private Sub DeObfuscate_Chr_Encode()
  ' 'CHR(157-125) & CHR(10+101)' or
  ' 'CHR(157-125) & CHR(10+101) & ""
 
-   CHR_CommandElements = WSpace(CHR_Command & _
+   CHR_CommandElements = RE_WSpace(CHR_Command & _
                       "(", "&", CHR_Command, ")*" & _
                       "(", "&", """""){0,1}")
   
@@ -119,7 +109,7 @@ Private Sub DeObfuscate_Chr_Encode()
    With Chrs
       .IgnoreCase = True
       .Global = True
-      .Pattern = WSpace(CHR_Command)
+      .Pattern = RE_WSpace(CHR_Command)
    End With
  
 ' 'Break String into lines (but retain "_ "&CRLF as one line)
@@ -128,7 +118,7 @@ Private Sub DeObfuscate_Chr_Encode()
 '       .IgnoreCase = True
 '       .Global = True
 '       .MultiLine = True
-'       .Pattern = WSpace(".*", "[^_]", "\n")
+'       .Pattern = RE_WSpace(".*", "[^_]", "\n")
 '   End With
 '   Dim Lines_Match As MatchCollection
 '   Set Lines_Match = Lines.Execute(NewScript)
@@ -142,7 +132,7 @@ Private Sub DeObfuscate_Chr_Encode()
    Set ChrStringNew = New clsStrCat
  
  ' Merge lines with _ at the end
-   NewScript = Replace(NewScript, "_" & vbCrLf, "")
+   NewScript = Replace(NewScript, AU_NEWLINE, "")
 
  ' Break into lines and process them
    Dim ScriptLines
@@ -218,8 +208,21 @@ Private Sub DeObfuscate_Chr_Encode()
 End Sub
 
 
-
-'Private Sub OLD_DeObfuscate_Chr_Encode()
+'Private Function Eval(Expr As String) As String
+'   'Dim x  As MSScriptControl.ScriptControl
+'   'Set x = New MSScriptControl.ScriptControl
+'   Dim x As Object
+'   Set x = CreateObject("MSScriptControl.ScriptControl") 'regsvr32.exe <WINXP>\SYSTEM32\msscript.ocx
+'   x.Language = "VBScript"
+'
+'   Eval = x.Eval(Expr)
+'
+'   Set x = Nothing
+'
+'
+'End Function
+'
+'Private Sub DeObfuscate_Chr_Encode_Old()
 '
 '
 '
@@ -243,7 +246,7 @@ End Sub
 '
 '     'Seperated ChrStrings of each line
 '      Dim ChrStrings
-'      ChrStrings = Split(Line, "&""""")
+'      ChrStrings = Split(Line, " & """"")
 '
 '
 '     'If contains ChrStrings...
@@ -289,10 +292,190 @@ End Sub
 'End Sub
 
 
+Private Sub RE_Replace(ByRef Data$, SearchPattern$, ReplaceText$)
+   With New RegExp
+      .IgnoreCase = True
+      .Global = True
+      .Pattern = SearchPattern
+      
+      Data = .Replace(Data, ReplaceText)
+   End With
+End Sub
+
+Private Sub ReplaceCRLF_and_Tab_Chrs(ByRef Line$)
+
+         RE_Replace Line, RE_WSpace("Chr\(13\)", "&", "Chr\(10\)"), "@CRLF" & AU_NEWLINE
+         RE_Replace Line, "Chr\(13\)", "@CR" & AU_NEWLINE
+         RE_Replace Line, "Chr\(10\)", "@LF" & AU_NEWLINE
+         RE_Replace Line, "Chr\(9\)", "@TAB" & AU_NEWLINE
+
+End Sub
+
+
+Private Sub DeObfuscate_Chr_Encode_old()
+   
+
+' --- Prepare regular expression objects & search pattern ---
+   
+   Dim Number$
+   Number = "(\d{0,4})"
+   
+ 
+   Dim CHR_Command$
+ ' for CHR_Commands for example "CHR(142)" or "CHR(8082)"
+   CHR_Command = RE_WSpace("CHR", "\(", Number, "\)")
+   
+ 
+   Dim CHR_CommandElements$
+ ' One or more CHR_Commands for example "CHR(157) & CHR(10)"
+ ' used to separate & replace ChrStrings like
+ ' 'CHR(157)' or
+ ' 'CHR(157) & ""' or
+ ' 'CHR(157) & CHR(10)' or
+ ' 'CHR(157) & CHR(10) & ""
+
+   CHR_CommandElements = RE_WSpace(CHR_Command & _
+                      "(", "&", CHR_Command, ")*" & _
+                      "(", "&", """""){0,1}")
+  
+   Dim ChrStrings As New RegExp
+   With ChrStrings
+      .IgnoreCase = True
+      .Global = False
+      .Pattern = CHR_CommandElements
+      
+   End With
+ 
+   Dim Chrs As New RegExp
+ ' RegExp for separating Chrs like "CHR( '10' )"
+   With Chrs
+      .IgnoreCase = True
+      .Global = True
+      .Pattern = RE_WSpace(CHR_Command)
+   End With
+ 
+' 'Break String into lines (but retain "_ "&CRLF as one line)
+'   Dim Lines As New RegExp
+'   With Lines
+'       .IgnoreCase = True
+'       .Global = True
+'       .MultiLine = True
+'       .Pattern = RE_WSpace(".*", "[^_]", "\n")
+'   End With
+'   Dim Lines_Match As MatchCollection
+'   Set Lines_Match = Lines.Execute(NewScript)
+'
+'
+
+
+' --- Process Script ---
+
+   Dim ChrStringNew As clsStrCat
+   Set ChrStringNew = New clsStrCat
+ 
+ ' Merge lines with _ at the end
+   NewScript = Replace(NewScript, AU_NEWLINE, "")
+
+ ' Break into lines and process them
+   Dim ScriptLines
+   ScriptLines = Split(NewScript, vbCrLf)
+   
+   Dim Lines As Long
+   Lines = UBound(ScriptLines)
+   GUI_StatusBar_SetLines Lines
+ 
+  'Go through all Lines
+   Dim Line_idx
+   For Line_idx = 0 To Lines
+      Dim Line$
+      Line = ScriptLines(Line_idx)
+      GUI_StatusBar_SetLines Line_idx
+'      GUI_Show_Text Line_idx & ": " & ScriptLines(Line_idx)
+      
+    
+'    If Line_idx = 13245 Then Stop
+    
+  ' Used to detect if all chr-strings in a line were replaced
+  ' incase there is something like Chr(0) or Chr(9) this is increased
+    Dim ChrStrings_NoMoreMatches_Count&
+    ChrStrings_NoMoreMatches_Count = 0
+    
+    ' separate ChrString's
+      Do While True
+         Dim ChrStrings_Matches As MatchCollection
+         Set ChrStrings_Matches = ChrStrings.Execute(Line)
+    ' Exit (and process next line) if there are no ChrStrings
+      If ChrStrings_Matches.Count = ChrStrings_NoMoreMatches_Count Then Exit Do
+
+        ChrStringNew.Clear
+         
+      ' separate Chr's
+        Dim bSkipChrStringReplace As Boolean
+        bSkipChrStringReplace = False
+         
+        Dim Chrs_Match As Match
+        For Each Chrs_Match In Chrs.Execute(ChrStrings_Matches(0))
+
+            Dim ChrCode&
+            ChrCode = Chrs_Match.SubMatches(0)
+          ' Filter out like  09-Tab or
+            Select Case ChrCode
+            
+            Case 0 To 31
+            
+'            ' Concat Chrs to a ChrString
+'              ChrStringNew.Concat """ & Chr(" & ChrCode & " ) &"""
+              
+            ' Hope that this is sufficient
+              bSkipChrStringReplace = True
+              Inc ChrStrings_NoMoreMatches_Count
+              Exit For
+            
+            Case Else
+            ' Concat Chrs to a ChrString
+              ChrStringNew.Concat ChrW(ChrCode)
+            End Select
+           
+         Next Chrs_Match
+       
+       ' replace ChrString in line
+         If bSkipChrStringReplace = False Then
+            ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
+         End If
+       
+       ' save modified Line
+         ScriptLines(Line_idx) = Line
+         
+      Loop ' next ChrString in Line
+
+      ' Apply macro's To Line (execute only if there were really some chr found)
+      If ChrStrings_NoMoreMatches_Count >= 1 Then
+         ReplaceCRLF_and_Tab_Chrs Line
+       
+       ' save modified Line
+         ScriptLines(Line_idx) = Line
+
+      End If
+      
+      GUI_Show_Text Line_idx & ": " & ScriptLines(Line_idx)
+      DoEventsSeldom
+      
+   Next Line_idx
+
+
+  'Join lines back to a script
+   NewScript = Join(ScriptLines, vbCrLf)
+
+End Sub
+
+
+
+
+
 Private Sub DeObfuscate_Encodeit()
 
  ' Merge lines with _ at the end
-   NewScript = Replace(NewScript, "_" & vbCrLf, "")
+   NewScript = Replace(NewScript, AU_NEWLINE, "")
 
 
  ' ======== Var Replace
@@ -414,13 +597,13 @@ Private Sub DeObfuscate_Encodeit()
   For FuncIdx = LBound(Funcs) + 1 To UBound(Funcs)
 
    ' getName
-   Dim funcName$
-   funcName = Trim(Split(Funcs(FuncIdx), "(")(0))
+   Dim FuncName$
+   FuncName = Trim(Split(Funcs(FuncIdx), "(")(0))
    
 '   Debug.Assert (FnDeCryHexToStr <> funcName) ' and (FuncIdx=UBound(Funcs)-2)
 
    ' add name for replace later
-   DeObfu_FunctionNames.Add funcName
+   DeObfu_FunctionNames.Add FuncName
 
    ' seperate Body & rest
    Dim funcBody$, funcRest$, tmp
@@ -429,7 +612,7 @@ Private Sub DeObfuscate_Encodeit()
    funcRest = tmp(1)
 
    'replace
-   DeObfu_ReplaceFnArgs funcBody, funcName
+   DeObfu_ReplaceFnArgs funcBody, FuncName
    ' writeback
 
    tmp(0) = funcBody
@@ -475,8 +658,8 @@ Log "Trying to DeObfuscate : " & FileName
       DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
    ElseIf NewScript Like "*""4074656D70646972""*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_VANZANDE
-
-   ElseIf NewScript Like "*4054656D70446972*" Then
+  ' "@TempDir"
+   ElseIf NewScript Like "*['""]4054656D70446972['""]*" Then
       DetectScriptObfuscated = DE_OBFUSC_VANZANDE_VER24
 
 
@@ -489,6 +672,9 @@ Log "Trying to DeObfuscate : " & FileName
       
    ElseIf NewScript Like "*Chr(##?[-+]?##*" Then
       DetectScriptObfuscated = DE_OBFUSC_TYPE_CHR_ENCODE
+      
+   ElseIf NewScript Like "*Chr(##) & """"*" Then
+      DetectScriptObfuscated = DE_OBFUSC_TYPE_CHR_ENCODE_OLD
       
    Else
       DetectScriptObfuscated = DE_OBFUSC_TYPE_NOT_OBFUSC
@@ -533,6 +719,11 @@ Public Sub DeObfuscate()
       Case DE_OBFUSC_TYPE_CHR_ENCODE
          Log "Deobfuscating Chr_Encode..."
          DeObfuscate_Chr_Encode
+         
+      Case DE_OBFUSC_TYPE_CHR_ENCODE_OLD
+         Log "Deobfuscating Chr_Encode(old style)..."
+         DeObfuscate_Chr_Encode_old
+      
    End Select
    
    SaveScriptData NewScript
@@ -553,6 +744,7 @@ Private Sub DeObfuscate_VanZande1_0_24()
 '                                       Execute(Binarytostring('0x457865637574652842696E6...
 '                                                                 Execute(Binarytostring('0x537472696E6753706C6974...
 '                                                                                           StringSplit(FileRead($AF123123...
+   
    
    Dim tmp2$
    tmp2 = NewScript
@@ -583,7 +775,7 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
 
 
  ' Merge lines with _ at the end + Add vbCrLf after last EndFunc
-   NewScript = Replace(NewScript, " _" & vbCrLf, "") ' & vbCrLf
+   ReplaceDo NewScript, AU_NEWLINE, "" ' & vbCrLf
    
 ''Correct case (may it's safer to let tidy do)
 '   NewScript = Replace(NewScript, "Func ", "Func ", , , vbTextCompare)
@@ -594,22 +786,21 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
    
    Dim OSString$
    OSString = strCropWithSeek(NewScript, "($", "[")
-   NewScript = Replace(NewScript, OSString, "Os", , , vbTextCompare)
-
-   NewScript = Replace(NewScript, "$Os [", "$Os[", , , vbTextCompare)
+   ReplaceDo NewScript, OSString, "Os", , , vbTextCompare
+   
+   ReplaceDo NewScript, "$Os [", "$Os[", , , vbTextCompare
 
 
 '=== Replace Dim Const and Globals
-'BenchStart
-   DeObfu_ReplaceGlobals NewScript
-'BenchEnd
-' ReplaceDoMulti 49297 ;51078
-' ReplaceDo 23188
-' Empty 9719  9625  9641
 
-   DeObfu_ReplaceDimsAndConst NewScript
-
+   GUI_Show_Text NewScript
    
+   DeObfu_ReplaceGlobals NewScript
+   GUI_Show_Text NewScript
+'   qw
+   
+   GUI_Show_Text NewScript
+   DeObfu_ReplaceDimsAndConst NewScript
    GUI_Show_Text NewScript
 
    Log "Okay. Obfucated script loaded and displayed."
@@ -647,19 +838,52 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
     
     Dim StringTBLFile As New FileStream
     StringTBLFile.Create StringTBLFileName.FileName
+    StringTBLFile.Position = 0
+    
+    Dim TBLFileData As New StringReader
+    TBLFileData.Data = StringTBLFile.FixedString(-1)
+    StringTBLFile.CloseFile
+
+' === Find Stringseperator ===
+   Dim TBLStringSeperator2$
+   TBLStringSeperator2 = TBLFindStringSeperator(TBLFileData)
+   
+' === Check TBLStringSeperator ===
+   If IsValidSeperator(TBLFileData, TBLStringSeperator) Then
+      ' okay
+   ElseIf IsValidSeperator(TBLFileData, TBLStringSeperator) Then
+      
+      Do While True
+         TBLStringSeperator = InputBox("Please enter TBLStringSeperator that is used in the *.tbl file to seperate the HexStrings", "Finding TBLStringSeperator failed", TBLStringSeperator)
+         Log "Finding TBLStringSeperator failed. Asked user and got: " & TBLStringSeperator
+         
+         If IsValidSeperator(TBLFileData, TBLStringSeperator) = False Then
+            If vbYes = MsgBox("The entered TBLStringSeperator still seems to be wrong. Contiune anyway?", vbYesNo + vbDefaultButton2) Then Exit Do
+         Else
+            Exit Do
+         End If
+      Loop
+      TBLStringSeperator = TBLStringSeperator2
+
+   Else
+         Log "TBLStringSeperator seems to be wrong using heuristic one: " & TBLStringSeperator2
+         TBLStringSeperator = TBLStringSeperator2
+   End If
+   
     
    'Read Stringtable
     Dim StringTBL
     ReDim StringTBL(1 To 1)
-    
       Dim Line
-      StringTBLFile.Position = 0
-      For Each Line In Split(StringTBLFile.FixedString(-1), TBLStringSeperator)
+      For Each Line In Split(TBLFileData.Data, TBLStringSeperator)
          StringTBL(UBound(StringTBL)) = HexStringToString(Line)
          ReDim Preserve StringTBL(1 To UBound(StringTBL) + 1)
       Next
-      StringTBLFile.CloseFile
-      ReDim Preserve StringTBL(1 To UBound(StringTBL) - 1)
+     'delete last two elements
+     '  the last is always empty because Array is extented in advanced by ReDim Preserve
+     '  the prelast is always "" because the tbl ends with the string seperator
+     '      split takes this a start of the (last)element, that start after the stringseperator and ends at EOF)
+      ReDim Preserve StringTBL(1 To UBound(StringTBL) - 1 - 1)
 
 
    
@@ -681,14 +905,17 @@ Log "Restoring StringNames in ..."
    Dim Stat_NumLocal&, Stat_NumAtAll&
    Stat_NumAtAll = 0
 
-
-BenchStart
-  
+ 
    Dim EndToken$, NewScript2
    EndToken = "EndFunc" & vbCrLf
   
    NewScript2 = Split(NewScript, "Func ")
    Dim i&
+   
+ ' add new line at the end (to ensure function ends with "ENDFUNC\n" )
+   NewScript2(UBound(NewScript2)) = NewScript2(UBound(NewScript2)) & vbCrLf
+   
+   
    Dim iter: i = 0
    For iter = LBound(NewScript2) To UBound(NewScript2)
    Dim ScriptFunction$
@@ -710,10 +937,7 @@ BenchStart
          FunctionName = strCrop1(ScriptFunction, "", "(")
          DeObfu_FunctionNames.Add FunctionName
          Log "FunctionName: " & FunctionName
-       
-       ' === Replace Locals ====
-         DeObfu_ReplaceLocals ScriptFunction
-        
+               
        ' === Replace FunctionArguments  ====
          DeObfu_ReplaceFnArgs ScriptFunction, FunctionName
          
@@ -725,21 +949,32 @@ BenchStart
            '... apply String Restore
             Dim index
             For Each index In MainIndexes
-              DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), CStr(StringTBL(index))
+              DeObfu_ReplaceStrings ScriptFunction, LocalStringNames(index), StringTBL(index)
             Next
          End If
+
+
 '         GUI_Show_Text ScriptFunction
+         
 
          
          
       End If
       
  ' Exit if FnNameLoadTBL is reached
-   If FunctionName = FnNameLoadTBL Then Exit For
+   If FunctionName = FnNameLoadTBL Then
+     'Don't exit if this function is not at the expected place
+     '(only 3 other Van Zande functions(that can be deleted) should follow)
+      If i = UBound(NewScript2) - 3 Then
+      
+       ' Cut of rest after FnNameLoadTBL
+         ReDim Preserve NewScript2(i - 1)
+  
+         Exit For
+      End If
+   End If
       
       
-
-
 '   Debug.Assert "A2600102853" <> FunctionName
 
      
@@ -761,6 +996,7 @@ BenchStart
 '         'maybe also triggered by some normal 'IsDeclared'
 '         Debug.Assert InStr(1, ScriptFunction, "IsDeclared", vbTextCompare) = 0
       End If
+         
          
     ' Statistic Counter for String in Current function
       Stat_NumLocal = 0
@@ -813,19 +1049,28 @@ BenchStart
 '                 Debug.Print LocalStringNames(index), StringTBL(index), index
              End If
 
-          
-              
-           'Replace Strings
-          ' In ScriptFunction code Replace all "$SA3160B01D3E" with for exsample "Wrong Name Entered!"
-'            Debug.Print "Number(" & LocalStringNames(index) & ")", StringTBL(index)
-            DeObfu_ReplaceStrings ScriptFunction, CStr(LocalStringNames(index)), CStr(StringTBL(index))
+             'Replace Strings
+            ' In ScriptFunction code Replace all "$SA3160B01D3E" with for exsample "Wrong Name Entered!"
+         '            Debug.Print "Number(" & LocalStringNames(index) & ")", StringTBL(index)
+              DeObfu_ReplaceStrings ScriptFunction, LocalStringNames(index), StringTBL(index)
+         
+
+
+'GUI_Show_Text CStr(index)
+'DoEvents
 
               
          Next
 
+              
+      
       Stat_NumLocal = Stat_NumLocal + UBound(GlobalStringDef)
       Loop While True
-      
+
+
+'Bench no stringReplace    1219
+'Old stringReplace         15172 14813
+'
       Log "  Local strings: " & Stat_NumLocal
       Stat_NumAtAll = Stat_NumAtAll + Stat_NumLocal
     
@@ -842,19 +1087,24 @@ BenchStart
    i = i + 1
    Next
   
-Log "Strings at all: " & Stat_NumAtAll
+Log "Local strings at all: " & Stat_NumAtAll
 Log "strings in Tbl: " & UBound(StringTBL)
-  
-' Cut of rest after FnNameLoadTBL
-  ReDim Preserve NewScript2(i - 1)
   
   
    NewScript = Join(NewScript2, vbCrLf & "Func ")
-'  Stop
-  
   
   '=== Replace Functionname
+   Log "Renameing FunctionNames..."
    DeObfu_ReplaceFunctionNames NewScript
+  
+  
+   ' === Replace Locals ====
+     DeObfu_ReplaceLocals NewScript
+   
+   ' === Scopeless Locals ====
+     z_DeObfu_ReplaceX2 NewScript, "", "Var"
+   
+  
 
 
 '  '=== Replace Global Strings
@@ -865,12 +1115,18 @@ Log "strings in Tbl: " & UBound(StringTBL)
 '  Next
 'BenchEnd
 
-  
-  'Used String
+ 
+  'unUsed String
 '  Dim i&
-   Log "UnAssigned/Unused strings [Index, Value]: "
    For i = LBound(StringTBL) To UBound(StringTBL)
       If LocalStringNames(i) = "" Then
+         
+         Dim bBlocker_ShowOnlyOnce As Boolean
+         If bBlocker_ShowOnlyOnce = False Then
+            Log "UnAssigned/Unused strings [Index, Value]: "
+            bBlocker_ShowOnlyOnce = True
+         End If
+
          Log "  " & H16(i) & " " & StringTBL(i)
       End If
    Next
@@ -959,142 +1215,338 @@ Private Sub DeObfu_ReplaceFnArgs(ByRef CodeSnipped$, ByRef FunctionName$)
 
 End Sub
 
-Private Sub z_DeObfu_ReplaceX(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional IgnoreLinesWith = "$Os")
-   If IsMissing(IgnoreLinesWith) Then IgnoreLinesWith = "$Os"
-   
-   Dim LocalDefCommaSep, LocalDefCounter: LocalDefCounter = 0
-   Dim LocalNameCounter&: LocalNameCounter = 0
-   For Each LocalDefCommaSep In Split(CodeSnipped, KeyWord)
-     'Skip first element
-      If LocalDefCounter > 0 Then
-         Dim LocalDefLine$
-         LocalDefLine = Split(LocalDefCommaSep, vbCrLf)(0)
-         If (LocalDefLine Like "*" & IgnoreLinesWith & "*") = False Then
+'old version of z_DeObfu_ReplaceX... (requires Parser.bas)
+'Private Sub z_DeObfu_ReplaceX(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional IgnoreLinesWith = "$Os")
+'   If IsMissing(IgnoreLinesWith) Then IgnoreLinesWith = "$Os"
+'
+'   Dim DuplicateFilter As Collection
+'   Set DuplicateFilter = New Collection
+'
+'   Dim LocalDefCommaSep, LocalDefCounter: LocalDefCounter = 0
+'   Dim LocalNameCounter&: LocalNameCounter = 0
+'   For Each LocalDefCommaSep In Split(CodeSnipped, KeyWord)
+'     'Skip first element
+'      If LocalDefCounter > 0 Then
+'         Dim LocalDefLine$
+'         LocalDefLine = Split(LocalDefCommaSep, vbCrLf)(0)
+'         If (LocalDefLine Like "*" & IgnoreLinesWith & "*") = False Then
+'
+'
+'           'crop off functions args (Arg1,arg2,arg3...) that also contains ','
+'            LocalDefLine = CropParenthesis(LocalDefLine)
+'            LocalDefLine = CropParenthesis(LocalDefLine, "[", "]")
+'
+'            Dim LocalDef
+'            For Each LocalDef In Split(LocalDefLine, ",")
+'
+'             ' Cut out Current Name
+'               Dim LocalDefPureName$
+'               LocalDefPureName = Split(LocalDef, "$")(1)
+'               LocalDefPureName = Split(LocalDefPureName, "=")(0)
+'               LocalDefPureName = Split(LocalDefPureName, ")")(0)
+'               ReplaceDo LocalDefPureName, vbTab, ""
+'               LocalDefPureName = Trim(Split(LocalDefPureName, "[")(0))
+'
+'               On Error Resume Next
+'               DuplicateFilter.Add "", LocalDefPureName
+'               If Err = 0 Then
+'
+'
+'
+'                ' Create New Name
+'                  Dim LocalNameNew$: LocalNameNew = Prefix
+'                  If LocalDef Like "*const*" Then LocalNameNew = LocalNameNew & "Const"
+'                  If LocalDef Like "*[[]*" Then
+'                     LocalNameNew = LocalNameNew & "Arr"
+'                  Else
+'                     LocalNameNew = LocalNameNew & "Var"
+'                  End If
+''                  LocalNameNew = BlockAlign_r(LocalNameNew & H16(LocalNameCounter), 11)
+'                  LocalNameNew = LocalNameNew & H16(LocalNameCounter)
+'
+'   ' without Doevents
+'   ' without Replace 485
+'   ' Varsize = 15063
+'   ' FixSize = 11031
+'   ' dupfilter= 10797
+'
+'
+'                ' Replace current with new name
+'                  ReplaceDo CodeSnipped, LocalDefPureName, LocalNameNew
+'                  'ReplaceDoMulti CodeSnipped, LocalDefPureName, LocalNameNew, vbTextCompare
+'                  'DoEventsSeldom
+'
+'                  Inc LocalNameCounter
+'                  GUI_Show_Text CVar(LocalNameCounter)
+'                  DoEvents
+'               End If
+'
+'            Next
+'         Else
+'         End If
+'      End If
+'
+'      Inc LocalDefCounter
+''      If LocalNameCounter = 1000 Then Exit For
+'   Next
+'
+'End Sub
+
+Private Sub z_DeObfu_Replace_CacheVarNames(CodeSnipped$, ObfuName$, ByRef ObfuVarTree As Collection)
+     Static CodeSnippedLenOld&
+  If CodeSnippedLenOld <> Len(CodeSnipped) Then
+  
+     Dim ObfuVar As New RegExp
+     With ObfuVar
+         .IgnoreCase = True
+         .MultiLine = True
+      
+         .Pattern = "(\s*\$)" & ObfuName
+         .Global = True
          
-           
-           'crop off functions args (Arg1,arg2,arg3...) that also contains ','
-            LocalDefLine = CropParenthesis(LocalDefLine)
-            LocalDefLine = CropParenthesis(LocalDefLine, "[", "]")
+         Set ObfuVarTree = New Collection
+         
+         Dim Var As Match
+         For Each Var In ObfuVar.Execute(CodeSnipped)
             
-            Dim LocalDef
-            For Each LocalDef In Split(LocalDefLine, ",")
+            Dim SubMatchLen&
+            SubMatchLen = Len(Var.SubMatches(0)) + 1
+            
+            Dim VarName$
+            VarName = Mid(Var.value, SubMatchLen)
+            
+            Dim VarNamePos&
+            VarNamePos = Var.FirstIndex + SubMatchLen
+   
+   
+          ' Already in the collection?
+            On Error Resume Next
+            Dim ObfuVarBranch As Collection
+            Set ObfuVarBranch = ObfuVarTree(VarName)
+            If Err = 5 Then
+             
+             ' No so add it as new branch (with varName as key)
+               Set ObfuVarBranch = New Collection
+               ObfuVarTree.Add ObfuVarBranch, VarName
+'               Debug.Print VarName
+               
+            End If
+          ' add Var as leaf
+            ObfuVarBranch.Add VarNamePos
+         Next
+         
+         On Error GoTo 0
+     End With
+        
+    CodeSnippedLenOld = Len(CodeSnipped)
+End If
 
-             ' Cut out Current Name
-               Dim LocalDefPureName$
-               LocalDefPureName = Split(LocalDef, "$")(1)
-               LocalDefPureName = Split(LocalDefPureName, "=")(0)
-               LocalDefPureName = Split(LocalDefPureName, ")")(0)
-               ReplaceDo LocalDefPureName, vbTab, ""
-               LocalDefPureName = Trim(Split(LocalDefPureName, "[")(0))
+End Sub
 
-               
-               
-             ' Create New Name
-               Dim LocalNameNew$: LocalNameNew = Prefix
-               If LocalDef Like "*const*" Then LocalNameNew = LocalNameNew & "Const"
-               If LocalDef Like "*[[]*" Then
-                  LocalNameNew = LocalNameNew & "Arr"
-               Else
-                  LocalNameNew = LocalNameNew & "Var"
-               End If
-               LocalNameNew = LocalNameNew & H16(LocalNameCounter)
-               
-             ' Replace current with new name
-               ReplaceDo CodeSnipped, LocalDefPureName, LocalNameNew
-               'ReplaceDoMulti CodeSnipped, LocalDefPureName, LocalNameNew, vbTextCompare
-               DoEventsSeldom
-               
-               Inc LocalNameCounter
-            Next
-         Else
-         End If
+'Replace "<KeyWord> $A4201D12945" with "<KeyWord> $Var001D      "
+'http://msdn.microsoft.com/en-us/library/1400241x.aspx
+Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional IgnoreLinesWith = "$Os")
+  
+  
+  If IsMissing(IgnoreLinesWith) Then IgnoreLinesWith = "$Os"
+'                    123456789012345678901234567890
+' Example: "Global $A4201D12945"
+' Example: "Global $J767027413071708815817
+
+  Dim ObfuName$
+  ObfuName = "[A-Z][0123456789ABCDEF]{10,21}"
+  
+  
+  
+  Dim GlobalVar As New RegExp
+  With GlobalVar
+      .IgnoreCase = True
+      .MultiLine = True
+
+      If KeyWord = "" Then
+        ' Pattern Don't need to start at the beginning
+         .Pattern = RE_WSpace( _
+                        "\$" & RE_Group(ObfuName) & "\b", _
+                        RE_LookHead_negative(RE_AnyCharRepeat() & RE_Literal(IgnoreLinesWith)))
+      Else
+   
+         .Pattern = RE_WSpace( _
+                        RE_Anchor_LineBegin, KeyWord, _
+                        "\$" & RE_Group(ObfuName), "[[=]", _
+                        RE_LookHead_negative(RE_AnyCharRepeat() & RE_Literal(IgnoreLinesWith)))
       End If
       
-      Inc LocalDefCounter
-   Next
+      .Global = True
+  
 
-
-End Sub
-
-
-
-
-Private Sub DeObfu_ReplaceGlobals(ByRef CodeSnipped$, Optional IgnoreLinesWith)
-Log "Renaming Globals..."
-   z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
-''Global Const $A4A14104939 = $A2014201D1E
-'
-''Global $A4201D12945 =
-''http://msdn.microsoft.com/en-us/library/1400241x.aspx
-'  Dim ObfuName$
-'  ObfuName = "[0123456789ABCDEF]{11}"
-'  Dim GlobalVar As New RegExp
-'  With GlobalVar
-'      .IgnoreCase = True
-'      .Global = True
-'      '.Pattern = WSpace("Global $" & ObfuName, "=")
-'      .Pattern = ObfuName
-'
-'  End With
-'
-'
-' 'separate Chr's
-'  Dim GlobalVar_Match As Match
-'  For Each GlobalVar_Match In GlobalVar.Execute(NewScript)
-'
-'    ' Concat Chrs to a ChrString
-'      With GlobalVar_Match
-'        Dim tmp
-'         tmp = .SubMatches(0)    'Chrs_arg1 = 157
-'      End With
-'
-'   Next GlobalVar_Match
-'
-' ' replace ChrString in line
-''   ReplaceDo Line, CStr(ChrStrings_Matches(0)), MakeAutoItString(ChrStringNew.value)
-'
-' ' save modified Line
-' '  ScriptLines(Line_idx) = Line
-'
-''Loop ' next ChrString in Line
-'
-
-
-
-End Sub
-Private Sub DeObfu_ReplaceDimsAndConst(ByRef CodeSnipped$, Optional IgnoreLinesWith)
-Log "Renaming Dims..."
-   z_DeObfu_ReplaceX CodeSnipped, "Dim", "gDim", IgnoreLinesWith
-Log "Renaming Consts..."
-   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Const", "gConst", IgnoreLinesWith
+      Dim VarCounter&
+      VarCounter = 0
+      
+      Dim isUniqueItem As New clsDuplicateFilter
+      isUniqueItem.Clear
+      
+      
+   BenchStart
+               
+   Dim RE_Searchpattern As New clsStrCat
+            
+ ' Build/Update Var Search&Replace Cache (used to speed up Search&Replace)
+   Static ObfuVarTree As Collection
+   z_DeObfu_Replace_CacheVarNames CodeSnipped, ObfuName, ObfuVarTree
+  
+  
+    ' Go through all matches and search'n'replace them with a new name
+      Dim GlobalVar_Match As Match
+      For Each GlobalVar_Match In GlobalVar.Execute(CodeSnipped)
    
-   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Global Const ", "glConst", IgnoreLinesWith
+         Dim SearchString$
+         SearchString = GlobalVar_Match.SubMatches(0)
+'         SearchString = MatchesSplitted(i + 1)
+
+        'filter out names where seach&replace was already done
+         If isUniqueItem(SearchString) Then
+
+            Dim ReplaceString$
+            ReplaceString = Prefix & H16(VarCounter)
+           
+           'fill up ReplaceString with space to bring it to same size
+            If Len(SearchString) > Len(ReplaceString) Then
+                ReplaceString = BlockAlign_r(ReplaceString, Len(SearchString))
+            End If
+            
+         ' Replace one Var
+         ' Well since the cache build&update function uses the len
+         ' of the data were the Search&replace to should be applied
+         ' to detect if the cache needs to be rebuild is unreliable
+         ' Cache maybe outdate and ObfuVarTree($BlahBlah) raise an error
+         ' - for this case there is a slower seach&replace function...
+Try_DoReplaceWithCache:
+            On Error GoTo Catch_DoReplaceWithCache
+
+'            Debug.Print SearchString
+'            Debug.Assert "J767027413071708815817" <> SearchString
+            
+            Dim ReplacePos
+            For Each ReplacePos In ObfuVarTree(SearchString)
+               Mid(CodeSnipped, ReplacePos) = ReplaceString
+            Next
+            
+   GoTo Finally_DoReplaceWithCache
+Catch_DoReplaceWithCache:
+
+   Resume Try_DoReplaceWithoutCache
+Try_DoReplaceWithoutCache:
+
+           'Put a notice on that error in the log
+            Dim bBlocker_ReportErrorOnlyOnce As Boolean
+            If bBlocker_ReportErrorOnlyOnce = False Then
+               bBlocker_ReportErrorOnlyOnce = True
+               
+               Log "An expected error situation occured in 'ClsDeobfuscator::z_DeObfu_ReplaceX2' - when replacing '" & SearchString & "'. Well there's an errorhandler that can deal&correct this however it would be nice to see the script that provoked this. So if you like please mail me this script."
+            End If
+            
+            
+            ReplaceDo NewScript, SearchString, ReplaceString
+'            ReplaceDoMulti NewScript, SearchString, ReplaceString
+            
+Finally_DoReplaceWithCache:
+         
+            Inc VarCounter
+            GUI_Show_Text CStr(VarCounter)
+            DoEvents
+         End If
+            
+      Next
+
+Exit Sub
+
+            
+'   CodeSnipped = Join(MatchesSplitted, "")
+   
+' Bench without ReplaceDo              438    469
+' Bench with    ReplaceDo    FixLen  10485  10547 ( 8125)
+' Bench with    Replace()    FixLen  12719
+' Bench with    ReplaceDoMulti xLen  13546  13563
+' Bench with    ReplaceDo    VarLen  17625  17313 (15047)
+' Bench with    vba.Replace()        44734  45110
+' Bench with    regexp.Replace() FixLen   18281  18344
+' Bench with    regexp.Replace() FixLen   27218  27172 (.IgnoreCase = True)
+   End With
+   
+
+End Sub
+
+Private Sub DeObfu_ReplaceGlobals(ByRef CodeSnipped$, Optional IgnoreLinesWith = "$Os")
+
+   Log "Renaming Globals..."
+'   z_DeObfu_ReplaceX CodeSnipped, "Global", "g", IgnoreLinesWith
+   DeObfu_Replacer CodeSnipped, "Global", "g", IgnoreLinesWith
+End Sub
+
+Private Sub DeObfu_Replacer(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional IgnoreLinesWith = "$Os")
+   If IsMissing(IgnoreLinesWith) Then IgnoreLinesWith = "$Os"
+
+   z_DeObfu_ReplaceX2 CodeSnipped, KeyWord & " Const", Prefix & "Const", IgnoreLinesWith
+
+' 'Global $A4201D12945 = '       OR
+   z_DeObfu_ReplaceX2 CodeSnipped, KeyWord, Prefix & "Var", IgnoreLinesWith
+
+' 'Global Const $A4A14104939 = $A2014201D1E'
+   z_DeObfu_ReplaceX2 CodeSnipped, "Const", "Const", IgnoreLinesWith
+
+
+End Sub
+
+
+
+Private Sub DeObfu_ReplaceDimsAndConst(ByRef CodeSnipped$, Optional IgnoreLinesWith)
+Log "Renaming Consts..."
+   DeObfu_Replacer CodeSnipped, "Const", "gConst", IgnoreLinesWith
+
+   DeObfu_Replacer CodeSnipped, "Global Const ", "glConst", IgnoreLinesWith
+
+Log "Renaming Dims..."
+   DeObfu_Replacer CodeSnipped, "Dim", "gDim", IgnoreLinesWith
+
+
+
+
+'Log "Renaming Dims..."
+'   z_DeObfu_ReplaceX CodeSnipped, "Dim", "gDim", IgnoreLinesWith
+'Log "Renaming Consts..."
+'   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Const", "gConst", IgnoreLinesWith
+'
+'   z_DeObfu_ReplaceX CodeSnipped, vbCrLf & "Global Const ", "glConst", IgnoreLinesWith
+     
    
 End Sub
 
 Private Sub DeObfu_ReplaceLocals(ByRef CodeSnipped$)
-'log "Renaming Locals..."
-   z_DeObfu_ReplaceX CodeSnipped, "Local ", ""
+' Log "Renaming Locals..."
+   z_DeObfu_ReplaceX2 CodeSnipped, "Local ", "Local"
 End Sub
 
-Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr$, ByRef NewStr$)
+Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
+
 'log "Renaming Locals..."
  ' avoid Replacing ShellExecute
    ReplaceDo Data, "ShellExecute", "Shell_xecute"
       ReplaceDo Data, "Execute(" & ReplaceStr & ")", NewStr
    ReplaceDo Data, "Shell_xecute", "ShellExecute"
+
+If "$H729026783220739177320" = Data Then Stop
+
       ReplaceDo Data, "Number(" & ReplaceStr & ")", FormatNumber(NewStr), , , vbTextCompare
       ReplaceDo Data, ReplaceStr, """" & Replace(NewStr, """", """""") & """"
-End Sub
 
+End Sub
 
 
 
 Private Sub DeObfuscate_VanZande1_0_14()
 
    'Merge lines with _ at the end
-    NewScript = Replace(NewScript, "_" & vbCrLf, "")
-
+    NewScript = Replace(NewScript, AU_NEWLINE, "")
 
 
    GUI_Show_Text NewScript
@@ -1371,10 +1823,10 @@ End Sub
 
 
 
-Private Function FormatNumber$(Expr$)
+Private Function FormatNumber(Expr)
    On Error GoTo err_FormatNumber
      'Set default incase of error
-      FormatNumber = Expr
+'      FormatNumber = Expr
 '      If IsNumeric(Expr) Then
          
         'Beautify Numbers
@@ -1386,13 +1838,80 @@ Private Function FormatNumber$(Expr$)
             
          Else
             '0...10'
-'            FormatNumber = Expr
+            FormatNumber = Expr
             
          End If
          
 '      Else
 '         FormatNumber = Expr
 '      End If
+Exit Function
 
 err_FormatNumber:
+FormatNumber = Expr
 End Function
+
+Private Function IsValidSeperator(TBLFileData As StringReader, TBLStringSeperator) As Boolean
+   
+   Dim TBLSeperated
+   TBLSeperated = Split(TBLFileData.Data, TBLStringSeperator)
+   
+ ' Must contain at least 2 HexDigets
+   Dim isTBLStringSeperatorOk As Boolean
+   isTBLStringSeperatorOk = UBound(TBLSeperated) >= 1
+   If isTBLStringSeperatorOk <> False Then
+      
+     'Remove last element
+      ReDim Preserve TBLSeperated(UBound(TBLSeperated) - 1)
+      
+      Dim item
+      For Each item In TBLSeperated
+        
+       ' Len must be an even number and bigger than 2
+         isTBLStringSeperatorOk = isEven(Len(item)) And _
+                                   (Len(item) >= 2)
+         If isTBLStringSeperatorOk = False Then Exit For
+   
+      Next
+      
+      IsValidSeperator = isTBLStringSeperatorOk
+   End If
+
+End Function
+
+
+Private Function TBLFindStringSeperator(TBLFileData As StringReader) As String
+    With TBLFileData
+      
+    ' Move to End Of String
+      .EOS = True
+      .DisableAutoMove = True
+      
+'      .Move -3
+      Dim OccurenceCount&
+      OccurenceCount = 0
+    ' Blow up TBLStringSeperator2 by 1 byte until the number of its occurence deincreases
+      Do
+         .Move -1
+         Dim TBLStringSeperator$
+         TBLStringSeperator = .FixedString(-1)
+         
+         Dim OccurenceCountNew&
+         OccurenceCountNew = UBound(Split(.Data, TBLStringSeperator))
+      If OccurenceCountNew < OccurenceCount Then
+          ' OccurenceCount dropped - TBLStringSeperator is complete
+         Exit Do
+         
+      Else
+          ' OccurenceCount has grow(or equal) - set new max
+            OccurenceCount = OccurenceCountNew
+      End If
+       ' store
+         TBLFindStringSeperator = TBLStringSeperator
+      Loop While True
+            
+    End With
+
+End Function
+
+

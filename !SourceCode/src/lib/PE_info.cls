@@ -31,15 +31,16 @@ Public Sub Create()
 '
 '     'Locate start of PE-header
 '      PEStart = InStr(1, tmpstr, "PE" & vbNullChar & vbNullChar, vbBinaryCompare)
-'      If PEStart = 0 Then err.Raise vbObjectError + 1, , "No PE-Header Found"
+'      If PEStart = 0 Then err.Raise vbObjectError Or 1, , "No PE-Header Found"
     
      '--- find PE-signature ---
      'Check DOS Header
       Dim tmpstr$
       File.Position = 0
      
+     'to skip the Error in VB-IDE Rightclick Toggle/Break on unhandled errors
      'MZ DOS-Header->e_magic
-      If File.intValue <> &H5A4D Then Err.Raise vbObjectError + 1, , "No ExeFile DOS-Header.e_magic<>""MZ"""
+      If File.intValue <> &H5A4D Then Err.Raise vbObjectError Or 1, , "No ExeFile DOS-Header.e_magic<>""MZ"""
 
      
      'Locate & Validate PE-header
@@ -48,7 +49,7 @@ Public Sub Create()
       File.Position = PEStart
       PEStart = PEStart + 1
       
-      If File.longValue <> &H4550 Then Err.Raise vbObjectError + 2, , "No ExeFile 'PE-Header.Signature<>""PE"""
+      If File.longValue <> &H4550 Then Err.Raise vbObjectError Or 2, , "No ExeFile 'PE-Header.Signature<>""PE"""
     
     '  --- get PE_Header  ---
       Dim hFile&
@@ -61,25 +62,25 @@ Public Sub Create()
     ' Validate Machine Type
       If PE_Header.Machine <> &H14C Then
          If PE_Header.Machine = &H8664 Then
-            Err.Raise vbObjectError + 4, , "PE-Header.Signature=HDR64_MAGIC!"
+            Err.Raise vbObjectError Or 4, , "PE-Header.Signature=HDR64_MAGIC!"
          Else
-           Err.Raise vbObjectError + 3, , "Unsupported PE-Header.Signature 0x" & H16(PE_Header.Machine) & " <>I386(0x14C)."
+           Err.Raise vbObjectError Or 3, , "Unsupported PE-Header.Signature 0x" & H16(PE_Header.Machine) & " <>I386(0x14C)."
          End If
       End If
      
 '    ' Validate Optionaldata Type
 '      If PE_Header.Magic <> &H10B Then
-'         err.Raise vbObjectError + 5, , "PE_Header.Magic <> PE32!"
+'         err.Raise vbObjectError Or 5, , "PE_Header.Magic <> PE32!"
 '      End If
      
       If PE_Header.OptionalHeaderSize <> &HE0 Then
-         Err.Raise vbObjectError + 5, , "PE_Header.OptionalHeaderSize = E0 expected but curvalue is " & H32(PE_Header.OptionalHeaderSize)
+         Err.Raise vbObjectError Or 5, , "PE_Header.OptionalHeaderSize = E0 expected but curvalue is " & H32(PE_Header.OptionalHeaderSize)
       End If
       
 
      
 '      If PE_Header.NumberofDataDirectories > &HE Then
-'         err.Raise vbObjectError + 5, , "PE_Header.NumberofDataDirectories must be greater than 14"
+'         err.Raise vbObjectError Or 5, , "PE_Header.NumberofDataDirectories must be greater than 14"
 '      End If
 'imagever 3..5 <-winXP / 6 vista
      
@@ -114,8 +115,8 @@ End Function
 
 Public Function GetChecksum&() '(Optional ByRef Output_ChecksumCurrent&, Optional ByRef Output_ChecksumNew&)
    If PEStart = 0 Then Err.Raise vbObjectError, , "You must call PE_info::Create first!"
-   Dim tmp&, RetVal&
-   RetVal = MapFileAndCheckSum(File.FileName, 0, tmp)
+   Dim tmp&, Retval&
+   Retval = MapFileAndCheckSum(File.FileName, 0, tmp)
    GetChecksum = tmp
 End Function
 

@@ -8,11 +8,11 @@ Const ExcludePostWhiteSpaceTerminal$ = ")]."
 
 Const TokenFile_RequiredInputExtensions = ".tok .mem"
 
-Dim Atom$, SourceCodeLine$
+Dim Atom$, SourceCodeLine As New clsStrCat
 Dim bAddWhiteSpace As Boolean
 
+
 Sub DeToken()
-   BenchStart
    
    With File
     
@@ -68,7 +68,8 @@ Sub DeToken()
       Dim RawString As StringReader: Set RawString = New StringReader
       Dim DecodeString As StringReader: Set DecodeString = New StringReader
 
-      SourceCodeLine = ""
+      
+      SourceCodeLine.Clear
       Do
    
          Atom = ""
@@ -87,12 +88,13 @@ Sub DeToken()
          
        ' Log it ''" & Chr(Cmd) & "'
          FL_verbose "Token: " & H8(Cmd) & "      (Line: " & SourceCodeLineCount & "  TokenCount: " & TokenCount & ")"
-'         If RangeCheck(SourceCodeLineCount, 8716, 8714) Then
-''            Stop
+'         If RangeCheck(SourceCodeLineCount, 3188, 3184) Then
+'            Stop
 '            If FrmMain.Chk_verbose <> vbChecked Then FrmMain.Chk_verbose = vbChecked
 '         Else
 '           If FrmMain.Chk_verbose <> vbUnchecked Then FrmMain.Chk_verbose = vbUnchecked
 '         End If
+'Debug.Assert Not (SourceCodeLine Like "*$NY*")
          
          
          Select Case Cmd
@@ -113,7 +115,7 @@ Sub DeToken()
             'int64 = H32(.longValue)
             'int64 = H32(.longValue) & int64
             'Replace 123,45 -> 12345
-            Atom = Replace(CStr(int64), ",", "")
+            Atom = Replace(Replace(CStr(int64), ",", ""), ".", "")
             
             FL_verbose "int64: " & int64
             
@@ -219,7 +221,14 @@ Sub DeToken()
             
             Case Else
                'Unknown StringToken
-               Stop
+               If HandleTokenErr("ERROR: Unknown StringToken") Then
+               Else
+                  Err.Raise vbObjectError Or 1, , "Unknown StringToken"
+                  Stop
+
+               End If
+               
+               
             End Select
             
  '           log String(40, "_")
@@ -261,17 +270,18 @@ Sub DeToken()
             'Execute
             
             
-            SourceCodeLine = RTrim$(SourceCodeLine)
+            SourceCodeLine.value = RTrim$(SourceCodeLine.value)
             
-            LogSourceCodeLine SourceCodeLine
+            LogSourceCodeLine SourceCodeLine.value
             
-            log_verbose ">>>  " & SourceCodeLine
+            
+            log_verbose ">>>  " & SourceCodeLine.value
             log_verbose String(80, "_")
             log_verbose ""
  
           ' Test Length
             Dim SourceCodeLine_Len&
-            SourceCodeLine_Len = Len(SourceCodeLine)
+            SourceCodeLine_Len = SourceCodeLine.Length
             If SourceCodeLine_Len >= AUTOIT_SourceCodeLine_MAXLEN Then
                Log "WARNING: SourceCodeLine: " & SourceCodeLineCount & " is " & _
                SourceCodeLine_Len - AUTOIT_SourceCodeLine_MAXLEN & " chars longer than " & _
@@ -280,18 +290,22 @@ Sub DeToken()
           
           
           ' Add SourceCodeLine to SourceCode
-            SourceCode(SourceCodeLineCount) = SourceCodeLine
+            SourceCode(SourceCodeLineCount) = SourceCodeLine.value
             Inc SourceCodeLineCount
             
-            SourceCodeLine = ""
+            SourceCodeLine.Clear
+            
 
          Case Else
             
            'Unknown Token
-           Log "ERROR: Unknown Token: " & Cmd & " at " & H32(.Position)
-           Exit Do
+            Log "ERROR: Unknown Token: " & Cmd & " at " & H32(.Position)
+            If HandleTokenErr("ERROR: Unknown Token") Then
+            Else
+               Exit Do
+            End If
            'qw
-           Stop
+'           Stop
            
 
          End Select
@@ -305,12 +319,12 @@ Sub DeToken()
 '            If SourceCodeLine = "" Then
 '               SourceCodeLine = Atom & whiteSpaceTerminal
 '            Else
-               SourceCodeLine = SourceCodeLine & whiteSpaceTerminal & Atom & whiteSpaceTerminal
+               SourceCodeLine.Concat whiteSpaceTerminal & Atom & whiteSpaceTerminal
 '            End If
             
          Else
            'Add to SourceLine
-            SourceCodeLine = SourceCodeLine & Atom
+            SourceCodeLine.Concat Atom
          End If
          
          DoEventsVerySeldom
@@ -325,7 +339,7 @@ Select Case Err
      Dim ErrText$
      ErrText = "ERROR: " & Err.Description & vbCrLf & _
       "FileOffset: " & H32(.Position) & vbCrLf & _
-      "when detokising script line: " & SourceCodeLineCount & vbCrLf & SourceCodeLine
+      "when de-tokenising script line: " & SourceCodeLineCount & vbCrLf & SourceCodeLine.value
      Log ErrText
      MsgBox ErrText, vbCritical, "Unexpected Error during detokenising"
      
@@ -334,10 +348,7 @@ End Select
 DeToken_Finally:
    .CloseFile
   End With
-  
-BenchEnd
-  
-  
+    
   
   If FrmMain.Chk_TmpFile = vbUnchecked Then
      Log "Keep TmpFile is unchecked => Deleting '" & FileName.NameWithExt & "'"
@@ -375,7 +386,32 @@ BenchEnd
 
 End Sub
 
+Private Function HandleTokenErr(ErrText$) As Boolean
 
+   With File
+   
+      If vbYes = MsgBox("An Token error occured - possible due to corrupted scriptdata. Contiune?", vbCritical + vbYesNo, ErrText) Then
+         HandleTokenErr = True
+         
+'         Dim Hexdata As New clsStrCat, HexdataLine&
+'         Hexdata.Clear
+'         For HexdataLine = 0 To &H100 Step &H8
+'            Dim Data As New StringReader
+'            Data = .FixedString(&H8)
+'            Hexdata.Concat H16(HexdataLine) & ":  " & ValuesToHexString(Data) & vbCrLf
+'
+'         Next
+'         .Move -&H100
+'         Stop
+'         .Move InputBox("The this is the following raw Token data: " & Hexdata.value & "How many bytes should I skip?", "Skip Tokenbytes", "0")
+         
+      Else
+         HandleTokenErr = False
+      
+      End If
+      
+   End With
+End Function
 
 Private Sub LogSourceCodeLine(TextLine$)
    If FrmMain.Chk_verbose.value = vbChecked Then
@@ -394,7 +430,7 @@ Private Sub LogSourceCodeLine(TextLine$)
    End If
 End Sub
 'Handle UserString with Quotes...
-Function MakeAutoItString(RawString$)
+Function MakeAutoItString$(RawString$)
              
    ' HasDoubleQuote ?
      If InStr(RawString, """") <> 0 Then
@@ -414,6 +450,50 @@ Function MakeAutoItString(RawString$)
      
 
 End Function
+
+' Converts an AutoIt string to a Raw String
+' "Test""123""_" -> Test"123"_
+Public Function UndoAutoItString$(Au3Str$)
+   Dim StringTerminal$
+   
+  'Get stringchar ( should be " or ')
+   StringTerminal$ = Left(Au3Str, 1)
+   
+  'Cut away Lead&Tailing " or '
+  'Is length of Au3Str is smaller than 2 this will give an error
+  'since it's no valid Au3String
+   Au3Str = Mid(Au3Str, 2, Len(Au3Str) - 2)
+   
+   
+  'Replaces '' -> '  or "" -> "
+   UndoAutoItString = Replace(Au3Str, StringTerminal & StringTerminal, StringTerminal)
+   
+End Function
+
+'   With New RegExp
+'      .Global = True
+'
+'      Const StringTerminal$ = "(['""])"
+'      Const StringTerminalBackRef$ = "\1"
+'      Const StringBody$ = "(.*?)"
+'
+'
+'      .Pattern = StringTerminal & _
+'                   "(?:" & _
+'                   StringBody & _
+'                     StringTerminalBackRef & StringTerminalBackRef & _
+'                        StringBody & _
+'                   ")*" & _
+'                 StringTerminalBackRef
+'      '$2 is the StringBody
+'      '$3 is
+'      Au3StrToString = .Replace(Au3Str, "$2$3$4")
+'   End With
+   
+'End Function
+
+
+
 
 ' Add WhiteSpace Seperator to SourceCodeLine
 Function AddWhiteSpace$()

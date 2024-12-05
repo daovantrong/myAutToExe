@@ -2,15 +2,21 @@ VERSION 5.00
 Begin VB.Form FrmMain 
    Caption         =   "myAut2Exe >The Open Source AutoIT/AutoHotKey script decompiler<"
    ClientHeight    =   9465
-   ClientLeft      =   2595
-   ClientTop       =   5235
+   ClientLeft      =   2670
+   ClientTop       =   1005
    ClientWidth     =   9300
    Icon            =   "frmMain.frx":0000
    LinkTopic       =   "Form1"
    ScaleHeight     =   9465
    ScaleWidth      =   9300
+   Begin VB.Timer Timer_TriggerLoad 
+      Enabled         =   0   'False
+      Interval        =   100
+      Left            =   7800
+      Top             =   120
+   End
    Begin VB.TextBox txt_FILE_DecryptionKey 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   285
       Left            =   8160
       TabIndex        =   14
@@ -27,7 +33,7 @@ Begin VB.Form FrmMain
       Top             =   8520
       Width           =   9135
       Begin VB.TextBox Txt_Scriptstart 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   6960
          TabIndex        =   13
@@ -76,7 +82,7 @@ Begin VB.Form FrmMain
          Left            =   2880
          TabIndex        =   8
          Top             =   480
-         Value           =   2  'Zwischenzustand
+         Value           =   2  'Grayed
          Width           =   3255
       End
       Begin VB.CheckBox Chk_RestoreIncludes 
@@ -85,7 +91,7 @@ Begin VB.Form FrmMain
          Left            =   2880
          TabIndex        =   7
          Top             =   240
-         Value           =   1  'Aktiviert
+         Value           =   1  'Checked
          Width           =   1560
       End
    End
@@ -99,7 +105,7 @@ Begin VB.Form FrmMain
       Visible         =   0   'False
       Width           =   1815
    End
-   Begin VB.Timer Timer_OleDrag 
+   Begin VB.Timer Timer_TriggerLoad_OLEDrag 
       Enabled         =   0   'False
       Interval        =   100
       Left            =   240
@@ -117,7 +123,7 @@ Begin VB.Form FrmMain
    Begin VB.TextBox Txt_Filename 
       Height          =   375
       Left            =   120
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   1
       Text            =   "Drag the compiled AutoItExe / AutoHotKeyExe or obfucated script in here, or enter/paste path+filename."
       ToolTipText     =   "Drag in or type in da file"
@@ -133,7 +139,7 @@ Begin VB.Form FrmMain
       Width           =   9135
    End
    Begin VB.ListBox List_Source 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   5685
       ItemData        =   "frmMain.frx":6321
       Left            =   120
@@ -153,6 +159,10 @@ Begin VB.Form FrmMain
    End
    Begin VB.Menu mu_Tools 
       Caption         =   "&Tools"
+      Begin VB.Menu RegExp_Renamer 
+         Caption         =   "&RegExp_Renamer"
+         Shortcut        =   {F11}
+      End
       Begin VB.Menu mi_FunctionRenamer 
          Caption         =   "&FunctionRenamer"
          Shortcut        =   {F12}
@@ -215,7 +225,7 @@ Sub FL_verbose(Text)
 End Sub
 
 Sub log_verbose(TextLine$)
-   If Chk_verbose.Value = vbChecked Then Log TextLine
+   If Chk_verbose.value = vbChecked Then Log TextLine
 End Sub
 
 
@@ -255,7 +265,7 @@ End Sub
 
 '/////////////////////////////////////////////////////////
 '// log_clear - Clears all log entries
-Public Sub log_clear()
+Public Sub Log_Clear()
 On Error Resume Next
    List1.Clear
 End Sub
@@ -265,19 +275,22 @@ End Sub
 
 Private Sub Chk_ForceOldScriptType_Click()
    Static Block_Chk_ForceOldScriptType_Click As Boolean
-   If Block_Chk_ForceOldScriptType_Click Then Exit Sub
-   Block_Chk_ForceOldScriptType_Click = True
-   With Chk_ForceOldScriptType
-      Static Value
-      If Value = 2 Then
-         Value = 0
-      Else
-         Value = Value + 1
-      End If
-      .Value = Value
+   If Block_Chk_ForceOldScriptType_Click = False Then
+      Block_Chk_ForceOldScriptType_Click = True
       
-   End With
-   Block_Chk_ForceOldScriptType_Click = False
+      With Chk_ForceOldScriptType
+         Static value
+         If value = vbGrayed Then
+            value = vbUnchecked
+         Else
+            value = value + 1
+         End If
+         .value = value
+         
+      End With
+      
+      Block_Chk_ForceOldScriptType_Click = False
+   End If
 End Sub
 
 Private Sub Cmd_About_Click()
@@ -299,8 +312,8 @@ End Sub
 Private Function ConfigValue_Load(Key$, Optional DefaultValue)
    ConfigValue_Load = GetSetting(App.Title, Me.Name, Key, DefaultValue)
 End Function
-Property Let ConfigValue_Save(Key$, Value As Variant)
-      SaveSetting App.Title, Me.Name, Key, Value
+Property Let ConfigValue_Save(Key$, value As Variant)
+      SaveSetting App.Title, Me.Name, Key, value
 End Property
 
 
@@ -308,18 +321,27 @@ End Property
 '///////////////////////////////////////////
 '// Load/Save a CheckBox State
 Sub CheckBox_Load(ByVal ChkBox As CheckBox)
-   ChkBox.Value = ConfigValue_Load(ChkBox.Name, ChkBox.Value)
+   ChkBox.value = ConfigValue_Load(ChkBox.Name, ChkBox.value)
 End Sub
 Sub CheckBox_Save(ByVal ChkBox As CheckBox)
-   ConfigValue_Save(ChkBox.Name) = ChkBox.Value
+   ConfigValue_Save(ChkBox.Name) = ChkBox.value
 End Sub
 
 
-Sub TextBox_Load(ByVal Txt As TextBox)
-   Txt.Text = ConfigValue_Load(Txt.Name, Txt.Text)
-End Sub
-Sub TextBox_Save(ByVal Txt As TextBox)
-   ConfigValue_Save(Txt.Name) = Txt.Text
+Sub TextBox_Load(ByVal Txt As Textbox)
+   With Txt
+      'signal [txt]_change that were and load the settings
+      'so it might react on this i.e. like not the execute the event handler code
+      .Enabled = False
+         .Text = ConfigValue_Load(Txt.Name, Txt.Text)
+      .Enabled = True
+   End With
+ End Sub
+Sub TextBox_Save(ByVal Txt As Textbox)
+  'don't save Multiline Textbox
+   If Txt.MultiLine = False Then
+      ConfigValue_Save(Txt.Name) = Txt.Text
+   End If
 End Sub
 
 
@@ -334,8 +356,18 @@ Sub FormSettings_Load()
    
    Dim controlItem
    For Each controlItem In Fr_Options.Container
-      CheckBox_Load controlItem
-      TextBox_Load controlItem
+      
+      Select Case TypeName(controlItem)
+      Case "TextBox"
+         If (Txt Is txt_FileName) = False Then
+            TextBox_Load controlItem
+         End If
+
+      Case "CheckBox"
+         CheckBox_Load controlItem
+      
+      End Select
+   
    Next
  
 End Sub
@@ -345,14 +377,23 @@ Sub FormSettings_Save()
    Dim controlItem
    For Each controlItem In Fr_Options.Container
       CheckBox_Save controlItem
-'      TextBox_Save controlItem
+      TextBox_Save controlItem
    Next
 End Sub
 
 
 Private Sub Form_Load()
-
-   
+'   Dim str$, i&
+'   Dim leni%
+'   Do
+'      BenchStart
+'      For i = 0 To 100000000
+'         leni = Len(str)
+'
+'      Next
+'      BenchEnd
+'   Loop While True
+'
    
    FrmMain.Caption = FrmMain.Caption & " " & App.Major & "." & App.Minor & " build(" & App.Revision & ")"
    
@@ -375,10 +416,12 @@ Private Sub Form_Load()
   
   'Open the File that was set by the commandline
    If IsCommandlineMode Then
-      Txt_Filename = FileName
-   Else
-      Txt_Filename_Change
+      txt_FileName = FileName
    End If
+   
+  'try Load file in the 'File textbox'
+   Timer_TriggerLoad.Enabled = True
+
 End Sub
    
    
@@ -444,7 +487,7 @@ Public Function GetLogdata$()
    Dim LogData As New clsStrCat
    LogData.Clear
    Dim i
-   If (List1.ListCount > 0) Then
+   If (List1.ListCount >= 0) Then
       For i = 0 To List1.ListCount
          LogData.Concat (List1.List(i) & vbCrLf)
       Next
@@ -461,7 +504,7 @@ Public Function GetLogdata$()
    
    End If
    
-   GetLogdata = LogData.Value
+   GetLogdata = LogData.value
    
 End Function
 
@@ -507,7 +550,7 @@ Private Sub mi_SeperateIncludes_Click()
    Dim File$
    File = InputBox("Normally seperating includes is done automatically after you decompiled some au3.exe(of old none tokend format)." & vbCrLf & _
           "However that tool is useful in the case you have some decompiled *.au3 with these '; <AUT2EXE INCLUDE-START: C:\ ...' comments you like to process." & vbCrLf & vbCrLf & _
-          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'seperate au3 includes' on file", Txt_Filename)
+          "Please enter(/paste) full path of the file: (Or drag it into the myAutToExe filebox and then run me again)", "Manually run 'seperate au3 includes' on file", txt_FileName)
    If File <> "" Then
       FileName.FileName = File
       SeperateIncludes
@@ -516,11 +559,23 @@ End Sub
 
 
 
-Private Sub Timer_OleDrag_Timer()
-   Timer_OleDrag.Enabled = False
-   Txt_Filename = FilePath_for_Txt
+Private Sub RegExp_Renamer_Click()
+   FrmRegExp_Renamer.Show vbModal
+   Unload FrmRegExp_Renamer
 End Sub
 
+Private Sub Timer_TriggerLoad_OLEDrag_Timer()
+   Timer_TriggerLoad_OLEDrag.Enabled = False
+   txt_FileName = FilePath_for_Txt
+End Sub
+
+
+Private Sub Timer_TriggerLoad_Timer()
+   Timer_TriggerLoad.Enabled = False
+   
+   Txt_FileName_Change
+
+End Sub
 
 Private Sub txt_FILE_DecryptionKey_Change()
    With txt_FILE_DecryptionKey
@@ -552,52 +607,57 @@ Private Sub txt_FILE_DecryptionKey_Validate(Cancel As Boolean)
 
 End Sub
 
-Private Sub Txt_Filename_Change()
-   
+Private Sub Txt_FileName_Change()
+  'Avoid to be triggered during load settings
+   If txt_FileName.Enabled = False Then Exit Sub
+  
    On Error GoTo Txt_Filename_err
-   If FileExists(Txt_Filename) Then
+   If FileExists(txt_FileName) Then
       
      'Clear Log (expect when run via commandline)
       If IsCommandlineMode = False Then List1.Clear
       Txt_Script = ""
       
-      FileName = Txt_Filename
-      
+      FileName = txt_FileName
       
       Log String(80, "=")
 '      log "           -=  " & Me.Caption & "  =-"
       Log Me.Caption
       Log String(80, "=")
-'      log ""
          
       Decompile
-      
-      Log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
-
-      For Each FileName In ExtractedFiles
+         Log "Testing for Scripts that were obfuscate by 'Jos van der Zande AutoIt3 Source Obfuscator v1.0.15 [July 1, 2007]' or 'EncodeIt 2.0'"
+'      For Each FileName In ExtractedFiles
 '         If FileName.Ext Like "*.au*" Then
-            On Error Resume Next
-            Log String(79, "=")
-         DeToken
-            If Err Then Log "ERR: " & Err.Description
+         Log String(79, "=")
+   
+      
+      FileName = ExtractedFiles("MainScript")
+         On Error Resume Next
+      DeToken
+         If Err Then Log "ERR: " & Err.Description
 
-            On Error Resume Next
-            Log String(79, "=")
-         DeObfuscate.DeObfuscate
-            If Err Then Log "ERR: " & Err.Description
-          Select Case Err
-          Case 0, ERR_NO_OBFUSCATE_AUT
-            
-            If Chk_RestoreIncludes.Value = vbChecked Then SeperateIncludes
-          
-          Case Else
+         On Error Resume Next
+         Log String(79, "=")
+      
+      
+      DeObfuscate.DeObfuscate
+         If Err Then Log "ERR: " & Err.Description
+         Select Case Err
+         Case 0, ERR_NO_OBFUSCATE_AUT
+            If Chk_RestoreIncludes.value = vbChecked Then _
+               SeperateIncludes
+               
+         Case Else
             Log Err.Description
-          End Select
-  
-         CheckScriptFor_COMPILED_Macro
+            
+         End Select
+
+
+      CheckScriptFor_COMPILED_Macro
  
 '        End If
-      Next
+'      Next
 
 ' ErrorHandle for For-Each-Loop
 Err.Clear
@@ -617,8 +677,8 @@ DeObfuscate:
       
 Txt_Filename_err:
   ' Add some fileName if it weren't done during decompile()
-    If ExtractedFiles.Count Then
-      ExtractedFiles.Add File.FileName
+    If IsAlreadyInCollection(ExtractedFiles, "MainScript") = False Then
+       ExtractedFiles.Add File.FileName, "MainScript"
     End If
 
   
@@ -650,8 +710,8 @@ Txt_Filename_err:
     'Save Log Data
     On Error Resume Next
     
-    FileName = ExtractedFiles(1).FileName
-    FileName.NameWithExt = "_myExeToAut.log"
+    FileName = ExtractedFiles("MainScript").FileName
+    FileName.NameWithExt = FileName.Name & "_myExeToAut.log"
     
     Log ""
     Log "Saving Logdata to : " & FileName.FileName
@@ -693,14 +753,14 @@ End Select
 End Function
 
 
-Private Sub Txt_Filename_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
-   On Error GoTo Txt_Filename_OLEDragDrop_err
+Private Sub txt_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
+   On Error GoTo Txt_FileName_OLEDragDrop_err
    
    FilePath_for_Txt = Data.Files(1)
-   Timer_OleDrag.Enabled = True
+   Timer_TriggerLoad_OLEDrag.Enabled = True
    
 
-Txt_Filename_OLEDragDrop_err:
+Txt_FileName_OLEDragDrop_err:
 Select Case Err
 Case 0
 

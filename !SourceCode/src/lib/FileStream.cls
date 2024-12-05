@@ -71,7 +71,7 @@ End Enum
 Private Declare Function SetFilePointer Lib "kernel32" (ByVal hFile As Long, ByVal lDistanceToMove As Long, lpDistanceToMoveHigh As Long, ByVal dwMoveMethod As Long) As Long
 Private Declare Function SetEndOfFile Lib "kernel32" (ByVal hFile As Long) As Long
 
-Private RetVal As Long
+Private Retval As Long
 Private bytesRead As Long
 Private Declare Function DeleteFile Lib "kernel32" Alias "DeleteFileA" (ByVal lpFileName As String) As Long
 Private Declare Function GetFileSize Lib "kernel32" (ByVal hFile As Long, lpFileSizeHigh As Long) As Long
@@ -139,8 +139,8 @@ Public Property Get FixedStringW(ByVal Length As Long) As String
    FixedStringW = Space(Length)
    
  ' Read Fixed String
-   RetVal = ReadFilePtr(hFile, StrPtr(FixedStringW), Length * 2, bytesRead, 0)
-   If RetVal < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
+   Retval = ReadFilePtr(hFile, StrPtr(FixedStringW), Length * 2, bytesRead, 0)
+   If Retval < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
 End Property
 
 
@@ -163,8 +163,8 @@ Public Property Get FixedString(ByVal Length As Long) As String
    FixedString = Space(Length)
    
  ' Read Fixed String
-   RetVal = ReadFile(hFile, FixedString, Length, bytesRead, 0)
-   If RetVal < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
+   Retval = ReadFile(hFile, FixedString, Length, bytesRead, 0)
+   If Retval < 0 Then Err.Raise vbObjectError, , "ReadFileString failed."
    
  ' Limit buffer incase the file is smaller
    FixedString = Left(FixedString, bytesRead)
@@ -408,9 +408,9 @@ Public Property Get longValue() As Long
 '    bytesRead = ReadFileLong(hFile, value, 4, bytesRead, 0)
 '    longValue = value
 
-  Dim RetVal&, bytesRead&
-  RetVal = ReadFileLong(hFile, longValue, 4, bytesRead, 0)
-  If bytesRead <> 4 Then MsgBox "[File::longValue] Only '" & bytesRead & "' bytes read instead of 4! RetVal: " & RetVal, vbCritical
+  Dim Retval&, bytesRead&
+  Retval = ReadFileLong(hFile, longValue, 4, bytesRead, 0)
+  If bytesRead <> 4 Then MsgBox "[File::longValue] Only '" & bytesRead & "' bytes read instead of 4! RetVal: " & Retval, vbCritical
 End Property
 
 
@@ -497,12 +497,12 @@ End Property
 
 
 Private Sub SeekToPosition(Offset&, SeekType As SeekType)
-   Dim RetVal&
-   RetVal = SetFilePointer(hFile, Offset, 0, SeekType)
-   If RetVal = -1 Then
+   Dim Retval&
+   Retval = SetFilePointer(hFile, Offset, 0, SeekType)
+   If Retval = -1 Then
       MsgBox "Error on SetFilePointer to :" & Offset, vbCritical
    Else
-      mvarMaxPosition = Max(mvarMaxPosition, RetVal)
+      mvarMaxPosition = Max(mvarMaxPosition, Retval)
    End If
 End Sub
 
@@ -598,7 +598,7 @@ Public Property Get ByteValue() As Long '(Offset&, lenght&)
     Dim bytesRead&
     Dim tmp$
     tmp = " "
-    RetVal = ReadFile(hFile, tmp, 1, bytesRead, 0)
+    Retval = ReadFile(hFile, tmp, 1, bytesRead, 0)
     ByteValue = Asc(tmp)
 End Property
 

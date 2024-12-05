@@ -4,13 +4,15 @@ Option Explicit
 Public File As New FileStream
 Public FileName As New ClsFilename
 
-Public Const ERR_NO_AUT_EXE& = vbObjectError + &H10
-Public Const ERR_NO_OBFUSCATE_AUT& = vbObjectError + &H20
+Public Const ERR_NO_AUT_EXE& = vbObjectError Or &H10
+Public Const ERR_NO_OBFUSCATE_AUT& = vbObjectError Or &H20
 
 Public Const DE_OBFUSC_TYPE_NOT_OBFUSC& = &H0
 Public Const DE_OBFUSC_TYPE_VANZANDE& = &H10000
 Public Const DE_OBFUSC_TYPE_ENCODEIT& = &H20000
-Public Const DE_OBFUSC_TYPE_CHR_ENCODE& = 10
+Public Const DE_OBFUSC_TYPE_CHR_ENCODE& = &H10
+Public Const DE_OBFUSC_TYPE_CHR_ENCODE_OLD& = &H8
+
 
 Public Const DE_OBFUSC_VANZANDE_VER14& = &H10014
 Public Const DE_OBFUSC_VANZANDE_VER15& = &H10015
@@ -53,10 +55,12 @@ End Sub
 Sub SaveScriptData(ScriptData$)
 
    With FrmMain
-   ' Adding a underscope '_' for lines longer than 2047
-   ' so Tidy will not complain
-      FrmMain.Log "Try to breaks very long lines (about 2000 chars) by adding '_'+<NewLine> ..."
-      ScriptData = AddLineBreakToLongLines(Split(ScriptData, vbCrLf))
+   
+   ' Not need anymore since Tidy v2.0.24.4 November 30, 2008
+'   ' Adding a underscope '_' for lines longer than 2047
+'   ' so Tidy will not complain
+'      FrmMain.Log "Try to breaks very long lines (about 2000 chars) by adding '_'+<NewLine> ..."
+'      ScriptData = AddLineBreakToLongLines(Split(ScriptData, vbCrLf))
    
 'debug
 'FrmMain.Chk_TmpFile.Value = vbChecked

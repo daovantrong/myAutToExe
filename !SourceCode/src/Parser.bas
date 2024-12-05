@@ -1,4 +1,7 @@
 Attribute VB_Name = "Parser"
+'_________________________________________________________________
+' NOTE: Module Not need anymore since Tidy v2.0.24.4 November 30, 2008 comes along with long scriptLines
+
 Option Explicit
    Dim Str As StringReader
    Dim Level&
@@ -52,7 +55,7 @@ End Function
 Function AddLineBreakToLongLines$(ByRef Lines)
 ' Adding a underscope '_' for lines longer than 2047
 ' so Tidy will not complain
-   
+
 '  Dim Lines
   Dim Line, NewLine As New clsStrCat
 '   Lines = Split(TextLine, vbCrLf)
@@ -64,32 +67,32 @@ Function AddLineBreakToLongLines$(ByRef Lines)
    '...total "&@CRLF&_
    '"fees....
    '
-   
+
 '   Const MAX_CODE_LINE_LENGHT& = 2000
 '   Const MAX_CODE_LINE_LENGHT& = 1897
    Const MAX_CODE_LINE_LENGHT& = 1800
-   
-   
+
+
    For Line = 0 To UBound(Lines)
-      
+
       Dim lineLen&
       lineLen = Len(Lines(Line))
-      
-      
+
+
       If lineLen > MAX_CODE_LINE_LENGHT Then
-         
+
          NewLine.Clear
-         
+
          Dim linePos&, LastPos&
          linePos = 1
          LastPos = 1
-         
+
          Do While linePos + MAX_CODE_LINE_LENGHT < lineLen
-            
+
             Dim CrackAtPos&
             CrackAtPos = InStrRev(Mid(Lines(Line), linePos, MAX_CODE_LINE_LENGHT), "&")
             If (CrackAtPos <> 0) Then
-                           
+
                NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos)
                NewLine.Concat " _" & vbCrLf
              ' Test for special cases
@@ -102,7 +105,7 @@ Function AddLineBreakToLongLines$(ByRef Lines)
 
                   GoTo notice_user
                End If
-            
+
             'IF with AND
             ElseIf Mid(Lines(Line), linePos, 3) = "IF " Then
                CrackAtPos = InStrRev(Mid(Lines(Line), linePos, MAX_CODE_LINE_LENGHT), " AND ")
@@ -119,22 +122,22 @@ notice_user:
                CrackAtPos = MAX_CODE_LINE_LENGHT
                NewLine.Concat Mid(Lines(Line), linePos, CrackAtPos)
                Log " PROBLEM: Line " & Line & " is longer than " & MAX_CODE_LINE_LENGHT & " Bytes. Tidy will refuse to work. Fix this manually an then apply Tidy."
-               
+
             End If
-           
+
             Inc linePos, CrackAtPos
-            
+
          Loop
-         
+
         'add last end
          NewLine.Concat Mid(Lines(Line), linePos)
-         
-         
+
+
          Lines(Line) = NewLine.value
-         
+
       End If
    Next
-  
+
   AddLineBreakToLongLines = Join(Lines, vbCrLf)
 
 End Function

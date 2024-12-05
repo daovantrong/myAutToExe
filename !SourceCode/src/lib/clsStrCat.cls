@@ -25,11 +25,11 @@ Public Sub Clear()
 End Sub
 
 'String anhängen:
-Public Sub Concat(ByRef Value As String)
+Public Sub Concat(ByRef value As String)
   Dim PointerNew As Long
   
   'Benötigten Buffer berechnen:
-  PointerNew = Pointer + LenB(Value)
+  PointerNew = Pointer + LenB(value)
   
   'Ggf. Buffer vergößern:
   If PointerNew > BufferLen Then
@@ -38,9 +38,29 @@ Public Sub Concat(ByRef Value As String)
   End If
   
   'String passend kopieren:
-  MidB$(Buffer, Pointer) = Value
+  MidB$(Buffer, Pointer) = value
   Pointer = PointerNew
 End Sub
+
+'String anhängen:
+Public Sub ConcatVariant(ByRef value As Variant)
+  Dim PointerNew As Long
+  
+  'Benötigten Buffer berechnen:
+  PointerNew = Pointer + LenB(value)
+  
+  'Ggf. Buffer vergößern:
+  If PointerNew > BufferLen Then
+    Buffer = Buffer & Space$(PointerNew)
+    BufferLen = LenB(Buffer)
+  End If
+  
+  'String passend kopieren:
+  MidB$(Buffer, Pointer) = value
+  Pointer = PointerNew
+End Sub
+
+
 
 'Länge des internen Strings:
 Public Property Get Length() As Long
@@ -48,9 +68,17 @@ Public Property Get Length() As Long
 End Property
 
 'Inhalt des internen Strings:
-Public Property Get Value() As String
-  Value = LeftB$(Buffer, Pointer - 1)
+Public Property Let value(vData As String)
+  Pointer = 1
+  Concat vData
+  
 End Property
+Public Property Get value() As String
+  value = LeftB$(Buffer, Pointer - 1)
+End Property
+
+
+
 
 'Neues Objekt initialisieren:
 Private Sub Class_Initialize()

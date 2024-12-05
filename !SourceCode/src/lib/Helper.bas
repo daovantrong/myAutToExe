@@ -22,7 +22,7 @@ Public Const ERROR_NONE = 0
 
 
 Public Const ERR_FILESTREAM = &H1000000
-Public Const ERR_OPENFILE = vbObjectError + ERR_FILESTREAM + 1
+Public Const ERR_OPENFILE = vbObjectError Or ERR_FILESTREAM + 1
 Private i, j As Integer
 
 Public Declare Sub MemCopyAnyToAny Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As Any, src As Any, ByVal Length&)
@@ -44,6 +44,16 @@ Private BenchtimeA&, BenchtimeB&
 
 'for mt_MT_Init to do a multiplation without 'overflow error'
 Private Declare Function iMul Lib "MSVBVM60.DLL" Alias "_allmul" (ByVal dw1 As Long, ByVal dw2 As Long, ByVal dw3 As Long, ByVal dw4 As Long) As Long
+
+
+'Ensure that 'myObjRegExp.MultiLine = True' else it will use the beginning of the string!
+Public Const RE_Anchor_LineBegin$ = "^"
+Public Const RE_Anchor_LineEnd$ = "$"
+
+Public Const RE_Anchor_WordBoarder$ = "\b"
+Public Const RE_Anchor_NoWordBoarder$ = "\B"
+Public Const RE_AnyChar$ = "."
+
 
 
 Function MulInt32&(a&, b&)
@@ -145,9 +155,15 @@ Function limit(value&, Optional ByVal upperLimit = &H7FFFFFFF, Optional lowerLim
    
 End Function
 
+Function isEven(Number As Long) As Boolean
+   isEven = ((Number And 1) = 0)
+End Function
+
 Function RangeCheck(ByVal value&, Max&, Optional Min& = 0, Optional ErrText, Optional ErrSource$) As Boolean
    RangeCheck = (Min <= value) And (value <= Max)
-   If (RangeCheck = False) And (IsMissing(ErrText) = False) Then Err.Raise vbObjectError, ErrSource, ErrText & " Value must between '" & Min & "'  and '" & Max & "' !"
+   If (RangeCheck = False) And (IsMissing(ErrText) = False) Then _
+       Err.Raise vbObjectError, ErrSource, _
+           ErrText & " Value must between '" & Min & "'  and '" & Max & "' !"
 End Function
 
 Public Function H8(ByVal value As Long)
@@ -177,6 +193,18 @@ Public Function Swap(ByRef a, ByRef b)
    Swap = b
    b = a
    a = Swap
+End Function
+
+'////////////////////////////////////////////////////////////////////////
+'// BlockAlign_r  -  Erzeugt einen linksbündigen BlockString
+'//
+'// Beispiel1:     BlockAlign_l("Summe",7) -> "  Summe"
+'// Beispiel2:     BlockAlign_l("Summe",4) -> "umme"
+Public Function BlockAlign_r(RawString, Blocksize) As String
+  'String kürzen lang wenn zu
+   RawString = Right(RawString, Blocksize)
+  'mit Leerzeichen auffüllen
+   BlockAlign_r = RawString & Space(Blocksize - Len(RawString))
 End Function
 
 '////////////////////////////////////////////////////////////////////////
@@ -337,7 +365,7 @@ End Function
 Public Function BenchEnd()
 
    BenchtimeB = GetTickCount
-   Debug.Print BenchtimeB - BenchtimeA
+   Debug.Print Time & " - " & BenchtimeB - BenchtimeA
 
 End Function
 
@@ -356,12 +384,96 @@ End Function
 Public Function Brackets(ByRef Text As String) As String
    Brackets = "(" & Text & ")"
 End Function
-Public Function WSpace(ParamArray Elements()) As String
+
+Public Function RE_WSpace(ParamArray Elements()) As String
    Dim WS$ ' WhiteSpace
    WS = "\s*"
    
-   WSpace = Join(Elements, WS)
+   RE_WSpace = Join(Elements, WS)
 End Function
 
 
+
+Public Function RE_LookHead_positive(ExpressionThatShouldBeFound$) As String
+   RE_LookHead_positive = "(?=" & ExpressionThatShouldBeFound & ")"
+End Function
+
+Public Function RE_LookHead_negative(ExpressionThatShouldNOTBeFound$) As String
+   RE_LookHead_negative = "(?!" & ExpressionThatShouldNOTBeFound & ")"
+End Function
+
+Public Function RE_Repeat(Optional MinRepeat& = 0, Optional MaxRepeat = "") As String
+   If (MinRepeat = MaxRepeat) Then
+      RE_Repeat = "{" & MinRepeat & "}"
+   Else
+      RE_Repeat = "{" & MinRepeat & "," & MaxRepeat & "}"
+   End If
+   
+End Function
+
+
+Public Function RE_AnyCharRepeat(Optional MinRepeat& = 0, Optional MaxRepeat = "") As String
+   RE_AnyCharRepeat = "." & RE_Repeat(MinRepeat, MaxRepeat)
+End Function
+
+Public Function RE_Group(RegExpForTheGroup$) As String
+   RE_Group = "(" & RegExpForTheGroup & ")"
+End Function
+
+Public Function RE_Group_NonCaptured(RegExpForTheNonCapturedGroup$) As String
+   RE_Group_NonCaptured = "(?:" & RegExpForTheNonCapturedGroup & ")"
+End Function
+
+Public Function RE_Literal(TextWithLiterals) As String
+   'Mask metachars
+   RE_Literal = RE_Mask(TextWithLiterals, "][{}()*+?.\\^$|")
+                                           
+End Function
+
+Private Function RE_Mask(ByVal Text, CharsToMask$) As String
+'   Dim t As New RegExp
+   With New RegExp
+      .Global = True
+      
+     ' Unmask it first to avoid double mask
+      .Pattern = "\\" & _
+                  "([" & CharsToMask & "])"
+       Text = .Replace(Text, "$1")
+   
+     ' Mask MetaChars like with a preciding '\'
+      .Pattern = "[" & CharsToMask & "]"
+      RE_Mask = .Replace(Text, "\$&")
+   
+   
+   End With
+
+End Function
+
+Public Function RE_CharCls(Chars$) As String
+   ' mask ']' and '-'
+   RE_CharCls = "[" & RE_Mask(Chars, "]\\-") & "]"
+End Function
+
+Public Function RE_CharCls_Excluded(Chars$) As String
+   ' mask ']' and '-'
+   RE_CharCls_Excluded = "[^" & RE_Mask(Chars, "]\\-") & "]"
+
+End Function
+
+Public Function IsAlreadyInCollection(CollectionToTest As Collection, Key$) As Boolean
+   Dim Description$, Number&, Source$
+   Description = Err.Description
+   Number = Err.Number
+   Source = Err.Source
+   
+      On Error Resume Next
+      CollectionToTest.item Key
+      IsAlreadyInCollection = (Err = 0)
+      
+   Err.Description = Description
+   Err.Number = Number
+   Err.Source = Source
+
+
+End Function
 

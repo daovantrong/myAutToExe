@@ -28,7 +28,8 @@
 </style> 
       <div class="ContentArea">
           
-          <div class="topic"><div class="majorTitle">JScript<!----></div><div class="title">
+          <div class="topic">
+            <div class="title">
         <a href="http://msdn.microsoft.com/en-us/library/1400241x(VS.85).aspx">Regular Expression Syntax (Scripting)</a>
           	</div><!--
       Content type: Devdiv1. Transform: orcas2mtps.xslt.
@@ -42,7 +43,8 @@ a character pattern to the string being searched. </p></div><div id="ctl00_mainC
 	<div id="ctl00_mainContentContainer_cpe38657_h" class="CollapseRegionLink">
 		<img id="ctl00_mainContentContainer_cpe38657_i" class="LibC_o" src="regexp/clear.gif" style="border-width: 0px; vertical-align: middle;">&nbsp;Examples of Regular Expressions
 	</div><div style="overflow: visible; display: block; height: auto;" id="ctl00_mainContentContainer_cpe38657_c" class="MTPS_CollapsibleSection"><div style="display: block;" id="" class="MTPS_CollapsibleSection">
-		<a name="sectionToggle0"><!----></a><div class="caption"><!----></div><div class="tableSection"><table width="50%" frame="lhs"><tbody><tr><th><p>
+		<!---->
+		<div class="caption"><!----></div><div class="tableSection"><table width="50%" frame="lhs"><tbody><tr><th><p>
                     JScript
                 </p></th><th><p>
                     VBScript
@@ -62,7 +64,8 @@ a character pattern to the string being searched. </p></div><div id="ctl00_mainC
                     Validate an ID number consisting of 2 digits, a hyphen, and another 5 digits.
                 </p></td></tr></tbody></table></div><p>
 The following table contains the complete list of metacharacters and
-their behavior in the context of regular expressions: </p><div class="caption"><!----></div><div class="tableSection"><table width="50%" frame="lhs"><tbody><tr><th><p>
+their behavior in the context of regular expressions: </p><div class="caption"><!----></div><div class="tableSection"><table width="50%" frame="lhs">
+  <tbody><tr><th><p>
                     Character
                 </p></th><th><p>
                     Description
@@ -75,32 +78,37 @@ character "n". '\n' matches a newline character. The sequence '\\'
 matches "\" and "\(" matches "(". </p></td></tr><tr><td><p>
                     ^
                 </p></td><td><p>
-                    Matches the position at the beginning of the input string. If the <b>RegExp</b> object's <b>Multiline</b> property is set, ^ also matches the position following '\n' or '\r'.
+                    Matches the position at the <u>beginning</u> of the input string.<br />
+                    If the <b>RegExp</b> object's <b>Multiline</b> property is set, ^ also matches the position following '\n' or '\r'.
                 </p></td></tr><tr><td><p>
                     $
                 </p></td><td><p>
-                    Matches the position at the end of the input string. If the <b>RegExp</b> object's <b>Multiline</b> property is set, $ also matches the position preceding '\n' or '\r'.
+                    Matches the position at the <u>end</u> of the input string.<br />
+                    If the <b>RegExp</b> object's <b>Multiline</b> property is set, $ also matches the position preceding '\n' or '\r'.
                 </p></td></tr><tr><td><p>
                     *
                 </p></td><td><p>
-Matches the preceding character or subexpression zero or more times.
-For example, zo* matches "z" and "zoo". * is equivalent to {0,}. </p></td></tr><tr><td><p>
+Matches the preceding character or subexpression <u>zero</u> or more times.
+    <br />
+    For example, zo* matches "z" and "zoo". * is equivalent to {0,}. </p></td></tr><tr><td><p>
                     +
                 </p></td><td><p>
-Matches the preceding character or subexpression one or more times. For
+Matches the preceding character or subexpression <u>one</u> or more times. <br />
+For
 example, 'zo+' matches "zo" and "zoo", but not "z". + is equivalent to
 {1,}. </p></td></tr><tr><td><p>
                     ?
                 </p></td><td><p>
-Matches the preceding character or subexpression zero or one time. For
+Matches the preceding character or subexpression <u>zero</u> or <u>one</u> time. <br />
+For
 example, "do(es)?" matches the "do" in "do" or "does". ? is equivalent
 to {0,1} </p></td></tr><tr><td><p>
                     {<i>n</i>}
-                </p></td><td><p> <i>n</i> is a nonnegative integer. Matches exactly <i>n</i> times. For example, 'o{2}' does not match the 'o' in "Bob," but matches the two o's in "food".
+                </p></td><td><p> <i>n</i> is a nonnegative integer. Matches <u>exactly</u> <i>n</i> times. For example, 'o{2}' does not match the 'o' in "Bob," but matches the two o's in "food".
                 </p></td></tr><tr><td><p>
                     {<i>n</i>,}
-                </p></td><td><p> <i>n</i> is a nonnegative integer. Matches at least <i>n</i>
-times. For example, 'o{2,}' does not match the "o" in "Bob" and matches
+                </p></td><td><p> <i>n</i> is a nonnegative integer. Matches <u>at least</u> <i>n</i>
+times. For example, 'o{2,}' does not match the 'o' in "Bob" and matches
 all the o's in "foooood". 'o{1,}' is equivalent to 'o+'. 'o{0,}' is
 equivalent to 'o*'. </p></td></tr><tr><td><p>
                     {<i>n</i>,<i>m</i>}
@@ -134,21 +142,26 @@ parts of a pattern with the "or" character (|). For example,
 'industry|industries'. </p></td></tr><tr><td><p>
                     (?=<i>pattern</i>)
                 </p></td><td><p>
-                    Positive lookahead matches the search string at any point where a string matching <i>pattern</i>
-begins. This is a non-capturing match, that is, the match is not
+                    <u>Positive</u> lookahead matches the search string at any point where a string matching <i>pattern</i>
+begins. <br />
+This is a non-capturing match, that is, the match is not
 captured for possible later use. For example 'Windows
 (?=95|98|NT|2000)' matches "Windows" in "Windows 2000" but not
-"Windows" in "Windows 3.1". Lookaheads do not consume characters, that
+"Windows" in "Windows 3.1". <br />
+Lookaheads do not consume characters, that
 is, after a match occurs, the search for the next match begins
 immediately following the last match, not after the characters that
 comprised the lookahead. </p></td></tr><tr><td><p>
                     (?!<i>pattern</i>)
                 </p></td><td><p>
-                    Negative lookahead matches the search string at any point where a string not matching <i>pattern</i>
-begins. This is a non-capturing match, that is, the match is not
+                    <u>Negative</u> lookahead matches the search string at any point where a string <u>not</u> matching <i>pattern</i>
+begins. 
+<br />
+This is a non-capturing match, that is, the match is not
 captured for possible later use. For example 'Windows
 (?!95|98|NT|2000)' matches "Windows" in "Windows 3.1" but does not
-match "Windows" in "Windows 2000". Lookaheads do not consume
+match "Windows" in "Windows 2000". <br />
+Lookaheads do not consume
 characters, that is, after a match occurs, the search for the next
 match begins immediately following the last match, not after the
 characters that comprised the lookahead. </p></td></tr><tr><td><p> <i>x</i>|<i>y</i> </p></td><td><p>
@@ -249,17 +262,14 @@ example, '(.)\1' matches two consecutive identical characters. </p></td></tr><tr
                 </p></td></tr><tr><td><p>
                     \u<i>n</i> </p></td><td><p>
                     Matches <i>n</i>, where <i>n</i> is a Unicode character expressed as four hexadecimal digits. For example, \u00A9 matches the copyright symbol (©).
-                </p></td></tr></tbody></table></div>
-	</div></div>
-</div></div>  </div></div>
-      </div>
+                </p></td></tr></tbody></table></div></div></div></div></div>  </div></div></div>
       <div id="ctl00_WikiViewer1_cc" class="wv_cc">
 	
     <div id="ctl00_WikiViewer1_ccContainer">
 		<div class="wv_ccTopicTags">
 			<span class="wv_ccTitle">Tags:&nbsp;</span><span>regularexpression&nbsp;</span>
 		</div>
-        &nbsp;
+         
         <div class="wv_cclogo">
 	        <img id="ctl00_WikiViewer1_WikiLogo" src="regexp/wiki.gif" style="border-width: 0px;">
         </div>

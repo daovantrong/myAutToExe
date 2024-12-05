@@ -90,7 +90,6 @@ Sub log_verbose(TextLine$)
 End Sub
 
 
-
 Sub FL(Text)
    FrmMain.FL Text
 End Sub
@@ -465,7 +464,7 @@ Private Sub FindStartOfScriptAlternative()
 ' === Alternativ Scan ===
           
     '  Signature not found - try alternative search...
-      'Err.Raise vbObjectError + 41022, , "Error: The executable file is not recognised as a compiled AutoIt script."
+      'Err.Raise vbObjectError Or 41022, , "Error: The executable file is not recognised as a compiled AutoIt script."
 Log "AlternativeSigScan for 'FILE'-signature in au3-body..."
 'The Compiled Script AutoIT File format
 '--------------------------------------
@@ -481,9 +480,24 @@ Log "AlternativeSigScan for 'FILE'-signature in au3-body..."
          If FindLocation(DeCryptNew("FILE", FILE_DecryptionKey_New), "FILE-(new)signature", True) = -1 Then  '6382) '18EE
            ' Not Found - Search for signature of new Aut3Script
            ' ...Error Exit Sub
-            Err.Raise ERR_NO_AUT_EXE, , "'FILE'-signature not found. Please enter start of script manually."
+           
+            If IsValidPEFile Then
+               Log "Alternative search fail - assuming end of exe-stub as start of script. This is very vague but may work..."
+               If (PEFile_EOF_Offset - File.Length) < &H40 Then
+                  Err.Raise ERR_NO_AUT_EXE, , "At the end must be at least 0x40 bytes at the end... Please enter start of script manually."
+               Else
+                  File.Position = PEFile_EOF_Offset + Len(AU3Sig)
+               End If
+               
+               
+               
+               
+            Else
+               Err.Raise ERR_NO_AUT_EXE, , "'FILE'-signature not found. Please enter start of script manually."
+            End If
+            
             Exit Sub
-
+            
          Else
          
             '...Finally found :)
@@ -627,13 +641,15 @@ Private Sub FindStartOfScript()
    If FrmMain.Chk_NormalSigScan.value = vbChecked Then
       Dim Location&
       Location = FindLocation(AU3Sig.Data, "AutoIt Signature")
+      If Location = -1 Then
+         FindStartOfScriptAlternative
+      End If
+      
    Else
-      Location = -1
-   End If
-   
-   If Location = -1 Then
       FindStartOfScriptAlternative
    End If
+   
+
 
 End Sub
 
@@ -657,7 +673,7 @@ Private Function FindLocation(SearchPattern$, Optional PatternName$ = "", Option
        ' and check if Findpattern was found more than one time
       If Locations.Count = 0 Then
        '  Signature not found - try alternative search...
-         'Err.Raise vbObjectError + 41022, , "Error: The executable file is not recognised as a compiled AutoIt script."
+         'Err.Raise vbObjectError Or 41022, , "Error: The executable file is not recognised as a compiled AutoIt script."
    Log "...not found."
          FindLocation = -1
         
@@ -823,8 +839,9 @@ Public Sub Decompile()
         
      End If
     
+      RangeCheck .Position, .Length, 0, "ERROR: ScriptStartPosition is outside the file! -", "Decompile"
     
-    
+    'File
     ' ===> Check if it's an old or New AutoIt Script
       Dim SubType As New StringReader:   SubType.DisableAutoMove = True
       SubType = .FixedString(4)
@@ -888,7 +905,7 @@ Public Sub Decompile()
          End If
          
          
-         'Err.Raise vbObjectError + 41022, , "Error: Unsupported Version of AutoIt script."
+         'Err.Raise vbObjectError Or 41022, , "Error: Unsupported Version of AutoIt script."
 
       
          ' GetPassword Hash from with later the key to decrypt the script is calculated
@@ -977,10 +994,12 @@ Public Sub Decompile()
          End If
          If ResType <> "FILE" Then
          
-           ' Is checkbox normal signature scan unchecked OR
-           ' minimal Overlay(0x40Bytes) ?
-            If (FrmMain.Chk_NormalSigScan.value = vbUnchecked) Or _
-               (.Length - .Position <= &H40) Then
+           ' Is checkbox normal signature scan is not greyed out(disabled) OR
+           ' minimal Overlay(0x40Bytes)
+           ' Not the first File? (because a au3exe without at least one file makes no sense)
+            If ((FrmMain.Chk_NormalSigScan.Enabled) Or _
+               (.Length - .Position <= &H40)) And _
+               (FileCount > 1) Then
 Processing_Finished:
                   Log "Processing Finished!"
                ' No valid FILE Marker so seek back
@@ -1094,20 +1113,32 @@ Processing_Finished:
          ScriptData = .FixedString(ScriptSize)
    
          ' ==> Create output fileName
-         Dim OutFileName As New ClsFilename
+         Dim OutFileName As ClsFilename
+         Set OutFileName = New ClsFilename
+         
          ' initialise with ScriptPath
          OutFileName = File.FileName
          
+         
+         'Note: AHK saves the mainscript as *.tmp
          If (CompiledPathName.Name Like "*>*") Or (CompiledPathName.Ext Like "*tmp*") Then
             
             OutFileName.Ext = Switch(bIsAHK_Script, ".ahk", _
                                      bIsNewScriptType, ".tok", _
                                      isAutoIT2Script, ".aut", _
                                      True, ".au3")
-            If ExtractedFiles.Count > 0 Then
+            If IsAlreadyInCollection(ExtractedFiles, "MainScript") Then
                OutFileName.Name = OutFileName.Name & "_" & ExtractedFiles.Count
+               ' Add extracted FileName to global ExtractedFiles List
+               ExtractedFiles.Add OutFileName
+
+            Else
+             ' Add extracted FileName to global ExtractedFiles List as 'MainScript'
+               ExtractedFiles.Add OutFileName, "MainScript"
+            
             End If
-         
+            
+
          Else
             
             'if its an absolute path like "C:\Documents and Settings\EnCodeItInfo\Restart_EnCoded1.au3"
@@ -1121,6 +1152,9 @@ Processing_Finished:
             
             ' create Dir if it doesn't exists
             OutFileName.MakePath
+            
+          ' Add extracted FileName to global ExtractedFiles List
+            ExtractedFiles.Add OutFileName
             
          End If
               
@@ -1215,6 +1249,17 @@ Processing_Finished:
                   Log "   FAILED!"
                   Log "   Calculate ADLER32: " & H32(ScriptData_CRC_Calculated)
                   Log "   CRC from script  : " & H32(ScriptData_CRC)
+                  
+                  MsgBox "The checksum from the ExeArc_Header and" & vbCrLf & _
+                           "the calculated checksum on the decrypted scriptdata differs." & vbCrLf & _
+                           "Well either decryption failed or the scriptdata is corrupted." & vbCrLf & _
+                            vbCrLf & _
+                           "Note: Often this error is caused by a AutoIT-Exe that was compressed with Armadillon." & vbCrLf & _
+                           "Armadillon just lightly 'compresses' the script so myAutToExe finds the header - but" & vbCrLf & _
+                           "later the scriptdata gets 'corrupted' through this compression." & vbCrLf & _
+                            vbCrLf & _
+                           "To fix this error, dump the decompressed data from memory to a file." & vbCrLf & _
+                           "For more details see 'readme.txt'.", vbCritical, "Warning checksum failure"
                End If
             End If
             
@@ -1282,7 +1327,7 @@ Processing_Finished:
                    Log "Compressed scriptdata written to " & .FileName
          
                   
-                  Dim RetVal&
+                  Dim Retval&
                 ' About LZSS see: http://de.wikipedia.org/wiki/Lempel-Ziv-Storer-Szymanski-Algorithmus
          
          '         Dim tmpstr$
@@ -1311,34 +1356,50 @@ Processing_Finished:
              ' Applied Post AHK_Sub_Key if necessary
              ' if it's "; <COMPILER: v1.0.46.15>" text is already uncrypted and so this step
              ' need to be skipped
-               Dim AHK_Sub_Key&
+               Dim AHK_Sub_Key As Byte
                If bDoAHK_add And Not (.mvardata Like "; <COMPILER*") Then
 
-                 'init AHK_Sub_Key
+
+                 
+                 'init AHK_Sub_Key(normal way)
                   AHK_Sub_Key = SizeUncompressed And 255
                   AHK_Sub_Key = AHK_Sub_Key + &H40  '<-BugFix (That line was missing)
                   If AHK_Sub_Key = 0 Then AHK_Sub_Key = &H40
                   
-                        Log "Appling AHK extra decryption; substraction Key: " & H8(AHK_Sub_Key)
+                  Log "AHK substraction key: " & H8(AHK_Sub_Key)
+            
                   
-'                        Dim StrCharPos&, tmpBuff$
-                          tmpBuff = StrConv(.mvardata, vbFromUnicode)
-                          Dim tmpByte As Byte
-                          For StrCharPos = 1 To Len(.mvardata)
-                             tmpByte = AscB(MidB$(tmpBuff, StrCharPos, 1))
-                             tmpByte = (tmpByte - AHK_Sub_Key) And &HFF
-                             MidB$(tmpBuff, StrCharPos, 1) = ChrB$(tmpByte)
-               
-                             If 0 = (StrCharPos Mod &H8000) Then DoEvents
-                             
-                          Next
-                        .mvardata = StrConv(tmpBuff, vbUnicode)
-                        
-                        outFile.CloseFile
-                        
-                        Log "Saving decrypted data to """ & OutFileName.NameWithExt & """ at " & OutFileName.Path
-                        outFile.Create OutFileName.FileName, True, False, False
-                        outFile.Data = .Data
+                 'init AHK_Sub_Key(alternative way)
+                 'Alternative way to calc the XOR key
+                 'well this assumes that the script start like this "; <COMPILER..."
+                  Dim AHK_Sub_Key_Heuristic As Byte
+                  .Position = 0
+                  AHK_Sub_Key_Heuristic = .int8 - Asc(";")
+                  
+                  
+                  If AHK_Sub_Key <> AHK_Sub_Key_Heuristic Then
+                     'Ask user
+                     FrmAHK_KeyFinder.Create ScriptData, AHK_Sub_Key_Heuristic
+                     FrmAHK_KeyFinder.Show vbModal
+                     AHK_Sub_Key = FrmAHK_KeyFinder.AHK_Key
+                     
+                     'AHK_Sub_Key = "&h" & InputBox("Hmm somehow the script is be modified." & vbCrLf & _
+                     "The script normal key is :" & H8(AHK_Sub_Key) & ". However the " & vbCrLf & _
+                     "alternative key seem to be better here. Just press enter to use it. ...or change it.", "Please enter AHK-Key", H8(AHK_Sub_Key_Heuristic))
+                     
+                     Log "AHK script stub was modified; using alterative/userdefined substraction key: " & H8(AHK_Sub_Key)
+                  
+                  End If
+                  
+                  
+'                  Log "Appling AHK extra decryption..."
+                  ScriptData = AHK_ExtraDecryption(ScriptData, AHK_Sub_Key)
+                  
+                  outFile.CloseFile
+                  
+                  Log "Saving decrypted data to """ & OutFileName.NameWithExt & """ at " & OutFileName.Path
+                  outFile.Create OutFileName.FileName, True, False, False
+                  outFile.Data = .Data
 
                End If
      
@@ -1352,20 +1413,13 @@ Processing_Finished:
             
             End If
             
-          ' Add extracted FileName to global ExtractedFiles List
-          ' Clear global list with extracted files
-            Dim newFileName As ClsFilename
-            Set newFileName = New ClsFilename
-
-            newFileName.FileName = OutFileName.FileName
-            ExtractedFiles.Add newFileName
 
             Log "Setting Creation and LastWrite time"
             Err.Clear
-            RetVal = SetFileTime(outFile.hFile, pCreationTime, 0, pLastWrite)
-            If RetVal = 0 Then
-               RetVal = Err.LastDllError
-               Log "LastDllError: " & RetVal
+            Retval = SetFileTime(outFile.hFile, pCreationTime, 0, pLastWrite)
+            If Retval = 0 Then
+               Retval = Err.LastDllError
+               Log "LastDllError: " & Retval
             End If
             
           
@@ -1596,6 +1650,15 @@ Sub CheckScriptFor_COMPILED_Macro()
       If FoundPos >= 0 Then
          Log "WARNING: The '@COMPILED' was found in the script - at position: " & FoundPos & _
              " to avoid 'bad suprises' you should manually check the code at this location(s) before you run it."
+             
+       ' Show first occurence of "@COMPILED" and mark it
+         .Move -200
+         With FrmMain.Txt_Script
+            .Text = File.FixedString(-1)
+            .SelStart = 200
+            .SelLength = 10 'Note: "@COMPILED" is 10 byte long
+            .SetFocus
+         End With
       End If
    End With
       
@@ -1606,3 +1669,29 @@ Private Sub OverWriteSignature(LZSS_Signature_new$)
    ScriptData.Move -4
    ScriptData.FixedString(4) = LZSS_Signature_new
 End Sub
+
+Public Function AHK_ExtraDecryption(ScriptData As StringReader, ByVal AHK_Sub_Key&) As StringReader
+   
+   With ScriptData
+   
+      Dim tmpBuff$
+      tmpBuff = StrConv(.mvardata, vbFromUnicode)
+      Dim tmpByte As Byte
+      
+      Dim StrCharPos&
+      For StrCharPos = 1 To Len(.mvardata)
+         tmpByte = AscB(MidB$(tmpBuff, StrCharPos, 1))
+         tmpByte = (tmpByte - AHK_Sub_Key) And &HFF
+         MidB$(tmpBuff, StrCharPos, 1) = ChrB$(tmpByte)
+      
+         If 0 = (StrCharPos Mod &H8000) Then DoEvents
+         
+      Next
+      
+      Set AHK_ExtraDecryption = New StringReader
+      AHK_ExtraDecryption.Data = StrConv(tmpBuff, vbUnicode)
+      
+      FrmMain.Txt_Script = AHK_ExtraDecryption.Data
+      
+   End With
+End Function

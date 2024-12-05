@@ -107,7 +107,10 @@ Public Sub MakePath()
       On Error Resume Next
       MkDir NewPath
       
-      If (Err <> 75) And (Err <> 0) Then  'And (Err <> 76)
+     
+     '75 - "Path/File access error"  Example: "\"
+     '76 - "Path not found"  Example: "\\intel2400"
+      If (Err <> 75) And (Err <> 0) And (Err <> 76) Then
       Dim tmpstr$
          tmpstr = Err.Description & " [" & Err.Number & "] when creating dir: " & Path
          On Error GoTo 0
