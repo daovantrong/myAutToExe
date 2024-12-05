@@ -99,7 +99,7 @@ End Function
 
 Function ShellEx&(FileName$, Params$, Optional WinStyle As VbAppWinStyle = vbHide)
       
-Dim Retval&, PID&
+Dim retval&, PID&
 '   On Error Resume Next
 '  RetVal = ShellExecute(Me.hwnd, "open", """" & App.Path & "/" & "lzss.exe""", "-d """ & dbgFile.FileName & """ """ & outFileName & """", "", SW_NORMAL)
 On Error GoTo ShellEx_err
@@ -116,10 +116,10 @@ On Error GoTo ShellEx_err
        GUI_SkipEnable
 
        Do
-          Retval = GetExitCodeProcess(hProcess, ExitCode)
+          retval = GetExitCodeProcess(hProcess, ExitCode)
 '               RetVal = WaitForSingleObject(hProcess, 100)
           myDoEvents
-       Loop While Retval And (ExitCode = STILL_ACTIVE)
+       Loop While retval And (ExitCode = STILL_ACTIVE)
        
        ShellEx = ExitCode
     Else
@@ -143,8 +143,8 @@ Select Case Err
       Err.Raise vbObjectError Or Err.Number, "ShellEx()", "Shell(" & ShellCommand & ") [@ApiHelper.bas] FAILED! Error: " & Err.Description
    
    Case ERR_SKIP
-      Retval = TerminateProcess(hProcess, ExitCode)
-      If Retval Then
+      retval = TerminateProcess(hProcess, ExitCode)
+      If retval Then
          Log "User skipped/canceled process " & FileName & " terminated."
       Else
          Log "User skipped/canceled process " & FileName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
@@ -169,11 +169,11 @@ End Function
 'End Sub
 Public Function FileRename(SourceFileName$, destinationFileName$) As Boolean
 
-      Dim Retval&
+      Dim retval&
 '      log_verbose "Renaming: " & SourceFileName & " -> " & destinationFileName
-      Retval = MoveFile(SourceFileName$ & vbNullChar, destinationFileName$ & vbNullChar)
+      retval = MoveFile(SourceFileName$ & vbNullChar, destinationFileName$ & vbNullChar)
       
-      If Retval = 0 Then
+      If retval = 0 Then
          On Error Resume Next
          GetAttr SourceFileName
          If Err Then

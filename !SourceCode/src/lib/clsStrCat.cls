@@ -28,7 +28,6 @@ Attribute value.VB_UserMemId = 0
   
 End Property
 Public Property Get value() As String
-Attribute value.VB_UserMemId = 0
 
   value = LeftB$(Buffer, Pointer - 1)
 End Property

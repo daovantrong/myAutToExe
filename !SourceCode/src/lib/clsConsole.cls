@@ -123,11 +123,11 @@ On Error GoTo ShellExConsole_err
     
   ' Create hWritePipe for CreateProcess!STARTUPINFO
   ' -> creates a console we'll read the output from
-    Dim Retval As Long
+    Dim retval As Long
     Dim hReadPipe As Long, hWritePipe As Long
-    Retval = CreatePipe(hReadPipe, hWritePipe, sa, 0)
-    If Retval = 0 Then
-        Err.raise 5, , "CreatePipe failed! RetVal: 0x" & H32(Retval)
+    retval = CreatePipe(hReadPipe, hWritePipe, sa, 0)
+    If retval = 0 Then
+        Err.Raise 5, , "CreatePipe failed! RetVal: 0x" & H32(retval)
     End If
    
   ' Prepare STARTUPINFO for CreateProcess
@@ -142,14 +142,15 @@ On Error GoTo ShellExConsole_err
       
       End If
       .hStdOutput = hWritePipe
+ '     .hStdError = hWritePipe
     End With
     
   ' Call CreateProcess
     Dim proc As PROCESS_INFORMATION
-    Retval = CreateProcessA(0&, ShellCommand$, sa, sa, 1&, _
+    retval = CreateProcessA(0&, ShellCommand$, sa, sa, 1&, _
         NORMAL_PRIORITY_CLASS, 0&, 0&, STARTUPINFO, proc)
 
-    If Retval <> 0 Then
+    If retval <> 0 Then
         
         Do
             Dim lPeekData As Long
@@ -162,8 +163,8 @@ On Error GoTo ShellExConsole_err
                 Dim L As Long
                 Dim Buffer As String
                 Buffer = Space$(lPeekData)
-                Retval = ReadFile(hReadPipe, Buffer, Len(Buffer), L, 0&)
-                If Retval = 1 Then
+                retval = ReadFile(hReadPipe, Buffer, Len(Buffer), L, 0&)
+                If retval = 1 Then
                     
                     Buffer = Left(Buffer, L)
                     
@@ -176,7 +177,7 @@ On Error GoTo ShellExConsole_err
                     
                     
                 Else
-                    Err.raise 5, , "ReadFile failed! RetVal: 0x" & H32(Retval)
+                    Err.Raise 5, , "ReadFile failed! RetVal: 0x" & H32(retval)
                 End If
                 
             Else
@@ -190,7 +191,7 @@ On Error GoTo ShellExConsole_err
         Loop While GetExitCode_RetVal And (ExitCode = STILL_ACTIVE)
     
     Else
-        Err.raise 5, , "CreateProcessA failed! RetVal: 0x" & H32(Retval)
+        Err.Raise 5, , "CreateProcessA failed! RetVal: 0x" & H32(retval)
     End If
     
     CloseHandle hReadPipe
@@ -204,19 +205,19 @@ ShellExConsole_err:
 Select Case Err
    Case 0
    Case 5, 53
-      Err.raise vbObjectError Or Err.Number, "ShellExConsole()", "Shell(" & ShellCommand & ") [@ApiHelper.bas] FAILED! Error: " & Err.Description
+      Err.Raise vbObjectError Or Err.Number, "ShellExConsole()", "Shell(" & ShellCommand & ") [@ApiHelper.bas] FAILED! Error: " & Err.Description
       
    Case ERR_CANCEL_ALL
-      Retval = TerminateProcess(proc.hProcess, ExitCode)
-      If Retval Then
-         Err.raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated."
+      retval = TerminateProcess(proc.hProcess, ExitCode)
+      If retval Then
+         Err.Raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated."
       Else
-         Err.raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
+         Err.Raise ERR_CANCEL_ALL, , "User canceled process " & ProgramName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
       End If
       
    Case ERR_SKIP
-      Retval = TerminateProcess(proc.hProcess, ExitCode)
-      If Retval Then
+      retval = TerminateProcess(proc.hProcess, ExitCode)
+      If retval Then
          Log "User skipped/canceled process " & ProgramName & " terminated."
       Else
          Log "User skipped/canceled process " & ProgramName & " terminated. FAILED! - ErrCode: " & H32(Err.LastDllError)
@@ -224,7 +225,7 @@ Select Case Err
       
       
    Case Else
-      Err.raise vbObjectError Or Err.Number, "ShellExConsole()", Err.Description
+      Err.Raise vbObjectError Or Err.Number, "ShellExConsole()", Err.Description
 End Select
 
 

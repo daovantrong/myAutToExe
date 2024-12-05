@@ -85,15 +85,21 @@ Sub DoEventsVerySeldom()
 End Sub
 
 Sub ShowScript(ScriptData$)
-   If isUTF16(ScriptData) Then
-      FrmMain.Txt_Script = StrConv((Mid(ScriptData, 1 + Len(UTF16_BOM))), vbFromUnicode)
-   ElseIf isUTF8(ScriptData) Then
-      FrmMain.Txt_Script = Mid(ScriptData, 1 + Len(UTF8_BOM))
-   Else
-      FrmMain.Txt_Script = ScriptData
-   End If
+   
+   FrmMain.Txt_Script = Script_RawToText(ScriptData)
 
 End Sub
+
+Function Script_RawToText(ByRef ScriptData$) As String
+   If isUTF16(ScriptData) Then
+      Script_RawToText = StrConv((Mid(ScriptData, 1 + Len(UTF16_BOM))), vbFromUnicode)
+   ElseIf isUTF8(ScriptData) Then
+      Script_RawToText = Mid(ScriptData, 1 + Len(UTF8_BOM))
+   Else
+      Script_RawToText = ScriptData
+   End If
+
+End Function
 
 Sub SaveScriptData(ScriptData$, Optional skipTidy As Boolean)
 

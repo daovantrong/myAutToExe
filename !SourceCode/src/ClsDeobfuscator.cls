@@ -51,9 +51,10 @@ Public Function IsObfuscatedFunctionName(FunctionName) As Boolean
    '...
    'a1b00100b0a
    
+   
    'IsObfuscatedFunctionName = FunctionName Like "A??????????" '"A[0-9A-F]{10}"
 '   With New RegExp
-      myRegExp.Pattern = "[0-9A-Fa-f]{10}"
+      myRegExp.Pattern = "^[0-9A-Fa-f]{10}"
       IsObfuscatedFunctionName = myRegExp.Test(FunctionName)
 '      Debug.Assert IsObfuscatedFunctionName = True
 '   End With
@@ -199,7 +200,7 @@ Private Sub DeObfuscate_Chr_Encode()
         ChrStringNew.Clear
          
        'separate Chr's
-        Dim Chrs_Match As Match
+        Dim Chrs_Match As match
         For Each Chrs_Match In Chrs.Execute(ChrStrings_Matches(0))
            
           ' Concat Chrs to a ChrString
@@ -449,7 +450,7 @@ Private Sub DeObfuscate_Chr_Encode_old()
         Dim bSkipChrStringReplace As Boolean
         bSkipChrStringReplace = False
          
-        Dim Chrs_Match As Match
+        Dim Chrs_Match As match
         For Each Chrs_Match In Chrs.Execute(ChrStrings_Matches(0))
 
             Dim ChrCode&
@@ -694,6 +695,7 @@ Private Sub DeObfuscate_Encodeit()
    
 End Sub
 
+
 Public Sub Init()
    Log "DeObfuscating : " & FileName
    
@@ -707,14 +709,16 @@ Public Sub Init()
    
   'Convert to Accii if it's unicode
 
-   Dim UnicodeMarker%
-   UnicodeMarker = File.int16
-   If UnicodeMarker = &HFEFF Then
+
+   If IsUTF16File Then
       NewScript = StrConv(File.FixedString(-1), vbFromUnicode, LocaleID)
    Else
-      File.Move 1
-      NewScript = File.FixedString(-1)
-      NewScript = DecodeUTF8(NewScript)
+      If IsUTF8File Then
+         NewScript = DecodeUTF8(File.FixedString(-1))
+      Else
+         File.Position = 0
+         NewScript = File.FixedString(-1)
+      End If
    End If
    
    File.CloseFile
@@ -1052,12 +1056,14 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
  '  FnNameLoadTBL$ = strCropAndDelete(NewScript, "global $Os" & vbCrLf, "()")
       
   ' Get
-    Dim FnNameLoadTBL_Match As Match
+    Dim FnNameLoadTBL_Match As match
     FnNameLoadTBL = RE_FindPattern(NewScript, _
                  "[ -~]*?" & RE_Literal("global $Os") & RE_NewLine & _
                  RE_AnyChars & RE_Group("[0-9A-Fa-f_]{12}") & RE_AnyChars, _
                  FnNameLoadTBL_Match)
   'Note: [ -~] goes from 0x20 to 0x7E and is there to retain UTF-8 BomMarker
+    
+    On Error Resume Next
                  
   ' Delete match
     ReplaceDo NewScript, FnNameLoadTBL_Match.value, ""
@@ -1089,7 +1095,7 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
        StringTBLFileName.NameWithExt = ExtractedTBLFileName
     Else
       
-       StringTBLFileName.NameWithExt = ExtractedTBLFileName & ".tbl"
+       StringTBLFileName.NameWithExt = Mid(ExtractedTBLFileName, 2) & ".tbl"
     End If
     
     
@@ -1109,7 +1115,7 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
    
    Do
       If Err Then
-         StringTBLFileName.FileName = InputBox("Can't open TBL-file - " & Err.Description, "Please try to correct that path maunally: ", StringTBLFileName.FileName)
+         StringTBLFileName.FileName = InputBox("Can't open TBL-file - " & Err.Description, "Please try to correct that path manually: ", StringTBLFileName.FileName)
          If StringTBLFileName.FileName = "" Then Exit Do
       End If
       
@@ -1154,7 +1160,7 @@ Private Sub DeObfuscate_VanZande1_0_15(Optional TBLStringSeperator = "O")
          TBL_ID = UBound(StringTBL)
          
          Dim TBL_Data$
-         TBL_Data = EncodeUTF8(HexStringToString(Line))
+         TBL_Data = HexStringToString(Line)
          
          StringTBL(TBL_ID) = TBL_Data
          ReDim Preserve StringTBL(1 To TBL_ID + 1)
@@ -1444,9 +1450,19 @@ Log "strings in Tbl: " & UBound(StringTBL)
 '  '=== Replace Global Strings
 
   Log "Restoring global strings..."
+  
+  GUIEvent_ProcessBegin MainIndexes.Count
+  GUIEvent_ProcessCounter = 0
+  
   For Each index In MainIndexes
+      
+      GUIEvent_ProcessUpdate Inc(GUIEvent_ProcessCounter)
+      
       DeObfu_ReplaceStrings NewScript, CStr(LocalStringNames(index)), StringTBL(index)
+  
   Next
+  
+  GUIEvent_ProcessEnd
 
 
   'unUsed String
@@ -1626,7 +1642,7 @@ End Sub
 '                  Else
 '                     LocalNameNew = LocalNameNew & "Var"
 '                  End If
-''                  LocalNameNew = BlockAlign_r(LocalNameNew & H16(LocalNameCounter), 11)
+''                  LocalNameNew = BlockAlign_l(LocalNameNew & H16(LocalNameCounter), 11)
 '                  LocalNameNew = LocalNameNew & H16(LocalNameCounter)
 '
 '   ' without myDoEvents
@@ -1678,7 +1694,7 @@ Private Sub z_DeObfu_Replace_CacheVarNames(CodeSnipped$, ObfuName$, ByRef ObfuVa
          
          Set ObfuVarTree = New Collection
          
-         Dim Var As Match
+         Dim Var As match
          For Each Var In ObfuVar.Execute(CodeSnipped)
             
             Dim SubMatchLen&
@@ -1768,7 +1784,7 @@ Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional I
   
   
     ' Go through all matches and search'n'replace them with a new name
-      Dim GlobalVar_Match As Match
+      Dim GlobalVar_Match As match
       For Each GlobalVar_Match In GlobalVar.Execute(CodeSnipped)
    
          Dim SearchString$
@@ -1783,7 +1799,7 @@ Private Sub z_DeObfu_ReplaceX2(ByRef CodeSnipped$, KeyWord$, Prefix$, Optional I
            
            'fill up ReplaceString with space to bring it to same size
             If Len(SearchString) > Len(ReplaceString) Then
-                ReplaceString = BlockAlign_r(ReplaceString, Len(SearchString))
+                ReplaceString = BlockAlign_l(ReplaceString, Len(SearchString))
             Else
                Stop
                'todo handle replacestring is bigger than searchstr
@@ -1966,7 +1982,7 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
 '                  Stop
 '                  ReplaceDo Data, .value, NewStr, .FirstIndex
 '               Else
-'                  Mid(Data, .FirstIndex + 1, .Length) = BlockAlign_r(FormatNumber(NewStr), .Length)
+'                  Mid(Data, .FirstIndex + 1, .Length) = BlockAlign_l(FormatNumber(NewStr), .Length)
 '               End If
 '            Else
 '
@@ -2007,9 +2023,9 @@ Private Sub DeObfu_ReplaceStrings(ByRef Data$, ByRef ReplaceStr, ByRef NewStr)
          Dim bShellExecuteFound As Boolean
          bShellExecuteFound = False
 
-         Dim Match As Match
-         For Each Match In .Execute(Data)
-            With Match
+         Dim match As match
+         For Each match In .Execute(Data)
+            With match
               'Skip ShellExecute
                If Mid(Data, .FirstIndex + 1 - 5, 5) <> c("Shell") Then
                   QuickReplace Data, .value, NewStr, .FirstIndex + 1, 1
@@ -2077,7 +2093,7 @@ End Sub
 
 Private Sub StringFillUp(ByRef Data, TargetSize&)
    If Len(Data) < TargetSize Then
-      Data = BlockAlign_r(Data, TargetSize)
+      Data = BlockAlign_l(Data, TargetSize)
    End If
 End Sub
 
@@ -2092,7 +2108,7 @@ Private Sub QuickReplace(Data$, ReplaceStr, ByVal NewStr$, Optional startPos& = 
 '       Stop
 '       ReplaceDo Data, oldValue, NewStr, NewPos
 '    Else
-'       Mid(Data, NewPos, NewLen) = BlockAlign_r(NewStr, NewLen)
+'       Mid(Data, NewPos, NewLen) = BlockAlign_l(NewStr, NewLen)
 '    End If
 
 End Sub
@@ -2102,6 +2118,24 @@ Private Sub DeObfuscate_VanZande1_0_14()
    'Merge lines with _ at the end
     NewScript = Replace(NewScript, AU_NEWLINE, " ")
 
+   Dim badName$
+   badName = "$VAR0"
+   If NewScript Like "*" & badName & "*" Then
+      NewScript = Replace(NewScript, badName, badName & "_")
+      Log "WARNING: Found badName " & badName & "* in script and replace it with " & badName & "_"
+   End If
+   
+   badName = "gConst"
+   If NewScript Like "*" & badName & "*" Then
+      NewScript = Replace(NewScript, badName, badName & "_")
+      Log "WARNING: Found badName " & badName & "* in script and replace it with " & badName & "_"
+   End If
+   
+   badName = "FN00"
+   If NewScript Like "*" & badName & "*" Then
+      NewScript = Replace(NewScript, badName, badName & "_")
+      Log "WARNING: Found badName " & badName & "* in script and replace it with " & badName & "_"
+   End If
 
    GUI_Show_Text NewScript
 
@@ -2177,15 +2211,17 @@ Log "Restoring StringNames in ..."
          If IsObfuscatedFunctionName(FunctionName) Then
             DeObfu_FunctionNames.Add FunctionName
             log_verbose "Obfuscated FunctionName: " & FunctionName
-         Else
-            log_verbose "FunctionName: " & FunctionName
-         End If
-         
+            
         ' === Replace Locals ====
           DeObfu_ReplaceLocals ScriptFunction
          
         ' === Replace FunctionArguments  ====
           DeObfu_ReplaceFnArgs ScriptFunction, FunctionName
+
+         Else
+            log_verbose "FunctionName: " & FunctionName
+         End If
+         
          
       End If '//is first function chunk
       
@@ -2376,7 +2412,7 @@ Log "strings in Tbl: " & StringTBL.Count
   End If
   
   
-   NewScript = Join(NewScript2, vbCrLf & "Func ")
+   NewScript = Join(NewScript2, "Func ")
   
   '=== Replace Functionname
    Log DeObfu_FunctionNames.Count & " of " & FunctionsCount & " functions names are obfuscated."
@@ -2526,24 +2562,3 @@ Private Function TBLFindStringSeperator(TBLFileData As StringReader) As String
 End Function
 
 
-
-Public Function RE_FindPattern$(Data$, Pattern$, Optional Match As Match)
-       
-   With New RegExp
-      .IgnoreCase = True
-      .Global = False
-      .MultiLine = False
-      .Pattern = Pattern
-      
-      Dim matches As MatchCollection
-      
-      Set matches = .Execute(Data)
-      If matches.Count = 1 Then
-         'Dim match As match
-         Set Match = matches(0)
-         If Match.SubMatches.Count = 1 Then
-            RE_FindPattern = matches.item(0).SubMatches(0)
-         End If
-      End If
-   End With
-End Function

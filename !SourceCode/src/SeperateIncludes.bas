@@ -340,58 +340,158 @@ End Sub
 
 
 Public Sub AHK_SeperateIncludes(ByRef ScriptData As StringReader, OutputPath$)
+'   On Error GoTo AHK_SeperateIncludes_err
    
-   If ScriptData.FindString("; #include ") = 0 Then
-      Log "There are no AHK-includes that could be seperated."
-      Exit Sub
-   End If
+'   If ScriptData.FindString("; #include ") = 0 Then
+'      Log "There are no AHK-includes that could be seperated."
+'      Exit Sub
+'   End If
    
-   If ScriptData.Length > 10000 Then
-      If vbYes <> MsgBox("Due to some strange RegExp bug this can take some time. (please look at sourcecode and tell me if you found some better solution)" & vbCrLf & _
-         "Do you really like to seperated includes?", vbDefaultButton2 Or vbYesNo Or vbQuestion, "Seperate AHK-includes") Then Exit Sub
-   End If
+ ' Got Through all Lines of the Script
+   Dim ScriptLines
+   ScriptLines = Split(ScriptData.Data, vbCrLf)
+   
+   
+   Dim MainFile As New clsStrCat
+   Dim IncludeFile As New clsStrCat
+   Dim IncludeFileCount&
+   
+   Dim StoreInIncludeFile As Boolean 'false
+   Dim LineWithIncludeDirective As Boolean 'false
+   
+   
    
    Dim myRegExp As New RegExp
    With myRegExp
-    
-      .MultiLine = True
-      .Pattern = RE_Group_NonCaptured( _
-                    RE_Group("; <COMPILER: v.*" & RE_NewLine) & _
-                    RE_Group_NonCaptured(RE_NewLine) & "*" _
-                 ) & "?" & _
- _
-                 RE_Group(RE_Group_NonCaptured(RE_AnyCharNL) & "*?") & _
-                 RE_NewLine & "; " & RE_Group("#include (.*?\.ahk)" & RE_NewLine)
-                 
-      .Global = True
+   
+     .MultiLine = False
+     .Global = False
+
+      Dim LineCount& '0
+      Dim Line
+      For Each Line In ScriptLines
+         Inc LineCount
+         
+         LineWithIncludeDirective = False
       
-'      BenchStart
-'.Execute ScriptData
-'      BenchEnd
-    
-    ' Seperate & Save includes
-      Dim Match As Match
-      For Each Match In myRegExp.Execute(ScriptData)
-       
-       ' Get IncludeFileName
-         Dim IncludeFileName As New ClsFilename
-         With IncludeFileName
-            .FileName = OutputPath
-            .NameWithExt = Match.SubMatches(3)
-            .MakePath
-         End With
+     
+       ' Filter out lines like
+       ' "#include %A_ScriptDir%"
+       ' ...and use  them as kind of seperator between mainscript and first start of frist include
+        .Pattern = "; " & RE_Group("#include (%A_.*\%)")
+         Dim Match As Match
+         For Each Match In myRegExp.Execute(Line)
+            LineWithIncludeDirective = True
+            StoreInIncludeFile = True
+            
+            Line = Match.SubMatches(0)
+            log_verbose "AHK-Include directive: " & Match.SubMatches(1) & "@line: " & LineCount
+            
+   
+         Next
+      
+        
+       ' Now get "#include blah.ahk"
+        .Pattern = "; " & RE_Group("#include (.*\.ahk)")
+         For Each Match In myRegExp.Execute(Line)
+            LineWithIncludeDirective = True
+            StoreInIncludeFile = True
+            Inc IncludeFileCount
+            
+            
+          ' Make IncludeFileName
+            Dim IncludeFileName As New ClsFilename
+            With IncludeFileName
+               .FileName = OutputPath
+               .NameWithExt = Replace(Match.SubMatches(1), "/", "\") '<-slash to backslash
+               .MakePath
+            End With
+            
+          ' Save include data
+            FileSave IncludeFileName.FileName, _
+                     IncludeFile.value
+          
+          ' Clear tmpstorage for Include
+            IncludeFile.Clear
+            
+          ' Line <= " #include blah.ahk"
+            Line = Match.SubMatches(0)
+            
+            
+            log_verbose "AHK-Include #" & IncludeFileCount & ": " & _
+                        Match.SubMatches(1) & "  @line: " & LineCount
+            
+            
+         Next
+            
+        
+         If StoreInIncludeFile And Not LineWithIncludeDirective Then
          
-       ' Get IncludeData
-         Match.SubMatches(1) = FileLoad(IncludeFileName.FileName)
-         
+            IncludeFile.Concat Line & vbCrLf
+            
+         Else
+          ' store first lines and IncludeDirective in mainfile
+            MainFile.Concat Line & vbCrLf
+            
+         End If
+   
       Next
-      
-    ' Save mainscript ( with #includes)
-      ' '.Replace' deletes all matches data and inserts there the given data -
-      '     here $1 the CompilerLine and $3 what are the includes
-      ' ... and of course the unmatched data at the end stays too -> what is the main script
-      ScriptData = .Replace(ScriptData, "$1$3")
-      
+   
    End With
+   
+   ScriptData = MainFile.value
+   
+   
+   
+   
+   
+'   If ScriptData.Length > 10000 Then
+'      If vbYes <> MsgBox("Due to some strange RegExp bug this can take some time. (please look at sourcecode and tell me if you found some better solution)" & vbCrLf & _
+'         "Do you really like to seperated includes?", vbDefaultButton2 Or vbYesNo Or vbQuestion, "Seperate AHK-includes") Then Exit Sub
+'   End If
+'
+'   Dim myRegExp As New RegExp
+'   With myRegExp
+'
+'      .MultiLine = True
+'      .Pattern = RE_Group_NonCaptured( _
+'                    RE_Group("; <COMPILER: v.*" & RE_NewLine) & _
+'                    RE_Group_NonCaptured(RE_NewLine) & "*" _
+'                 ) & "?" & _
+' _
+'                 RE_Group(RE_Group_NonCaptured(RE_AnyCharNL) & "*?") & _
+'                 RE_NewLine & "; " & RE_Group("#include (.*?\.ahk)" & RE_NewLine)
+'
+'      .Global = True
+'
+''      BenchStart
+''.Execute ScriptData
+''      BenchEnd
+'
+'    ' Seperate & Save includes
+'      Dim Match As Match
+'      For Each Match In myRegExp.Execute(ScriptData)
+'
+'       ' Get IncludeFileName
+'         Dim IncludeFileName As New ClsFilename
+'         With IncludeFileName
+'            .FileName = OutputPath
+'            .NameWithExt = Match.SubMatches(3)
+'            .MakePath
+'         End With
+'
+'       ' Get IncludeData
+'         Match.SubMatches(1) = FileLoad(IncludeFileName.FileName)
+'
+'      Next
+'
+'    ' Save mainscript ( with #includes)
+'      ' '.Replace' deletes all matches data and inserts there the given data -
+'      '     here $1 the CompilerLine and $3 what are the includes
+'      ' ... and of course the unmatched data at the end stays too -> what is the main script
+'      ScriptData = .Replace(ScriptData, "$1$3")
+'
+'   End With
+AHK_SeperateIncludes_err:
 End Sub
 

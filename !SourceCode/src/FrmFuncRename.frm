@@ -8,18 +8,18 @@ Begin VB.Form FrmFuncRename
    LinkTopic       =   "Form1"
    ScaleHeight     =   8595
    ScaleWidth      =   11880
-   StartUpPosition =   3  'Windows-Standard
+   StartUpPosition =   3  'Windows Default
    Begin VB.CheckBox Chk_DontDeleteFunctions 
       Caption         =   "Keep Functions"
       Height          =   495
       Left            =   9360
-      Style           =   1  'Grafisch
+      Style           =   1  'Graphical
       TabIndex        =   7
       Top             =   645
       Width           =   855
    End
    Begin VB.ListBox List_Fn_String_Org 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   4515
       Left            =   0
       TabIndex        =   27
@@ -35,14 +35,14 @@ Begin VB.Form FrmFuncRename
       Width           =   1575
    End
    Begin VB.Frame Frame1 
-      BorderStyle     =   0  'Kein
+      BorderStyle     =   0  'None
       Height          =   345
       Left            =   6000
       TabIndex        =   22
       Top             =   4200
       Width           =   6255
       Begin VB.TextBox Txt_SearchSync 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   0
          TabIndex        =   24
@@ -80,7 +80,7 @@ Begin VB.Form FrmFuncRename
       End
    End
    Begin VB.Frame Frame_Search_Org 
-      BorderStyle     =   0  'Kein
+      BorderStyle     =   0  'None
       Height          =   450
       Left            =   0
       TabIndex        =   18
@@ -96,7 +96,7 @@ Begin VB.Form FrmFuncRename
          Width           =   255
       End
       Begin VB.TextBox Txt_SearchSync_Org 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   0
          TabIndex        =   20
@@ -150,7 +150,7 @@ Begin VB.Form FrmFuncRename
       Width           =   2895
    End
    Begin VB.FileListBox File_Includes 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   1200
       Left            =   10320
       Pattern         =   "*.au3"
@@ -177,18 +177,18 @@ Begin VB.Form FrmFuncRename
       Width           =   3375
    End
    Begin VB.TextBox Txt_Fn_Inc 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   4935
       Left            =   5160
       MultiLine       =   -1  'True
-      ScrollBars      =   3  'Beides
+      ScrollBars      =   3  'Both
       TabIndex        =   16
       Text            =   "FrmFuncRename.frx":0000
       Top             =   4560
       Width           =   5535
    End
    Begin VB.ListBox List_Fn_Inc 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   1785
       Left            =   5040
       TabIndex        =   14
@@ -196,17 +196,17 @@ Begin VB.Form FrmFuncRename
       Width           =   4815
    End
    Begin VB.TextBox Txt_Fn_Inc_FileName 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   285
       Left            =   6120
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   1
       Text            =   "<Drag some au3-include file in here> For example: C:\AutoIt3\Include\Array.au3"
       Top             =   0
       Width           =   5775
    End
    Begin VB.ListBox List_Fn_Assigned 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   1200
       Left            =   0
       TabIndex        =   5
@@ -214,28 +214,28 @@ Begin VB.Form FrmFuncRename
       Width           =   6975
    End
    Begin VB.TextBox Txt_Fn_Org_FileName 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   285
       Left            =   0
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   0
       Text            =   "<Drag deObfuscated au3-file in here>"
       Top             =   0
       Width           =   5775
    End
    Begin VB.TextBox Txt_Fn_Org 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   4935
       Left            =   1680
       MultiLine       =   -1  'True
-      ScrollBars      =   3  'Beides
+      ScrollBars      =   3  'Both
       TabIndex        =   15
       Text            =   "FrmFuncRename.frx":000D
       Top             =   4560
       Width           =   3255
    End
    Begin VB.ListBox List_Fn_Org 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   1785
       Left            =   0
       TabIndex        =   13
@@ -243,7 +243,7 @@ Begin VB.Form FrmFuncRename
       Width           =   4815
    End
    Begin VB.CommandButton cmd_org_reload 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "Reload &Target"
       Height          =   315
       Left            =   0
@@ -252,7 +252,7 @@ Begin VB.Form FrmFuncRename
       Width           =   2175
    End
    Begin VB.CommandButton cmd_inc_reload 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "Reload &Include"
       Height          =   330
       Left            =   6120
@@ -345,6 +345,10 @@ Dim NumOccurrenceFound& 'From SearchSync
 
 Dim List_Fn_String_Org_EventBlocker As Boolean
 
+
+Dim SkipGlobalConsts As Boolean
+Dim SkipFunctions As Boolean
+
 '///////////////////////////////////////////
 '// General Load/Save Configuration Setting
 Private Function ConfigValue_Load(Key$, Optional DefaultValue)
@@ -364,6 +368,8 @@ Private Sub cmd_AutoAdd_Click()
    If on_cmd_AutoAdd = True Then Exit Sub
    on_cmd_AutoAdd = True
       
+      On Error Resume Next
+      
       Dim i
       With List_Fn_Inc
          
@@ -372,9 +378,29 @@ Private Sub cmd_AutoAdd_Click()
             
             Dim ListItems&
             ListItems = .ListCount - 1
-            For i = 0 To ListItems
+            For i = .ListIndex To ListItems
                
                If SearchAndReplace_AddItem(True) = False Then
+                  Exit For
+              '    GoTo cmd_AutoAdd_ClickQuit
+               End If
+               
+            Next
+            
+            If .ListIndex < 0 Then GoTo cmd_AutoAdd_ClickQuit
+            
+            For i = .ListIndex To 0 Step -1
+               
+               ListBox_MoveUp List_Fn_Org
+               ListBox_MoveUp List_Fn_Inc
+              ' ListBox_Movedown List_Fn_Inc, -1
+               
+               If SearchAndReplace_AddItem(True) = False Then
+               
+                  ListBox_MoveUp List_Fn_Org, -1
+                  ListBox_Movedown List_Fn_Inc
+                  
+                  
                   GoTo cmd_AutoAdd_ClickQuit
                End If
                
@@ -547,51 +573,120 @@ End Select
 End Sub
 
 
-Private Sub OpenAndFill(FileName$, ScriptData As StringReader, FuncList, List_Func As Listbox)
+Private Sub OpenAndFill( _
+        FileName$, _
+        ScriptData As StringReader, _
+        FuncList, _
+        List_Func As Listbox _
+        )
+        
+        
  ' Open RightFile
    ScriptData.Data = FileLoad(FileName)
    
- ' Seperate functions
-   FuncList = Split(ScriptData.Data, vbCrLf & "Func ", , vbTextCompare)
-   'ReDim Preserve FuncList(1 To UBound(FuncList))
-   
-   Dim GlobalList
-   GlobalList = Split(ScriptData.Data, vbCrLf & "Global Const ", , vbTextCompare)
+  'ReDim Preserve FuncList(1 To UBound(FuncList))
    
    With List_Func
-      .Clear
-      Dim itemidx
-      For itemidx = 1 To UBound(FuncList)
-        'Add FunctionName
-         .AddItem (Split(FuncList(itemidx), vbCrLf)(0))
-        
-        'Store index of FuncList to find it later
-         .ItemData(.ListCount - 1) = itemidx
-      Next
-      
-      
-      Dim item
-      For Each item In GlobalList
-         If Left(item, 1) = "$" Then
+           .Clear
            
-           'Clean
-            item = Split(RemoveComments(item), vbCrLf)(0)
-            
-           'Add FunctionName
-            .AddItem item
-          
-            'Add FunctionData
-          ReDim Preserve FuncList(0 To itemidx)
-            FuncList(itemidx) = item
-          
-            'Store index of FuncList to find it later
-             .ItemData(.ListCount - 1) = itemidx
-             Inc itemidx
-         End If
-      Next
+      If SkipFunctions = False Then
+      
+       ' Seperate functions
+         FuncList = Split(ScriptData.Data, vbCrLf & "Func ", , vbTextCompare)
+         
+         
+         Dim itemidx
+         For itemidx = 0 To UBound(FuncList)
+              Dim item
+              item = FuncList(itemidx)
+           
+              'add #Includes
+              Dim match As match
+              For Each match In RE_FindPatterns(item, _
+                                      "#include\s*[""<]([^>""])*" _
+                                   )
+                 .AddItem match
+                 .ItemData(.ListCount - 1) = itemidx
+              Next
+              
+              
+              
+              If (itemidx > 0) Then
+              
+                 'Add FunctionName
+                  .AddItem (Split(item, vbCrLf)(0))
+                 
+                 'Store index of FuncList to find it later
+                  .ItemData(.ListCount - 1) = itemidx
+                  
+              End If
+           Next
+      End If
       
       
-    If .ListCount Then .ListIndex = 0
+      
+      
+     'BenchStart
+      If SkipGlobalConsts = False Then
+      
+              
+       ' Seperate Const
+         Dim GlobalList
+         GlobalList = Split(ScriptData.Data, vbCrLf & "Global Const ", , vbTextCompare)
+        
+      
+         For Each item In GlobalList
+            If Left(item, 1) = "$" Then
+              
+             ' Clean up Comments
+               item = RemoveComments(Split(item, vbCrLf)(0))
+               
+               If SkipFunctions = False Then
+                    
+                  ' Find insertpos / Function  above it
+                    Dim insertPos&
+                    For insertPos = insertPos To UBound(FuncList) - 1
+                       If InStr(FuncList(insertPos), item) Then Exit For
+                    Next
+                    
+                  ' Nothing found ? at the end & reset counter in case nothing was found
+                    If RangeCheck(insertPos, UBound(FuncList), 1) Then
+                       insertPos = 0
+                    End If
+               End If
+               
+               Dim inserOffset
+               
+              'Add VarName
+               .AddItem item, insertPos + inserOffset
+               
+         
+             
+               'Add VarData
+             ReDim Preserve FuncList(0 To itemidx)
+               FuncList(itemidx) = item
+             
+               'Store index of FuncList to find it later
+                .ItemData(insertPos + inserOffset) = itemidx
+                
+             ' Store pos to seek to first function
+               Dim FirstFunctionPos&
+               If (insertPos > 0) And (FirstFunctionPos = 0) Then
+                  FirstFunctionPos = inserOffset
+               End If
+                
+               Inc inserOffset
+               Inc itemidx
+                
+                
+            End If
+         Next
+         
+      End If
+      'BenchEnd
+    If .ListCount Then
+      .ListIndex = FirstFunctionPos
+    End If
    End With
 End Sub
 
@@ -608,6 +703,7 @@ Private Sub cmd_Quit_Click()
 End Sub
 
 Private Sub Cmd_Remove_assign_Click()
+   On Error Resume Next
    SearchAndReplace_RemoveItems
 End Sub
 
@@ -827,10 +923,8 @@ End Function
 Private Sub File_Includes_Click()
    Dim tmpFileName$
    tmpFileName = File_Includes.Path & "\" & File_Includes.FileName
-   If Txt_Fn_Inc_FileName <> tmpFileName Then
-     'Triggers _ChangeText
-      Txt_Fn_Inc_FileName = tmpFileName
-   End If
+ ' Triggers _ChangeText
+    Txt_Fn_Inc_FileName = tmpFileName
 End Sub
 
 '///////////////////////////////////////////
@@ -959,7 +1053,7 @@ Private Sub List_Fn_String_Org_Fill()
    Dim List_Fn_String_Org_LongestStringIndex&: List_Fn_String_Org_LongestStringIndex = 0
    
    
-   Dim item As Match
+   Dim item As match
    For Each item In matches
       
       If ItemStringMaxLength < Len(item) Then
@@ -982,6 +1076,7 @@ Private Sub List_Fn_String_Org_Fill()
 End Sub
 Private Sub List_Fn_Inc_Click()
  ' Show FunctionText
+   On Error Resume Next
    With List_Fn_Inc
       Txt_Fn_Inc = Functions_Inc(.ItemData(.ListIndex))
    End With
@@ -1016,6 +1111,27 @@ Private Sub ListBox_ScrollToFirstSelected(Listbox As Listbox)
    End With
 
 End Sub
+
+Private Sub ListBox_MoveUp(Listbox As Listbox, Optional steps = 1)
+   On Error Resume Next
+   With Listbox
+      If .ListIndex > 0 Then
+        .ListIndex = .ListIndex - steps
+      End If
+   End With
+End Sub
+
+Private Sub ListBox_Movedown(Listbox As Listbox, Optional steps = 1)
+   On Error Resume Next
+   With Listbox
+      If .ListIndex < (.ListCount - 1) Then
+          .ListIndex = .ListIndex + steps
+      End If
+     
+   End With
+End Sub
+
+
 
 'Private Sub SearchAndReplace_AddItems()
 '
@@ -1097,6 +1213,9 @@ Private Sub GetStrings(TextBox As TextBox, matches As MatchCollection) 'Strings 
 End Sub
 Private Function RemoveComments$(Text)
    
+'      RemoveComments = Text
+'Exit Function
+
 '   Const StringBody_SingleQuoted As String = "[^']*"
 '   Const String_SingleQuoted = "(?:'" & StringBody_SingleQuoted & "')+"
 '
@@ -1179,12 +1298,17 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
    Dim FuncOldName$, FuncOldNameIdx&
    With List_Fn_Org
    
+      If .Text Like "[#]include*" Then Exit Function
+      
+   
+   
      'Cut at '(' of for ex Func MyNewFunc(Arg1,arg2...
       FuncOldName = Split(.Text, "(")(0)
      
      'Dirty patch for globals
       Dim SkipValueCheck As Boolean
       SkipValueCheck = False
+      
       
     ' Problem
     ' "$LVM_HASGROUP = ($LVM_FIRST + 161)"
@@ -1200,9 +1324,19 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
          On Error Resume Next
          FuncName_tmp = Split(FuncOldValue, "0x", , vbTextCompare)
          If UBound(FuncName_tmp) = 1 Then
-            FuncOldValue = HexToInt(FuncName_tmp(1))
+         
+            FuncName_tmp = HexToInt(FuncName_tmp(1))
+           'Negative Hex like "-0x0001d"
+            If FuncOldValue Like "-0x*" Then
+               FuncOldValue = -FuncName_tmp
+            Else
+               FuncOldValue = FuncName_tmp
+            End If
+            
          Else
-            FuncOldValue = Val(FuncOldValue)
+           'Exsample "$CCM_FIRST + 11"
+            FuncName_tmp = Split(FuncOldValue, "+")(1)
+            FuncOldValue = Val(FuncName_tmp)
          End If
          If Err Then SkipValueCheck = True
          
@@ -1217,10 +1351,14 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
  ' Get FuncNewName
    Dim FuncNewName$, FuncNewNameIdx&
    With List_Fn_Inc
-   
+      
+     
       FuncNewName = Split(.Text, "(")(0)
+      
      'Dirty patch for globals
       If FuncNewName = .Text Then
+      
+      ' split "=">>>
          FuncName_tmp = Split(.Text, "=")
          FuncNewName = MyRTrim(FuncName_tmp(0))
 
@@ -1233,7 +1371,9 @@ Private Function SearchAndReplace_AddItem(Optional bQuietMode As Boolean = False
          If UBound(FuncName_tmp) = 1 Then
             FuncNewValue = HexToInt(FuncName_tmp(1))
          Else
-            FuncNewValue = Val(FuncNewValue)
+            'Exsample "$CCM_FIRST + 11"
+            FuncName_tmp = Split(FuncNewValue, "+")(1)
+            FuncNewValue = Val(FuncName_tmp)
          End If
          If Err Then SkipValueCheck = True
          
@@ -1426,8 +1566,10 @@ End Sub
 
 
 Private Sub List_Fn_String_Org_Click()
+   
    If List_Fn_String_Org_EventBlocker Then Exit Sub
     Txt_SearchSync_Org = List_Fn_String_Org.Text
+    If NumOccurrenceFound = 0 Then Txt_SearchSync_Org_Change
 End Sub
 
 Private Sub Txt_Fn_Inc_FileName_Change()
@@ -1464,7 +1606,7 @@ Select Case Err
 End Select
 End Sub
 
-Private Sub Txt_Fn_Inc_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Txt_Fn_Inc_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
    On Error GoTo Txt_Fn_Inc_FileName_OLEDragDrop_err
    
    Txt_Fn_Inc_FileName = Data.Files(1)
@@ -1486,7 +1628,7 @@ End Sub
 Private Sub Txt_Fn_Inc_KeyUp(KeyCode As Integer, Shift As Integer)
    Send_TxtFn_Inc_TO_Txt_SearchSync
 End Sub
-Private Sub Txt_Fn_Inc_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Txt_Fn_Inc_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
    Send_TxtFn_Inc_TO_Txt_SearchSync
 End Sub
 
@@ -1541,7 +1683,7 @@ Private Sub Txt_Fn_Org_FileName_Change()
 
 End Sub
 
-Private Sub Txt_Fn_Org_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Txt_Fn_Org_FileName_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
    On Error GoTo Txt_Fn_Org_FileName_OLEDragDrop_err
    
    Txt_Fn_Org_FileName = Data.Files(1)
@@ -1560,7 +1702,7 @@ End Select
 End Sub
 
 
-Private Sub Txt_Fn_Org_MouseMove(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Txt_Fn_Org_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
    If Txt_Fn_Org.SelStart Then
       Txt_Fn_Org.SetFocus
    End If
@@ -1600,7 +1742,7 @@ Private Sub SeekToSearchString(SearchText$, FnList As Listbox, FnData As TextBox
 End Sub
 
 
-Private Sub Txt_Fn_Org_MouseUp(Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub Txt_Fn_Org_MouseUp(Button As Integer, Shift As Integer, X As Single, Y As Single)
    Send_TxtFn_Org_TO_Txt_SearchSync
 End Sub
 
@@ -1611,32 +1753,63 @@ End Sub
 Private Sub Txt_SearchSync_Org_Change()
    Lbl_SearchSyncStatus_Org = ""
    
+   Dim SearchStringIsAVar
+   SearchStringIsAVar = ("$" = Left(Txt_Fn_Org, 1))
+   
+   
+   SkipGlobalConsts = Not (SearchStringIsAVar)
+   'SkipFunctions = SearchStringIsAVar
+  
+
+   
  ' Go through all include files
    With File_Includes
-      Dim old_ListIndex%
-      old_ListIndex = .ListIndex
+'      Dim old_ListIndex%
+'      old_ListIndex = .ListIndex
+      
+      If .ListIndex >= (.ListCount - 1) Then .ListIndex = -1
       
       Dim i&
-      For i = 0 To .ListCount - 1
+      For i = .ListIndex + 1 To .ListCount - 1
+      
+         ' Seek to next include file
+          .ListIndex = i
+         
+
          SearchSync Txt_SearchSync_Org.Text, _
                     Functions_Inc, List_Fn_Inc, _
                     Txt_Fn_Inc, _
                     Cmd_FindNext_Org, Lbl_SearchSyncStatus_Inc
        ' Exit loop if something found
-         If NumOccurrenceFound > 0 Then Exit For
+         If NumOccurrenceFound > 0 Then
+            
+            Exit For
          
-       ' Seek to next include file
-         .ListIndex = i
+         
+         End If
 
       Next
 
+            SkipGlobalConsts = False
+            SkipFunctions = False
+          
+          ' Refresh
+            Txt_Fn_Inc_FileName_Change
+            
+            SearchSync Txt_SearchSync_Org.Text, _
+                    Functions_Inc, List_Fn_Inc, _
+                    Txt_Fn_Inc, _
+                    Cmd_FindNext_Org, Lbl_SearchSyncStatus_Inc
          
+
+
+       
       If NumOccurrenceFound > 0 Then
       ' Okay found something - Try AutoAdd
          cmd_AutoAdd_Click
       Else
         ' Nothing found something - Restore old ListPosition
-         .ListIndex = old_ListIndex
+ '        .ListIndex = old_ListIndex
       End If
 
    End With
@@ -1657,6 +1830,8 @@ Private Sub SearchSync(SearchText$, FuncList, Fn_List As Listbox, Fn_Data As Tex
    
    Dim SearchBuffer As clsStrCat
    Set SearchBuffer = New clsStrCat
+   
+   Status = ""
    
    Dim item
    For item = 0 To Fn_List.ListCount - 1

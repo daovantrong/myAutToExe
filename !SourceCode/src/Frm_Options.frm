@@ -1,28 +1,63 @@
 VERSION 5.00
 Begin VB.Form Frm_Options 
-   BorderStyle     =   4  'Festes Werkzeugfenster
+   BorderStyle     =   4  'Fixed ToolWindow
    Caption         =   "Options"
-   ClientHeight    =   6375
+   ClientHeight    =   7020
    ClientLeft      =   45
    ClientTop       =   285
    ClientWidth     =   8400
    LinkTopic       =   "Options"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   ScaleHeight     =   6375
+   ScaleHeight     =   7020
    ScaleWidth      =   8400
    ShowInTaskbar   =   0   'False
-   StartUpPosition =   3  'Windows-Standard
+   StartUpPosition =   3  'Windows Default
+   Begin VB.Frame Frame3 
+      Caption         =   "Get XorKey's"
+      Height          =   855
+      Left            =   120
+      TabIndex        =   54
+      Top             =   6120
+      Width           =   8175
+      Begin VB.TextBox Txt_GetCamoFileName 
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
+         Height          =   285
+         Left            =   1680
+         TabIndex        =   56
+         ToolTipText     =   "FileName that is used when you click GetCamo's"
+         Top             =   450
+         Width           =   6255
+      End
+      Begin VB.CommandButton cmd_CamoGet 
+         Caption         =   "GetCamo's"
+         Height          =   375
+         Left            =   120
+         TabIndex        =   55
+         ToolTipText     =   "Click this if Au3-Stub was modifies by AutoIt3Camo - Requires UNPACKED(i.g. No UPX) Data to work!"
+         Top             =   360
+         Width           =   1455
+      End
+   End
+   Begin VB.CommandButton cmd_ResetOptions 
+      Caption         =   "Reset Options"
+      Height          =   375
+      Left            =   2040
+      TabIndex        =   53
+      Top             =   5640
+      Width           =   1455
+   End
    Begin VB.CommandButton cmd_ExportSettings 
       Caption         =   "Export settings to file"
       Height          =   375
-      Left            =   6240
+      Left            =   120
       TabIndex        =   50
       Top             =   5640
-      Width           =   2055
+      Width           =   1815
    End
    Begin VB.TextBox txt_AU2_Type 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Enabled         =   0   'False
       Height          =   285
       Left            =   6240
@@ -34,7 +69,7 @@ Begin VB.Form Frm_Options
       Width           =   495
    End
    Begin VB.TextBox txt_AU2_Type_Hex 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Enabled         =   0   'False
       Height          =   285
       Left            =   6840
@@ -52,7 +87,7 @@ Begin VB.Form Frm_Options
       Top             =   2280
       Width           =   8175
       Begin VB.TextBox txt_AU3_ResTypeFile_hex 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   2880
          TabIndex        =   11
@@ -60,31 +95,32 @@ Begin VB.Form Frm_Options
          Width           =   975
       End
       Begin VB.TextBox txtCompiledPathName_DataNew 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3000
          TabIndex        =   18
          Tag             =   "0F479"
          Text            =   "0F479"
-         ToolTipText     =   "DecryptionKey"
+         ToolTipText     =   "0F479"
          Top             =   1920
          Width           =   855
       End
       Begin VB.TextBox txtCompiledPathName_LenNew 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   2040
          TabIndex        =   17
          Tag             =   "0F820"
          Text            =   "0F820"
+         ToolTipText     =   "0F820 Path and Filename that was used to compile the script/Fileinstall resource"
          Top             =   1920
          Width           =   855
       End
       Begin VB.TextBox txtCompiledPathName_Data 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   6240
          TabIndex        =   25
@@ -94,8 +130,8 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.TextBox txtCompiledPathName_Len 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   5280
          TabIndex        =   24
@@ -105,31 +141,32 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.TextBox txtSrcFile_FileInst_DataNew 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3000
          TabIndex        =   16
          Tag             =   "B33F"
          Text            =   "B33F"
-         ToolTipText     =   "DecryptionKey"
+         ToolTipText     =   "B33F"
          Top             =   1560
          Width           =   855
       End
       Begin VB.TextBox txtSrcFile_FileInst_LenNew 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   2040
          TabIndex        =   15
          Tag             =   "ADBC"
          Text            =   "ADBC"
+         ToolTipText     =   "ADBC The SrcFile_FileInst is normally '>>>AUTOIT SCRIPT<<<' "
          Top             =   1560
          Width           =   855
       End
       Begin VB.TextBox txtSrcFile_FileInst_Data 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   6240
          TabIndex        =   23
@@ -139,8 +176,8 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.TextBox txtSrcFile_FileInst_Len 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   5280
          TabIndex        =   22
@@ -150,43 +187,43 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.TextBox txtData_DecryptionKey_New 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3960
          TabIndex        =   14
          Tag             =   "2477"
          Text            =   "2477"
-         ToolTipText     =   "DecryptionKey"
+         ToolTipText     =   "2477 DecryptionKey"
          Top             =   1200
          Width           =   855
       End
       Begin VB.TextBox txtData_DecryptionKey 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   7200
          TabIndex        =   21
          Tag             =   "22AF"
          Text            =   "22AF"
-         ToolTipText     =   "DecryptionKey"
          Top             =   1200
          Width           =   855
       End
       Begin VB.TextBox txtXORKey_MD5PassphraseHashText_DataNew 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3000
          TabIndex        =   13
          Tag             =   "99F2"
          Text            =   "99F2"
+         ToolTipText     =   "99F2"
          Top             =   1200
          Width           =   855
       End
       Begin VB.TextBox txtXORKey_MD5PassphraseHashText_Data 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   6240
          TabIndex        =   20
@@ -196,8 +233,8 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.TextBox txtXORKey_MD5PassphraseHashText_Len 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   5280
          TabIndex        =   19
@@ -207,24 +244,25 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.TextBox txt_AU3_ResTypeFile 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   2280
          TabIndex        =   10
          Tag             =   "FILE"
          Text            =   "FILE"
+         ToolTipText     =   "The 'FILE' marker marks the beginning of the mainscript and every File that is installed by FILEINSTALL"
          Top             =   360
          Width           =   495
       End
       Begin VB.TextBox txt_FILE_DecryptionKey 
-         Alignment       =   1  'Rechts
-         Appearance      =   0  '2D
+         Alignment       =   1  'Right Justify
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   4080
          TabIndex        =   12
          Tag             =   "18EE"
          Text            =   "18EE"
-         ToolTipText     =   "That Box is mean for the FILE-decryptionKey - normally there should be no reason to touch this."
+         ToolTipText     =   "18EE FILE-decryptionKey - normally there should be no reason to touch this."
          Top             =   360
          Width           =   975
       End
@@ -237,7 +275,7 @@ Begin VB.Form Frm_Options
          Y2              =   2280
       End
       Begin VB.Label Label17 
-         Alignment       =   1  'Rechts
+         Alignment       =   1  'Right Justify
          Caption         =   "AddKey"
          Height          =   255
          Left            =   7200
@@ -246,7 +284,7 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.Label Label16 
-         Alignment       =   1  'Rechts
+         Alignment       =   1  'Right Justify
          Caption         =   "AddKey"
          Height          =   255
          Left            =   3960
@@ -271,7 +309,7 @@ Begin VB.Form Frm_Options
          Width           =   1935
       End
       Begin VB.Label Label13 
-         Alignment       =   1  'Rechts
+         Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          Caption         =   "Data"
          Height          =   255
@@ -281,7 +319,7 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.Label Label12 
-         Alignment       =   1  'Rechts
+         Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          Caption         =   "Length"
          Height          =   255
@@ -291,7 +329,7 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.Label Label11 
-         Alignment       =   1  'Rechts
+         Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          Caption         =   "Data"
          Height          =   255
@@ -301,7 +339,7 @@ Begin VB.Form Frm_Options
          Width           =   855
       End
       Begin VB.Label Label10 
-         Alignment       =   1  'Rechts
+         Alignment       =   1  'Right Justify
          BackStyle       =   0  'Transparent
          Caption         =   "Length"
          Height          =   255
@@ -320,7 +358,7 @@ Begin VB.Form Frm_Options
          Width           =   1935
       End
       Begin VB.Label Label8 
-         Alignment       =   2  'Zentriert
+         Alignment       =   2  'Center
          BackStyle       =   0  'Transparent
          Caption         =   "...for AutoIt 3.2.6 and newer"
          Height          =   255
@@ -331,7 +369,7 @@ Begin VB.Form Frm_Options
          Width           =   2775
       End
       Begin VB.Label Label8 
-         Alignment       =   2  'Zentriert
+         Alignment       =   2  'Center
          BackStyle       =   0  'Transparent
          Caption         =   "... for older AU3, AHK and AU2 "
          Height          =   255
@@ -358,6 +396,17 @@ Begin VB.Form Frm_Options
       TabIndex        =   27
       Top             =   4920
       Width           =   8175
+      Begin VB.CheckBox chk_extractIcon 
+         Caption         =   "Extract Icon"
+         Height          =   255
+         Left            =   3480
+         TabIndex        =   57
+         ToolTipText     =   "Deselect if you don't need the icon(*.ico) file; Grey - don't keep Au3-Standard *.ico"
+         Top             =   240
+         UseMaskColor    =   -1  'True
+         Value           =   2  'Grayed
+         Width           =   1215
+      End
       Begin VB.CheckBox chk_disableWinhex 
          Caption         =   "Disable Winhex"
          Height          =   255
@@ -365,6 +414,7 @@ Begin VB.Form Frm_Options
          TabIndex        =   51
          ToolTipText     =   "Disables Winhex since it maybe disturbing that eac time you change the start offset it'll pops up."
          Top             =   240
+         Value           =   1  'Checked
          Width           =   1575
       End
       Begin VB.CheckBox Chk_RestoreIncludes 
@@ -372,8 +422,9 @@ Begin VB.Form Frm_Options
          Height          =   195
          Left            =   240
          TabIndex        =   28
+         ToolTipText     =   "That will only work for AHK and old not tokenise AU3"
          Top             =   240
-         Value           =   1  'Aktiviert
+         Value           =   1  'Checked
          Width           =   1560
       End
    End
@@ -385,7 +436,7 @@ Begin VB.Form Frm_Options
       Top             =   120
       Width           =   8175
       Begin VB.TextBox txt_AU3Sig_Hex 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   3120
          TabIndex        =   52
@@ -393,7 +444,7 @@ Begin VB.Form Frm_Options
          Width           =   3855
       End
       Begin VB.TextBox txt_AU3_Type_hex 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   2040
          TabIndex        =   5
@@ -401,7 +452,7 @@ Begin VB.Form Frm_Options
          Width           =   975
       End
       Begin VB.TextBox Txt_AU2_SubType_hex 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   5400
          TabIndex        =   9
@@ -409,17 +460,18 @@ Begin VB.Form Frm_Options
          Width           =   975
       End
       Begin VB.TextBox txt_AU2_SubType 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   4800
          TabIndex        =   8
          Tag             =   "EA05"
          Text            =   "EA05"
+         ToolTipText     =   "Comes right after AU3-Type and is used a second time as signature for compressed data"
          Top             =   1560
          Width           =   495
       End
       Begin VB.TextBox Txt_AU3_SubType_hex 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   2040
          TabIndex        =   7
@@ -427,32 +479,35 @@ Begin VB.Form Frm_Options
          Width           =   975
       End
       Begin VB.TextBox txt_AU3_SubType 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   1440
          TabIndex        =   6
          Tag             =   "EA06"
          Text            =   "EA06"
+         ToolTipText     =   "Comes right after AU3-Type and is used a second time as signature for compressed data"
          Top             =   1560
          Width           =   495
       End
       Begin VB.TextBox txt_AU3_Type 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   1440
          TabIndex        =   4
          Tag             =   "AU3!"
          Text            =   "AU3!"
+         ToolTipText     =   "This follows just after the Au3_Signature "
          Top             =   1200
          Width           =   495
       End
       Begin VB.TextBox txt_AU3Sig 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   285
          Left            =   1440
          TabIndex        =   3
          Tag             =   $"Frm_Options.frx":0000
          Text            =   $"Frm_Options.frx":0014
+         ToolTipText     =   "Only imporatant if 'Use 'normal' Au3_Signature to find start of script' is checked"
          Top             =   840
          Width           =   1575
       End
@@ -461,8 +516,9 @@ Begin VB.Form Frm_Options
          Height          =   255
          Left            =   4200
          TabIndex        =   2
+         ToolTipText     =   "Grey means auto detect and is the best in most cases. Background: AHK and AU2 don't have the 'SrcFile_FileInst' in the Header."
          Top             =   240
-         Value           =   2  'Zwischenzustand
+         Value           =   2  'Grayed
          Width           =   2295
       End
       Begin VB.CheckBox Chk_NormalSigScan 
@@ -525,7 +581,8 @@ Begin VB.Form Frm_Options
       Height          =   255
       Left            =   120
       TabIndex        =   49
-      Top             =   5640
+      Top             =   6000
+      Visible         =   0   'False
       Width           =   4815
    End
    Begin VB.Label Label4 
@@ -553,6 +610,8 @@ Private Const ValidSigStringLen = 16
 Private Const ValidHexStringLen = 8
 
 Const Setting_ExcludeFromLoadSave$ = _
+   "Txt_GetCamoFileName" & " " & _
+   "" & _
    "txt_AU3Sig" & " " & _
    "txt_AU3_Type" & " " & _
    "txt_AU3_SubType" & " " & _
@@ -563,6 +622,42 @@ Const Setting_ExcludeFromLoadSave$ = _
    "txt_AU2_Type_Hex" & " " & _
    "Chk_NoDeTokenise" & " " & _
    ""
+
+Private Sub RegRun(verb, ExportFileName, Optional options = "")
+   
+   Dim Regpath$
+   Regpath = Quote("HKCU\Software\VB and VBA Program Settings\" & App.Title & "\" & Me.Name)
+   
+   Const cmd$ = "Reg.exe"
+   
+   Log "Running: " & Quote(cmd & " " & _
+                           verb & " " & _
+                           Regpath & " " & _
+                           ExportFileName & " " & _
+                           options)
+   Dim retval&
+   retval = ShellEx(cmd, verb & " " & _
+                         Regpath & " " & _
+                         ExportFileName & " " & _
+                         options, vbHide) 'vbNormalFocus )
+
+End Sub
+
+
+Private Sub chk_extractIcon_Click()
+   Static value
+   Checkbox_TriStateToggle chk_extractIcon, value
+End Sub
+
+Private Sub cmd_CamoGet_Click()
+   On Error GoTo cmd_CamoGet_Click_err
+   
+   CamoGet
+   
+   Exit Sub
+cmd_CamoGet_Click_err:
+   Log "ERROR: [CamoGet] " & Err.Description
+End Sub
 
 Private Sub cmd_ExportSettings_Click()
    Dim ExportFileName As New ClsFilename
@@ -583,14 +678,35 @@ Private Sub cmd_ExportSettings_Click()
                      .NameWithExt)
       .Ext = "reg"
    End With
-   Dim Regpath$
-   Regpath = Quote("HKCU\Software\VB and VBA Program Settings\" & App.Title & "\" & Me.Name)
-   Const cmd$ = "Reg.exe"
-   Const Param$ = "EXPORT "
    
-   Log "Running: " & Quote(cmd & " " & Param & Regpath & " " & ExportFileName)
-   Dim retval&
-   retval = ShellEx(cmd, Param & Regpath & " " & ExportFileName, vbNormalFocus)
+   RegRun "EXPORT", ExportFileName
+                         
+   Log Quote(CurDir & "\" & ExportFileName) & " created."
+
+End Sub
+
+
+Private Sub cmd_ResetOptions_Click()
+   On Error Resume Next
+
+ ' Delete Registry settings
+   RegRun "DELETE", "", "/va /f"
+
+
+ ' Restore Defaults
+'   Form_Load
+ 
+   Unload Me
+   
+   Me.Show
+
+End Sub
+
+
+
+
+Private Sub Form_Activate()
+   Txt_GetCamoFileName = FrmMain.Combo_Filename
 End Sub
 
 Private Sub Form_Load()
@@ -598,9 +714,19 @@ Private Sub Form_Load()
    FormSettings_Load Me, Setting_ExcludeFromLoadSave
    
    LocaleID = ConfigValue_Load(Me.Name, "LocaleID", LocaleID)
- 
+   
+   
+ ' Ensure Initialisation
+   CommitChanges
 
- ' Ensure Initalisation
+
+End Sub
+
+'!!! Important !!!
+' Call CommitChanges every time you made changes to the form like for ex. this:
+' Frm_Options.txt_AU3Sig.Text = "AU3"
+Public Sub CommitChanges()
+
    Dim dummy As Boolean
    
  ' Script Start
@@ -641,8 +767,11 @@ Private Sub Form_Load()
 End Sub
 
 
-Private Sub Form_Unload(Cancel As Integer)
-   Settings_save
+
+Private Sub Form_QueryUnload(Cancel As Integer, UnloadMode As Integer)
+   If UnloadMode <> vbFormCode Then
+      Settings_save
+   End If
 End Sub
    
    

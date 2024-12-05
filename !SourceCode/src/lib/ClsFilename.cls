@@ -99,6 +99,7 @@ Public Sub MakePath()
    
    Dim NewDir, NewPath$
    NewPath = ""
+   
    For Each NewDir In Split(Path, "\")
      
      'Extent path Dir by Dir Create

@@ -41,17 +41,22 @@ Public Const ERR_FILESTREAM = &H1000000
 Public Const ERR_OPENFILE = vbObjectError Or ERR_FILESTREAM + 1
 Private i, j As Integer
 
-Public Declare Sub MemCopyAnyToAny Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As Any, src As Any, ByVal Length&)
-Public Declare Sub MemCopy Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, ByVal src As Any, ByVal Length&)
+Declare Sub MemCopyStrToLng Lib "kernel32" Alias "RtlMoveMemory" (src As Long, ByVal src As String, ByVal Length&)
+Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal src As String, src As Long, ByVal Length&)
+Declare Sub MemCopyLngToInt Lib "kernel32" Alias "RtlMoveMemory" (src As Long, ByVal src As Integer, ByVal Length&)
+
+
+'Public Declare Sub MemCopyAnyToAny Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As Any, src As Any, ByVal Length&)
+Public Declare Sub MemCopy Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As String, ByVal src As Any, ByVal Length&)
 Public Declare Sub MemCopyX Lib "kernel32" Alias "RtlMoveMemory" _
-(Dest As Any, ByVal src As Long, ByVal Length&)
-
+() '(Dest As Any, ByVal src As Long, ByVal Length&)
+'
 Public Declare Sub MemCopyAnyToStr Lib "kernel32" Alias "RtlMoveMemory" (Dest As Any, src As Any, ByVal Length&)
-Public Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As String, src As Long, ByVal Length&)
-
-Public Declare Sub MemCopyStrToLng Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As String, ByVal Length&)
-'Public Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal dest As String, src As Long, ByVal Length&)
-Public Declare Sub MemCopyLngToInt Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As Integer, ByVal Length&)
+'Public Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal Dest As String, src As Long, ByVal Length&)
+'
+'Public Declare Sub MemCopyStrToLng Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As String, ByVal Length&)
+''Public Declare Sub MemCopyLngToStr Lib "kernel32" Alias "RtlMoveMemory" (ByVal dest As String, src As Long, ByVal Length&)
+'Public Declare Sub MemCopyLngToInt Lib "kernel32" Alias "RtlMoveMemory" (Dest As Long, ByVal src As Integer, ByVal Length&)
     
 Private Declare Function GetAsyncKeyState Lib "user32" (ByVal vKey As Long) As Integer
 
@@ -127,6 +132,7 @@ Function KeyPressed(Key) As Boolean
 End Function
 
 Public Function HexToInt&(ByVal HexString$)
+   On Error Resume Next
    HexToInt = "&h" & HexString
 End Function
 
@@ -277,27 +283,27 @@ Public Function Swap(ByRef a, ByRef b)
 End Function
 
 '////////////////////////////////////////////////////////////////////////
-'// BlockAlign_r  -  Erzeugt einen linksbündigen BlockString
+'// BlockAlign_r  -  Erzeugt einen rechtsbündigen BlockString
 '//
-'// Beispiel1:     BlockAlign_l("Summe",7) -> "  Summe"
-'// Beispiel2:     BlockAlign_l("Summe",4) -> "umme"
+'// Beispiel1:     BlockAlign_r("Summe",7) -> "  Summe"
+'// Beispiel2:     BlockAlign_r("Summe",4) -> "umme"
 Public Function BlockAlign_r(RawString, Blocksize) As String
   'String kürzen lang wenn zu
    RawString = Right(RawString, Blocksize)
   'mit Leerzeichen auffüllen
-   BlockAlign_r = RawString & Space(Blocksize - Len(RawString))
+   BlockAlign_r = Space(Blocksize - Len(RawString)) & RawString
 End Function
 
 '////////////////////////////////////////////////////////////////////////
 '// BlockAlign_l  -  Erzeugt einen linksbündigen BlockString
 '//
-'// Beispiel1:     BlockAlign_l("Summe",7) -> "  Summe"
-'// Beispiel2:     BlockAlign_l("Summe",4) -> "umme"
+'// Beispiel1:     BlockAlign_l("Summe",7) -> "Summe  "
+'// Beispiel2:     BlockAlign_l("Summe",4) -> "Summ"
 Public Function BlockAlign_l(RawString, Blocksize) As String
   'String kürzen lang wenn zu
    RawString = Left(RawString, Blocksize)
   'mit Leerzeichen auffüllen
-   BlockAlign_l = Space(Blocksize - Len(RawString)) & RawString
+   BlockAlign_l = RawString & Space(Blocksize - Len(RawString))
 End Function
 
 'used to call from the VB6-debug console to be able to scroll textboxes/Listboxes...
@@ -424,14 +430,14 @@ Function strCrop$(Text$, LeftString$, RightString$, Optional errorvalue = "", Op
 
 End Function
 
-Function MidMbcs(ByVal Str As String, Start, Length)
-    MidMbcs = StrConv(MidB$(StrConv(Str, vbFromUnicode), Start, Length), vbUnicode)
+Function MidMbcs(ByVal str As String, Start, Length)
+    MidMbcs = StrConv(MidB$(StrConv(str, vbFromUnicode), Start, Length), vbUnicode)
 End Function
 
 
-Function strCutOut$(Str$, pos&, Length&, Optional TextToInsert = "")
-   strCutOut = Mid(Str, pos, Length)
-   Str$ = Mid(Str, 1, pos - 1) & TextToInsert & Mid(Str, pos + Length)
+Function strCutOut$(str$, pos&, Length&, Optional TextToInsert = "")
+   strCutOut = Mid(str, pos, Length)
+   str$ = Mid(str, 1, pos - 1) & TextToInsert & Mid(str, pos + Length)
 End Function
 
 
@@ -1018,14 +1024,14 @@ Sub Checkbox_TriStateToggle(CheckBox As CheckBox, value)
 End Sub
 
 
-Public Function MakePrintable$(Str$)
+Public Function MakePrintable$(str$)
    
-   MakePrintable = Str
+   MakePrintable = str
    Dim i
-   For i = 1 To Len(Str)
+   For i = 1 To Len(str)
       
       Dim char$
-      char = Mid(Str, i, 1)
+      char = Mid(str, i, 1)
       Select Case char
          Case vbNullChar To " "
             char = "."
@@ -1036,3 +1042,46 @@ Public Function MakePrintable$(Str$)
    Next
 
 End Function
+
+Function Left2$(str$, Optional Length_SeenFromEnd& = 1)
+    Left2 = Left(str$, Len(str$) - Length_SeenFromEnd)
+End Function
+
+
+
+Public Function RE_FindPattern$(Data$, Pattern$, Optional Match As Match)
+       
+   With New RegExp
+      .IgnoreCase = True
+      .Global = False
+      .MultiLine = False
+      .Pattern = Pattern
+      
+      Dim matches As MatchCollection
+      
+      Set matches = .Execute(Data)
+      If matches.Count = 1 Then
+         'Dim match As match
+         Set Match = matches(0)
+         If Match.SubMatches.Count = 1 Then
+            RE_FindPattern = matches.item(0).SubMatches(0)
+         End If
+      End If
+   End With
+End Function
+
+
+
+
+Public Function RE_FindPatterns(Data, Pattern$)
+       
+   With New RegExp
+      .IgnoreCase = True
+      .Global = True
+      .MultiLine = False
+      .Pattern = Pattern
+      
+      Set RE_FindPatterns = .Execute(Data)
+   End With
+End Function
+

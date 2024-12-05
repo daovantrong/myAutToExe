@@ -53,7 +53,7 @@ Func _Patch()
     RunWait('"' & $s_installdir & '\aut2exe\upx.exe" -d "' & $s_executable & '"')
 
     ;binary read
-    Local $v_executable = String(BinaryString(FileRead($s_executable)))
+    Local $v_executable = String(Binary(FileRead($s_executable)))
 
     ;modify
     _Replace($v_executable, 'A3484BBE986C4AA9', _Read(0, 07))
@@ -63,7 +63,7 @@ Func _Patch()
 
     ;write
     Local $h_Open = FileOpen($s_executable, 2)
-    FileWrite($h_Open, BinaryString($v_executable))
+    FileWrite($h_Open, Binary($v_executable))
     FileClose($h_Open)
 
     ;upx

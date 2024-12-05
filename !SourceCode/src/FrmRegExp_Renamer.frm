@@ -1,44 +1,44 @@
 VERSION 5.00
 Begin VB.Form FrmRegExp_Renamer 
    Caption         =   "RegEx Renamer (alpha!)"
-   ClientHeight    =   8115
+   ClientHeight    =   8400
    ClientLeft      =   60
    ClientTop       =   450
    ClientWidth     =   12810
    LinkTopic       =   "Form1"
-   ScaleHeight     =   8115
+   ScaleHeight     =   8400
    ScaleWidth      =   12810
-   StartUpPosition =   3  'Windows-Standard
+   StartUpPosition =   3  'Windows Default
    Begin VB.CommandButton cmd_RegExpSave 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "Save"
       Height          =   255
       Left            =   840
       TabIndex        =   16
-      Top             =   1560
+      Top             =   2160
       Width           =   735
    End
    Begin VB.CommandButton cmd_RegExpLoad 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "Load"
       Height          =   255
       Left            =   120
       TabIndex        =   15
-      Top             =   1560
+      Top             =   2160
       Width           =   735
    End
    Begin VB.CheckBox chk_Simple 
       Caption         =   "Simple"
       Height          =   375
       Left            =   11880
-      Style           =   1  'Grafisch
+      Style           =   1  'Graphical
       TabIndex        =   12
       ToolTipText     =   "Enables Simple Mode - that do not adds 0001,0002... to each match"
       Top             =   120
       Width           =   855
    End
    Begin VB.CommandButton Cmd_Test 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "&Test"
       Height          =   495
       Left            =   11880
@@ -47,7 +47,7 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   615
    End
    Begin VB.CommandButton cmd_help 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "?"
       Height          =   495
       Left            =   12480
@@ -56,7 +56,7 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   255
    End
    Begin VB.CommandButton Cmd_Save 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Caption         =   "&Save"
       Height          =   495
       Left            =   11880
@@ -66,13 +66,13 @@ Begin VB.Form FrmRegExp_Renamer
    End
    Begin VB.Frame Frame2 
       Caption         =   "Matches"
-      Height          =   6255
+      Height          =   5655
       Left            =   8400
       TabIndex        =   6
-      Top             =   1800
+      Top             =   2400
       Width           =   4335
       Begin VB.ListBox List_Matches 
-         Appearance      =   0  '2D
+         Appearance      =   0  'Flat
          Height          =   5880
          ItemData        =   "FrmRegExp_Renamer.frx":0000
          Left            =   120
@@ -82,7 +82,7 @@ Begin VB.Form FrmRegExp_Renamer
          Width           =   4095
       End
       Begin VB.TextBox txt_Matches 
-         BorderStyle     =   0  'Kein
+         BorderStyle     =   0  'None
          Height          =   5055
          Left            =   240
          MultiLine       =   -1  'True
@@ -93,7 +93,7 @@ Begin VB.Form FrmRegExp_Renamer
       End
    End
    Begin VB.ListBox List_log 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   1005
       ItemData        =   "FrmRegExp_Renamer.frx":002C
       Left            =   120
@@ -103,28 +103,28 @@ Begin VB.Form FrmRegExp_Renamer
       Width           =   8175
    End
    Begin VB.TextBox txt_FileName 
-      Appearance      =   0  '2D
+      Appearance      =   0  'Flat
       Height          =   285
       Left            =   120
-      OLEDropMode     =   1  'Manuell
+      OLEDropMode     =   1  'Manual
       TabIndex        =   4
       Text            =   "<Drag some au3-file in here>"
       Top             =   120
       Width           =   11655
    End
    Begin VB.TextBox txt_ReplaceString 
-      Appearance      =   0  '2D
-      BorderStyle     =   0  'Kein
+      Appearance      =   0  'Flat
+      BorderStyle     =   0  'None
       BeginProperty Font 
          Name            =   "Courier New"
-         Size            =   8.25
+         Size            =   9.75
          Charset         =   0
          Weight          =   400
          Underline       =   0   'False
          Italic          =   0   'False
          Strikethrough   =   0   'False
       EndProperty
-      Height          =   975
+      Height          =   1455
       Left            =   120
       MultiLine       =   -1  'True
       TabIndex        =   3
@@ -134,29 +134,29 @@ Begin VB.Form FrmRegExp_Renamer
    End
    Begin VB.Frame Frame1 
       Caption         =   "Preview"
-      Height          =   5175
+      Height          =   4575
       Left            =   120
       TabIndex        =   0
-      Top             =   1800
+      Top             =   2400
       Width           =   8175
       Begin VB.TextBox txt_Replace 
-         BorderStyle     =   0  'Kein
-         Height          =   4815
+         BorderStyle     =   0  'None
+         Height          =   4215
          Left            =   120
          MultiLine       =   -1  'True
          TabIndex        =   2
          Tag             =   ">>>  Dear VB6-Dev: Please note that right behind me is another TextBox  <<<"
-         Text            =   "FrmRegExp_Renamer.frx":01AF
+         Text            =   "FrmRegExp_Renamer.frx":019A
          Top             =   240
          Width           =   7935
       End
       Begin VB.TextBox txt_Original 
-         BorderStyle     =   0  'Kein
-         Height          =   4815
+         BorderStyle     =   0  'None
+         Height          =   4215
          Left            =   120
          MultiLine       =   -1  'True
          TabIndex        =   1
-         Text            =   "FrmRegExp_Renamer.frx":0281
+         Text            =   "FrmRegExp_Renamer.frx":026C
          Top             =   240
          Width           =   7935
       End
@@ -170,6 +170,13 @@ Begin VB.Form FrmRegExp_Renamer
       TabStop         =   0   'False
       Top             =   120
       Width           =   555
+   End
+   Begin VB.Label Lbl_Status 
+      Height          =   255
+      Left            =   120
+      TabIndex        =   17
+      Top             =   8160
+      Width           =   8295
    End
    Begin VB.Label Label1 
       Caption         =   """<RegExpSearchPattern(Variable)>"" -> ""<ReplaceString>"" ; Comments"
@@ -294,7 +301,7 @@ Private Sub Cmd_Test_Click()
 End Sub
 
 Private Sub Form_Load()
-   'txt_Filename = "!Test\CBS Bot (Chr Obfuscated)\1.93\LauncherGUI.au3"
+   'txt_Filename =
 End Sub
 
 Private Sub List_Matches_Click()
@@ -302,13 +309,14 @@ Private Sub List_Matches_Click()
 
    With SearchReplace_Matches(List_Matches.ListIndex)
    
-      OpenAndFill txt_FileName, .FirstIndex
-      txt_Replace = txt_Original
+      OpenAndFill txt_FileName
+      txt_Replace = Mid(txt_Original, Max(.FirstIndex - 400, 0))
    
    
-      txt_Replace.SelStart = 1
+      txt_Replace.SelStart = 400
       txt_Replace.SelLength = .Length
       txt_Replace.SetFocus
+
       
    End With
    
@@ -350,15 +358,9 @@ Private Sub OpenAndFill(FileName$, Optional StartOffset = 0)
 ' Open au3 file
 
    Set ScriptData = New StringReader
-   Dim InputFile As New FileStream
-   With InputFile
-      .Create FileName, False, False, True
-      .Position = StartOffset
-      ScriptData.Data = .FixedString(-1)
-      .CloseFile
-   End With
+   ScriptData.Data = FileLoad(FileName)
    
-   txt_Original = ScriptData.Data
+   txt_Original = Script_RawToText(ScriptData.Data)
    
    Log_Clear
    Log FileName & " loaded."
@@ -597,7 +599,7 @@ Private Sub DoSearchReplace(Data$, RE_Search$, RE_Replace$, Optional Comments = 
       GUIEvent_ProcessEnd
    
    End If
-   txt_Replace = Data
+   txt_Replace = Script_RawToText(Data)
    
 '
 ''    ' Merge lines with _ at the end
@@ -655,7 +657,7 @@ Private Function Apply(ByRef Data$, Optional Testonly = False)
    List_Matches.Clear
    
    
-   txt_Replace = Data
+   txt_Replace = Script_RawToText(Data)
    
  ' get/parse SearchReplacePatterns
    SeperateSearchReplacePattern
@@ -692,7 +694,16 @@ End Select
 End Function
 
 
-Private Sub txt_Filename_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, x As Single, y As Single)
+Private Sub txt_Replace_KeyUp(KeyCode As Integer, Shift As Integer)
+   UpdateLabel
+End Sub
+
+Private Sub txt_Replace_MouseMove(Button As Integer, Shift As Integer, X As Single, Y As Single)
+   UpdateLabel
+End Sub
+
+
+Private Sub txt_Filename_OLEDragDrop(Data As DataObject, Effect As Long, Button As Integer, Shift As Integer, X As Single, Y As Single)
    On Error GoTo txt_Filename_OLEDragDrop_err
    
    txt_FileName = Data.Files(1)
@@ -708,6 +719,19 @@ Case Else
 
 End Select
 End Sub
+
+Private Sub UpdateLabel()
+   Dim CharsSelected&
+   CharsSelected = txt_Replace.SelLength
+   If CharsSelected Then
+      Lbl_Status.Caption = "Note: " & txt_Replace.SelLength & " chars selected."
+   Else
+      Lbl_Status.Caption = ""
+   End If
+End Sub
+
+
+
 
 Private Sub Txt_ReplaceString_Change()
    Refresh_Preview

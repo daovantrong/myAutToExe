@@ -124,6 +124,7 @@ Sub DeToken()
          cmd = .int8
          Inc TokenCount
          
+         
          Dim TokenInfo$
          TokenInfo = "Token: " & H8(cmd) & "      (Line: " & SourceCodeLineCount & "  TokenCount: " & TokenCount & ")"
        ' Log it ''" & Chr(Cmd) & "'
@@ -145,6 +146,21 @@ Sub DeToken()
             Dim int32$
             int32 = .int32
             Atom = int32
+            
+          ' Bugfix for 3.3.8.1 (29th January, 2012)
+          ' Tokenoptimisation occure'+-123' -> '-123'
+            Dim LastAtom
+            If LastAtom = "+" Then
+               If Atom <= -1 Then
+                  log_verbose " Tokenoptimisation occured '+-' -> '-'  @line: " & SourceCodeLineCount
+                  Dim tmp$
+                  tmp = ArrayGetLast(SourceCodeLine)
+                  tmp = Left2(tmp) ' Cut last char
+                  ArraySetLast SourceCodeLine, tmp
+               End If
+            End If
+                         
+
             
             TypeName = "Int32"
             FL_verbose TypeName & ": 0x" & H32(int32) & "   " & int32
@@ -208,6 +224,7 @@ Sub DeToken()
             Next
             
             DecodeString = tmpBuff
+            
             
 'Comment out due to bad performance
 '            RawString.Position = 0
@@ -413,6 +430,7 @@ Sub DeToken()
             
             
          End If
+         LastAtom = Atom
 
       Loop Until .EOS
     
